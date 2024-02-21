@@ -6,40 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Document</title>
 
-  <style type="text/css">
-    table th,
-    table td {
-      padding: 1px;
-    }
-
-    table {
-      border-spacing: 0px;
-      /* table-layout: fixed; */
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    td {
-      border: 1px solid black;
-      /* word-break: break-all; */
-      word-wrap: break-word;
-      width: 70px;
-      overflow: hidden;
-    }
-
-    .header{
-      display: flex;
-      /* justify-content: space-between; */
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <div>
     <div class="header">
       <div class="fileSelector">
-        <input type="file" name="file" id="file" accept=".csv" />
-        <input type="button" id="btnsubmit" value="Submit" onclick="readCSVFile();" />
+        <input type="file" name="file" id="file" accept=".csv" onchange="readCSVFile()"/>
+        <!-- <input type="button" id="btnsubmit" value="Submit" onclick="readCSVFile();" /> -->
       </div>
       <div class="fileName" style='margin-left: 100px'></div>
     </div>
