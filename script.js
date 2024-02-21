@@ -37,8 +37,8 @@ function getFileName(filename){
 }
 
 function createTable(allRowsData) {
-  //   let rowsData = getTransformedData(allRowsData, noOfDays);
-  let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
+    let rowsData = getTransformedData(allRowsData, noOfDays);
+  // let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
   renderTable(rowsData);
 }
 
