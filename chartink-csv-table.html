@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+
+  <style type="text/css">
+    table th,
+    table td {
+      padding: 1px;
+    }
+
+    table {
+      border-spacing: 0px;
+      /* table-layout: fixed; */
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    td {
+      border: 1px solid black;
+      /* word-break: break-all; */
+      word-wrap: break-word;
+      width: 70px;
+      overflow: hidden;
+    }
+
+    .header{
+      display: flex;
+      /* justify-content: space-between; */
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <div class="header">
+      <div class="fileSelector">
+        <input type="file" name="file" id="file" accept=".csv" />
+        <input type="button" id="btnsubmit" value="Submit" onclick="readCSVFile();" />
+      </div>
+      <div class="fileName" style='margin-left: 100px'></div>
+    </div>
+    <br />
+    <!-- List CSV file data -->
+    <table id="tblcsvdata" border="1" style="border-collapse: collapse">
+      <tbody onclick="highlightShare(event)"></tbody>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
