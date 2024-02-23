@@ -1,6 +1,7 @@
 let allTds = "";
 let noOfDays = 25;
 let rowsData = '';
+let direction_btn = '';
 
 let fileNameDiv = document.querySelector('.fileName');
 
@@ -39,9 +40,16 @@ function getFileName(filename){
 }
 
 function createTable(allRowsData) {
+  if(!direction_btn || direction_btn === 'horizontal'){
     let rowsData = getTransformedData(allRowsData, noOfDays);
-  // let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
-  renderTable(rowsData);
+    renderTable(rowsData);
+  }
+  if(direction_btn === 'vertical'){
+    let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
+    renderTable(rowsData);
+  }
+  // let rowsData = getTransformedData(allRowsData, noOfDays);
+  // renderTable(rowsData);
 }
 
 function getTransformedDataColWise(rowsData, noOfDays) {
@@ -67,7 +75,7 @@ function getTransformedDataColWise(rowsData, noOfDays) {
     }
   }
 
-  console.log(totalRowsToRead, rowsCount);
+  // console.log(totalRowsToRead, rowsCount);
 
   let data = extractDataColWise(rowsData, noOfDays, rowsCount);
   return data;
@@ -165,23 +173,21 @@ function highlightShare(event) {
   });
 }
 
-function noOfDaysToDisplayDataInTable(){
-  let all_buttons = document.querySelectorAll('.days-btn');
-  let noOfDaysToDisplayData = '';
-all_buttons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        noOfDaysToDisplayData = e.target.innerHTML;
-        // console.log(noOfDaysToDisplayData);
-      })
-    });
-    return noOfDaysToDisplayData;
-}
 
 
-let all_button = document.querySelectorAll('.days-btn');
-    all_button.forEach(bt =>{
+let all_buttons = document.querySelectorAll('.days-btn');
+    all_buttons.forEach(bt =>{
         bt.addEventListener('click', (e) => {
             noOfDays = e.target.innerHTML;
-            createTable(rowsData ,noOfDays);
+            createTable(rowsData, noOfDays);
+        })
+    });
+
+
+let direction_buttons = document.querySelectorAll('.direction-btn');
+direction_buttons.forEach(bt =>{
+        bt.addEventListener('click', (e) => {
+            direction_btn = e.target.value;
+            createTable(rowsData, direction_btn);
         })
     });
