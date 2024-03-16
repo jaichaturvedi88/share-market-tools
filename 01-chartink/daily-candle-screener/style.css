@@ -1,3 +1,9 @@
+body {
+    scrollbar-width: auto;
+    /* scrollbar-width: thin;
+    scrollbar-width: none; */
+}
+
 table th,
 table td {
   padding: 1px;
@@ -24,7 +30,7 @@ td:first-child {
 }
 
 tr:nth-child(10n) {
-  background-color: #dfd1d1; /* Sets background color for rows that are multiples of 5 */
+  background-color: #cd4a4a; /* Sets background color for rows that are multiples of 5 */
 }
 
 .header{
@@ -32,7 +38,7 @@ tr:nth-child(10n) {
   /* justify-content: space-between; */
 }
 
-/* Scrollbar code start */
+
 ::-webkit-scrollbar {
     width: 1em;
     height: 1em
@@ -46,11 +52,8 @@ tr:nth-child(10n) {
 ::-webkit-scrollbar-thumb {
     background: #ff7979
 }   
+
 .thin_scroll{
     scrollbar-width: 50px;  
 }
-/* Scrollbar code start */
 
-.highlight {
-  background-color: #8c8c00;
-}
