@@ -1,5 +1,5 @@
 let allTds = "";
-let noOfDays = 25;
+let noOfDays = 5;
 let rowsData = "";
 let direction_btn = "";
 
@@ -213,10 +213,14 @@ filter_buttons.forEach((bt) => {
 function filterStocks(minAscii, maxAscii) {
   allTds.forEach((td) => {
     let asciiChar = td.innerText.charCodeAt(0);
-    if (asciiChar >= +minAscii && asciiChar <= +maxAscii
+    if(asciiChar >= 48 && asciiChar <= 57){
+      td.style.display = "table-cell";
+    }
+    else if (asciiChar >= +minAscii && asciiChar <= +maxAscii
     ) {
       td.style.display = "table-cell";
-    } else {
+    } 
+    else {
       td.style.display = "none";
     }
   });
