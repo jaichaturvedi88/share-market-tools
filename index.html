@@ -16,7 +16,7 @@
     <div class="header">
       <div class="fileSelector">
         <input type="file" name="file" id="file" accept=".csv" onchange="readCSVFile()"/>
-        <!-- <input type="button" id="btnsubmit" value="Submit" onclick="readCSVFile();" /> -->
+        <input type="button" id="btnsubmit" value="Submit" onclick="readCSVFile();" />
       </div>
       <div class="fileName" style='margin-left: 100px'></div>
       <div id="aBtnGroup" class="btn-group border ms-1">
@@ -30,6 +30,11 @@
       <div id="aBtnGroup" class="btn-group border ms-1">
         <button type="button" value="horizontal" class="btn btn-default border py-0 direction-btn">Horizontal</button>
         <button type="button" value="vertical" class="btn btn-default border py-0 direction-btn">Vertical</button>
+      </div>
+      <div id="aBtnGroup" class="btn-group border ms-1">
+        <button type="button" value="65" class="btn btn-default border py-0 filter-btn">A-I</button>
+        <button type="button" value="74" class="btn btn-default border py-0 filter-btn">J-R</button>
+        <button type="button" value="83" class="btn btn-default border py-0 filter-btn">S-Z</button>
       </div>
     </div>
     

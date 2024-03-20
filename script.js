@@ -1,9 +1,9 @@
 let allTds = "";
 let noOfDays = 25;
-let rowsData = '';
-let direction_btn = '';
+let rowsData = "";
+let direction_btn = "";
 
-let fileNameDiv = document.querySelector('.fileName');
+let fileNameDiv = document.querySelector(".fileName");
 
 function readCSVFile() {
   var files = document.querySelector("#file").files;
@@ -26,7 +26,7 @@ function readCSVFile() {
 
       // Split by line break to gets rows Array
       rowsData = csvdata.split("\n");
-
+      // console.log(rowsData);
       createTable(rowsData);
       allTds = document.querySelectorAll("td");
     };
@@ -35,16 +35,24 @@ function readCSVFile() {
   }
 }
 
-function getFileName(filename){
-  return filename.replace('Backtest', '').replace(', Technical Analysis Scanner', '').replace('.csv', '').split('-').join(' ');
+function getFileName(filename) {
+  return filename
+    .replace("Backtest", "")
+    .replace(", Technical Analysis Scanner", "")
+    .replace(".csv", "")
+    .split("-")
+    .join(" ");
 }
 
 function createTable(allRowsData) {
-  if(!direction_btn || direction_btn === 'horizontal'){
+  // let filteredData = filterData(rowsData);
+
+  if (!direction_btn || direction_btn === "horizontal") {
     let rowsData = getTransformedData(allRowsData, noOfDays);
+    // console.log(rowsData);
     renderTable(rowsData);
   }
-  if(direction_btn === 'vertical'){
+  if (direction_btn === "vertical") {
     let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
     renderTable(rowsData);
   }
@@ -147,6 +155,7 @@ function renderTable(rowsData) {
     // Split by comma (,) to get column Array
     // rowColData = rowsData[row].split(",");
     rowColData = rowsData[row];
+    // console.log(rowColData);
 
     // Loop on the row column Array
     for (var col = 0; col < rowColData.length; col++) {
@@ -161,7 +170,6 @@ function highlightShare(event) {
   let selectedShare = event.srcElement.innerText;
 
   console.log(selectedShare);
-  console.log(allTds);
 
   allTds.forEach((td) => {
     if (td.innerText && td.innerText === selectedShare) {
@@ -173,21 +181,43 @@ function highlightShare(event) {
   });
 }
 
+// change direction of table (horizontal or vertical)
+let days_buttons = document.querySelectorAll(".days-btn");
+days_buttons.forEach((bt) => {
+  bt.addEventListener("click", (e) => {
+    noOfDays = e.target.innerHTML;
+    createTable(rowsData, noOfDays);
+  });
+});
+
+let direction_buttons = document.querySelectorAll(".direction-btn");
+direction_buttons.forEach((bt) => {
+  bt.addEventListener("click", (e) => {
+    direction_btn = e.target.value;
+    createTable(rowsData, direction_btn);
+  });
+});
 
 
-let all_buttons = document.querySelectorAll('.days-btn');
-    all_buttons.forEach(bt =>{
-        bt.addEventListener('click', (e) => {
-            noOfDays = e.target.innerHTML;
-            createTable(rowsData, noOfDays);
-        })
-    });
+// filter stocks by name
+let filter_buttons = document.querySelectorAll(".filter-btn");
+filter_buttons.forEach((bt) => {
+  bt.addEventListener("click", (e) => {
+    let filter_btn = e.target.innerText;
+    let minAscii = filter_btn.charCodeAt(0);
+    let maxAscii = filter_btn.charCodeAt(2);
+    filterStocks(minAscii, maxAscii);
+  });
+});
 
-
-let direction_buttons = document.querySelectorAll('.direction-btn');
-direction_buttons.forEach(bt =>{
-        bt.addEventListener('click', (e) => {
-            direction_btn = e.target.value;
-            createTable(rowsData, direction_btn);
-        })
-    });
+function filterStocks(minAscii, maxAscii) {
+  allTds.forEach((td) => {
+    let asciiChar = td.innerText.charCodeAt(0);
+    if (asciiChar >= +minAscii && asciiChar <= +maxAscii
+    ) {
+      td.style.display = "table-cell";
+    } else {
+      td.style.display = "none";
+    }
+  });
+}

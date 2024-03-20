@@ -48,3 +48,7 @@ td {
     scrollbar-width: 50px;  
 }
 
+td:first-child {
+  white-space: nowrap;
+  padding-right: 5px 
+}
