@@ -1,4 +1,4 @@
-let allTds = "";
+// let allTds = "";
 let noOfDays = 5;
 let rowsData = "";
 let direction_btn = "";
@@ -28,7 +28,7 @@ function readCSVFile() {
       rowsData = csvdata.split("\n");
       // console.log(rowsData);
       createTable(rowsData);
-      allTds = document.querySelectorAll("td");
+      // allTds = document.querySelectorAll("td");
     };
   } else {
     alert("Please select a file.");
@@ -147,8 +147,12 @@ function renderTable(rowsData) {
     .getElementsByTagName("tbody")[0];
   tbodyEl.innerHTML = "";
 
+  let rowCounter = 0;
+  let cellCounter = 0;
+
   // Loop on the row Array (change row=0 if you also want to read 1st row)
   for (var row = 0; row < rowsData.length; row++) {
+    rowCounter++;
     // Insert a row at the end of table
     var newRow = tbodyEl.insertRow();
 
@@ -159,18 +163,22 @@ function renderTable(rowsData) {
 
     // Loop on the row column Array
     for (var col = 0; col < rowColData.length; col++) {
+      cellCounter++;
       // Insert a cell at the end of the row
       var newCell = newRow.insertCell();
       newCell.innerHTML = rowColData[col];
     }
   }
+  console.log(rowCounter);
+  console.log(cellCounter);
+  document.querySelector('.rowCounter').innerText = `No. of rows - ${rowCounter}`;
+  document.querySelector('.cellCounter').innerText = `No. of cells - ${cellCounter}`;
 }
-
 function highlightShare(event) {
   let selectedShare = event.srcElement.innerText;
 
   console.log(selectedShare);
-
+  let allTds = document.querySelectorAll("td");
   allTds.forEach((td) => {
     if (td.innerText && td.innerText === selectedShare) {
       navigator.clipboard.writeText(selectedShare);
@@ -211,7 +219,10 @@ filter_buttons.forEach((bt) => {
 });
 
 function filterStocks(minAscii, maxAscii) {
+  let allTds = document.querySelectorAll("td");
+  let tdCounter = 0;
   allTds.forEach((td) => {
+    tdCounter++;
     let asciiChar = td.innerText.charCodeAt(0);
     if(asciiChar >= 48 && asciiChar <= 57){
       td.style.display = "table-cell";
@@ -224,4 +235,6 @@ function filterStocks(minAscii, maxAscii) {
       td.style.display = "none";
     }
   });
+  console.log(tdCounter);
+  document.querySelector('.tdCounter').innerText = `No. of tds - ${tdCounter}`;
 }
