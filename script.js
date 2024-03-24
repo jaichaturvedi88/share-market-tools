@@ -44,7 +44,7 @@ function getFileName(filename) {
     .join(" ");
 }
 
-function createTable(allRowsData) {
+function createTable(allRowsData, direction_btn) {
   // let filteredData = filterData(rowsData);
 
   if (!direction_btn || direction_btn === "horizontal") {
@@ -182,42 +182,9 @@ function highlightShare(event) {
 }
 
 // change direction of table (horizontal or vertical)
-let days_buttons = document.querySelectorAll(".days-btn");
-days_buttons.forEach((bt) => {
-  bt.addEventListener("click", (e) => {
-    noOfDays = e.target.innerHTML;
-    createTable(rowsData, noOfDays);
-  });
-});
 
-let direction_buttons = document.querySelectorAll(".direction-btn");
-direction_buttons.forEach((bt) => {
-  bt.addEventListener("click", (e) => {
-    direction_btn = e.target.value;
+document.querySelector("#directionBtnGroup").addEventListener('click', (event) => {
+    let direction_btn = event.target.value;
+    console.log(direction_btn);
     createTable(rowsData, direction_btn);
-  });
 });
-
-
-// filter stocks by name
-let filter_buttons = document.querySelectorAll(".filter-btn");
-filter_buttons.forEach((bt) => {
-  bt.addEventListener("click", (e) => {
-    let filter_btn = e.target.innerText;
-    let minAscii = filter_btn.charCodeAt(0);
-    let maxAscii = filter_btn.charCodeAt(2);
-    filterStocks(minAscii, maxAscii);
-  });
-});
-
-function filterStocks(minAscii, maxAscii) {
-  allTds.forEach((td) => {
-    let asciiChar = td.innerText.charCodeAt(0);
-    if (asciiChar >= +minAscii && asciiChar <= +maxAscii
-    ) {
-      td.style.display = "table-cell";
-    } else {
-      td.style.display = "none";
-    }
-  });
-}
