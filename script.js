@@ -185,6 +185,5 @@ function highlightShare(event) {
 
 document.querySelector("#directionBtnGroup").addEventListener('click', (event) => {
     let direction_btn = event.target.value;
-    console.log(direction_btn);
     createTable(rowsData, direction_btn);
 });
