@@ -1,9 +1,9 @@
 // let allTds = "";
-let noOfDays = 5;
-let rowsData = "";
+let noOfDays = 20;
+let rowsData = [];
 let direction_btn = "";
-
 let fileNameDiv = document.querySelector(".fileName");
+let dataInTable = [];
 
 function readCSVFile() {
   var files = document.querySelector("#file").files;
@@ -45,17 +45,15 @@ function getFileName(filename) {
 }
 
 function createTable(allRowsData) {
-  // let filteredData = filterData(rowsData);
-
+  // console.log(allRowsData)
   if (!direction_btn || direction_btn === "horizontal") {
-    let rowsData = getTransformedData(allRowsData, noOfDays);
-    // console.log(rowsData);
-    renderTable(rowsData);
+    dataInTable = getTransformedData(allRowsData, noOfDays);
   }
   if (direction_btn === "vertical") {
-    let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
-    renderTable(rowsData);
+    dataInTable = getTransformedDataColWise(allRowsData, noOfDays);
   }
+
+  renderTable(dataInTable);
   // let rowsData = getTransformedData(allRowsData, noOfDays);
   // renderTable(rowsData);
 }
@@ -140,7 +138,7 @@ function getTransformedData(rowsData, noOfDays) {
   return transformedData;
 }
 
-function renderTable(rowsData) {
+function renderTable(dataInTable) {
   // <table > <tbody>
   var tbodyEl = document
     .getElementById("tblcsvdata")
@@ -150,14 +148,14 @@ function renderTable(rowsData) {
   
 
   // Loop on the row Array (change row=0 if you also want to read 1st row)
-  for (var row = 0; row < rowsData.length; row++) {
+  for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
     var newRow = tbodyEl.insertRow();
 
     // Split by comma (,) to get column Array
-    // rowColData = rowsData[row].split(",");
-    rowColData = rowsData[row];
-    // console.log(rowColData);
+    // rowColData = dataInTable[row].split(",");
+    rowColData = dataInTable[row];
+    // console.log(dataInTable);
 
     // Loop on the row column Array
     for (var col = 0; col < rowColData.length; col++) {
@@ -168,6 +166,10 @@ function renderTable(rowsData) {
   }
  
 }
+
+
+
+
 function highlightShare(event) {
   let selectedShare = event.srcElement.innerText;
 
@@ -183,48 +185,27 @@ function highlightShare(event) {
   });
 }
 
-// change direction of table (horizontal or vertical)
-let days_buttons = document.querySelectorAll(".days-btn");
-days_buttons.forEach((bt) => {
-  bt.addEventListener("click", (e) => {
-    noOfDays = e.target.innerHTML;
-    createTable(rowsData, noOfDays);
-  });
-});
-
-let direction_buttons = document.querySelectorAll(".direction-btn");
-direction_buttons.forEach((bt) => {
-  bt.addEventListener("click", (e) => {
-    direction_btn = e.target.value;
-    createTable(rowsData, direction_btn);
-  });
-});
 
 
-// filter stocks by name
-let filter_buttons = document.querySelectorAll(".filter-btn");
-filter_buttons.forEach((bt) => {
-  bt.addEventListener("click", (e) => {
-    let filter_btn = e.target.innerText;
-    let minAscii = filter_btn.charCodeAt(0);
-    let maxAscii = filter_btn.charCodeAt(2);
-    filterStocks(minAscii, maxAscii);
-  });
+document.querySelector("#filterBtnGroup").addEventListener('click', (event) => {
+  
+    let filter_btn = event.target.innerText;
+        let minAscii = filter_btn.charCodeAt(0);
+        let maxAscii = filter_btn.charCodeAt(2);
+        filterStocks(minAscii, maxAscii);
 });
 
 function filterStocks(minAscii, maxAscii) {
-  let allTds = document.querySelectorAll("td");
-  allTds.forEach((td) => {
-    let asciiChar = td.innerText.charCodeAt(0);
-    if(asciiChar >= 48 && asciiChar <= 57){
-      td.style.display = "table-cell";
-    }
-    else if (asciiChar >= +minAscii && asciiChar <= +maxAscii
-    ) {
-      td.style.display = "table-cell";
-    } 
-    else {
-      td.style.display = "none";
-    }
-  });
+  let filteredTableData = [];
+  for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
+    filteredTableData[rowIndex] = [];
+    for (let colIndex = 0; colIndex < dataInTable[rowIndex].length; colIndex++) {
+      let asciiChar = dataInTable[rowIndex][colIndex].charCodeAt(0);
+      if(((asciiChar >= 48 && asciiChar <= 57) || (asciiChar >= +minAscii && asciiChar <= +maxAscii))){
+           filteredTableData[rowIndex].push(dataInTable[rowIndex][colIndex]);
+          }
+        }
+      }
+  renderTable(filteredTableData);
 }
+
