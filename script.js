@@ -165,23 +165,10 @@ function highlightShare(event) {
   });
 }
 
-function noOfDaysToDisplayDataInTable(){
-  let all_buttons = document.querySelectorAll('.days-btn');
-  let noOfDaysToDisplayData = '';
-all_buttons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        noOfDaysToDisplayData = e.target.innerHTML;
-        // console.log(noOfDaysToDisplayData);
-      })
-    });
-    return noOfDaysToDisplayData;
-}
-
-
-let all_button = document.querySelectorAll('.days-btn');
-    all_button.forEach(bt =>{
-        bt.addEventListener('click', (e) => {
-            noOfDays = e.target.innerHTML;
-            createTable(rowsData ,noOfDays);
-        })
-    });
+    document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
+      //  let btn = document.querySelector('button');
+      //  console.log(btn.innerText);
+        // console.log(event.target.innerText);
+        noOfDays = event.target.innerText;
+        createTable(rowsData ,noOfDays);
+      });
