@@ -167,5 +167,5 @@ function highlightShare(event) {
 
     document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
         noOfDays = event.target.innerText;
-        createTable(rowsData ,noOfDays);
+        createTable(rowsData, noOfDays);
       });
