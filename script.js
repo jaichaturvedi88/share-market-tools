@@ -1,5 +1,5 @@
 let allTds = "";
-let noOfDays = 25;
+let noOfDays = 5;
 let rowsData = '';
 
 let fileNameDiv = document.querySelector('.fileName');
@@ -24,7 +24,11 @@ function readCSVFile() {
       var csvdata = event.target.result;
 
       // Split by line break to gets rows Array
+      // rowsData = csvdata.split("\n");
+
+      // Split by line break to gets rows Array
       rowsData = csvdata.split("\n");
+      rowsData.length = rowsData[rowsData.length-1] === "" ? rowsData.length-1 : rowsData.length; // Remove last row if it is empty
 
       createTable(rowsData);
       allTds = document.querySelectorAll("td");
@@ -167,5 +171,5 @@ function highlightShare(event) {
 
     document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
         noOfDays = event.target.innerText;
-        createTable(rowsData, noOfDays);
+        createTable(rowsData);
       });
