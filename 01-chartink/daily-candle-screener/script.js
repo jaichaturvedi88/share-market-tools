@@ -180,3 +180,23 @@ document.querySelector("#directionBtnGroup").addEventListener('click', (event) =
   let direction_btn = event.target.value;
   createTable(rowsData, direction_btn);
 });
+
+document.querySelector("#filterBtnGroup").addEventListener('click', (event) => {
+  let filter_btn = event.target.innerText;
+      let minAscii = filter_btn.charCodeAt(0);
+      let maxAscii = filter_btn.charCodeAt(2);
+      filterStocks(minAscii, maxAscii);
+});
+function filterStocks(minAscii, maxAscii) {
+let filteredTableData = [];
+for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
+  filteredTableData[rowIndex] = [];
+  for (let colIndex = 0; colIndex < dataInTable[rowIndex].length; colIndex++) {
+    let asciiChar = dataInTable[rowIndex][colIndex].charCodeAt(0);
+    if(((asciiChar >= 48 && asciiChar <= 57) || (asciiChar >= +minAscii && asciiChar <= +maxAscii))){
+         filteredTableData[rowIndex].push(dataInTable[rowIndex][colIndex]);
+        }
+      }
+    }
+renderTable(filteredTableData);
+}
