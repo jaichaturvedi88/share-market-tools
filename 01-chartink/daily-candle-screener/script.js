@@ -1,6 +1,6 @@
 let allTds = "";
-let noOfDays = 50;
-let noOfDaysToDisplayData = noOfDaysToDisplayDataINTable();
+let noOfDays = 5;
+let rowsData = [];
 let fileNameDiv = document.querySelector('.fileName');
 
 function readCSVFile() {
@@ -23,7 +23,10 @@ function readCSVFile() {
       var csvdata = event.target.result;
 
       // Split by line break to gets rows Array
-      var rowsData = csvdata.split("\n");
+      // var rowsData = csvdata.split("\n");
+      rowsData = csvdata.split("\n");
+      rowsData.length = rowsData[rowsData.length-1] === "" ? rowsData.length-1 : rowsData.length; // Remove last row if it is empty
+
 
       createTable(rowsData);
       allTds = document.querySelectorAll("td");
@@ -164,13 +167,7 @@ function highlightShare(event) {
   });
 }
 
-function noOfDaysToDisplayDataINTable(){
-  let all_buttons = document.querySelectorAll('.days-btn');
-all_buttons.forEach(btn =>{
-    btn.addEventListener('click', (e) => {
-        let noOfDays = '';
-        noOfDays = e.target.innerHTML;
-        console.log(noOfDays);
-    })
+document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
+  noOfDays = event.target.innerText;
+  createTable(rowsData);
 });
-}
