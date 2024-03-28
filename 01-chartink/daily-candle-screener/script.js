@@ -1,6 +1,7 @@
 let allTds = "";
 let noOfDays = 5;
 let rowsData = [];
+let dataInTable = [];
 let fileNameDiv = document.querySelector('.fileName');
 
 function readCSVFile() {
@@ -39,11 +40,14 @@ function readCSVFile() {
 function getFileName(filename){
   return filename.replace('Backtest', '').replace(', Technical Analysis Scanner', '').replace('.csv', '').split('-').join(' ');
 }
-
-function createTable(allRowsData) {
-  let rowsData = getTransformedData(allRowsData, noOfDays);
-  // let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
-  renderTable(rowsData);
+function createTable(allRowsData, direction_btn) {
+  if (!direction_btn || direction_btn === "horizontal") {
+    dataInTable = getTransformedData(allRowsData, noOfDays);
+  }
+  if (direction_btn === "vertical") {
+    dataInTable = getTransformedDataColWise(allRowsData, noOfDays);
+  }
+  renderTable(dataInTable);
 }
 
 function getTransformedDataColWise(rowsData, noOfDays) {
@@ -126,7 +130,7 @@ function getTransformedData(rowsData, noOfDays) {
   return transformedData;
 }
 
-function renderTable(rowsData) {
+function renderTable(dataInTable) {
   // <table > <tbody>
   var tbodyEl = document
     .getElementById("tblcsvdata")
@@ -134,13 +138,13 @@ function renderTable(rowsData) {
   tbodyEl.innerHTML = "";
 
   // Loop on the row Array (change row=0 if you also want to read 1st row)
-  for (var row = 0; row < rowsData.length; row++) {
+  for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
     var newRow = tbodyEl.insertRow();
 
     // Split by comma (,) to get column Array
     // rowColData = rowsData[row].split(",");
-    rowColData = rowsData[row];
+    rowColData = dataInTable[row];
 
     // Loop on the row column Array
     for (var col = 0; col < rowColData.length; col++) {
@@ -170,4 +174,9 @@ function highlightShare(event) {
 document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
   noOfDays = event.target.innerText;
   createTable(rowsData);
+});
+
+document.querySelector("#directionBtnGroup").addEventListener('click', (event) => {
+  let direction_btn = event.target.value;
+  createTable(rowsData, direction_btn);
 });
