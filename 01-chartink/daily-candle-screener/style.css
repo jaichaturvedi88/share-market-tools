@@ -11,18 +11,21 @@ table td {
 
 table {
   border-spacing: 0px;
-  /* table-layout: fixed; */
   margin-left: auto;
   margin-right: auto;
 }
 
 td {
   border: 1px solid black;
-  /* word-break: break-all; */
   word-wrap: break-word;
   width: 70px;
   overflow: hidden;
 }
+
+.table-container{
+  width: 99vw ;
+} 
+
 
 td:first-child {
   white-space: nowrap;
