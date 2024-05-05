@@ -1,4 +1,4 @@
-let allTds = "";
+// let allTds = "";
 let noOfDays = 5;
 let rowsData = [];
 let dataInTable = [];
@@ -30,7 +30,7 @@ function readCSVFile() {
 
 
       createTable(rowsData);
-      allTds = document.querySelectorAll("td");
+      // allTds = document.querySelectorAll("td");
     };
   } else {
     alert("Please select a file.");
@@ -102,6 +102,29 @@ function extractDataColWise(rowsData, colCount, rowCount) {
   return data;
 }
 
+// function extractDataColWise(rowsData, colCount, rowCount) {
+//   let rowIndex = rowsData.length - 1;
+//   let prevDate = "";
+//   rowCount++; //increase one more row to accomodate date in first row
+//   let data = initializeArray(rowCount, colCount);
+
+//   for (let col = -1; col < colCount; col++) {
+//     for (let row = 1; row < rowCount; row++) {
+//       let rowData = rowsData[rowIndex--].split(",");
+//       let currentDate = rowData[0];
+//       if (prevDate === currentDate) {
+//         data[row][col] = rowData[1];
+//       } else {
+//         prevDate = currentDate;
+//         data[0][col + 1] = rowData[0];
+//         // data[1][col + 1] = rowData[1];
+//         break;
+//       }
+//     }
+//   }
+//   return data;
+// }
+
 const initializeArray = (rows, columns) =>
   [...Array(rows).keys()].map((i) => Array(columns).fill(""));
 
@@ -156,10 +179,12 @@ function renderTable(dataInTable) {
 }
 
 function highlightShare(event) {
+  let allTds = document.querySelectorAll("td");
+
   let selectedShare = event.srcElement.innerText;
 
   console.log(selectedShare);
-  console.log(allTds);
+  // console.log(allTds);
 
   allTds.forEach((td) => {
     if (td.innerText && td.innerText === selectedShare) {
@@ -199,4 +224,13 @@ for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
       }
     }
 renderTable(filteredTableData);
+}
+
+
+function toggleCssClass(){
+  let tds = document.querySelectorAll('td');
+  // console.log(td);
+  tds.forEach(td => {
+    td.classList.toggle('row-wrap');
+  });
 }
