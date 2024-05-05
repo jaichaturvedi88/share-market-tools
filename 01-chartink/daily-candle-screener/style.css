@@ -1,0 +1,62 @@
+body {
+    scrollbar-width: auto;
+    /* scrollbar-width: thin;
+    scrollbar-width: none; */
+}
+
+table th,
+table td {
+  padding: 1px;
+}
+
+table {
+  border-spacing: 0px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+td {
+  border: 1px solid black;
+  word-wrap: break-word;
+  width: 70px;
+  overflow: hidden;
+}
+
+.table-container{
+  width: 99vw ;
+} 
+
+
+td:first-child {
+  white-space: nowrap;
+  padding-right: 5px;
+}
+
+tr:nth-child(10n) {
+  background-color: #cd4a4a; /* Sets background color for rows that are multiples of 5 */
+}
+
+.header{
+  display: flex;
+  /* justify-content: space-between; */
+}
+
+
+::-webkit-scrollbar {
+    width: 1em;
+    height: 1em
+}
+::-webkit-scrollbar-button {
+    background: #463434
+}
+::-webkit-scrollbar-track-piece {
+    background: #f7baba
+}
+::-webkit-scrollbar-thumb {
+    background: #ff7979
+}   
+
+.thin_scroll{
+    scrollbar-width: 50px;  
+}
+

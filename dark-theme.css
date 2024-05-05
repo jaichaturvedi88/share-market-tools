@@ -1,0 +1,13 @@
+.dark-theme {
+  background-color: #333; /* Dark background color */
+  color: #b1b1b1; /* Light text color */
+}
+
+.dark-theme tr:nth-child(10n) {
+  background-color: #452727; /* Sets background color for rows that are multiples of 5 */
+}
+
+.dark-theme .highlight {
+  background-color: #5b4d17;
+}
+
