@@ -1,6 +1,7 @@
-let allTds = "";
-let noOfDays = 50;
-let noOfDaysToDisplayData = noOfDaysToDisplayDataINTable();
+// let allTds = "";
+let noOfDays = 5;
+let rowsData = [];
+let dataInTable = [];
 let fileNameDiv = document.querySelector('.fileName');
 
 function readCSVFile() {
@@ -23,10 +24,13 @@ function readCSVFile() {
       var csvdata = event.target.result;
 
       // Split by line break to gets rows Array
-      var rowsData = csvdata.split("\n");
+      // var rowsData = csvdata.split("\n");
+      rowsData = csvdata.split("\n");
+      rowsData.length = rowsData[rowsData.length-1] === "" ? rowsData.length-1 : rowsData.length; // Remove last row if it is empty
+
 
       createTable(rowsData);
-      allTds = document.querySelectorAll("td");
+      // allTds = document.querySelectorAll("td");
     };
   } else {
     alert("Please select a file.");
@@ -36,67 +40,11 @@ function readCSVFile() {
 function getFileName(filename){
   return filename.replace('Backtest', '').replace(', Technical Analysis Scanner', '').replace('.csv', '').split('-').join(' ');
 }
-
-function createTable(allRowsData) {
-  let rowsData = getTransformedData(allRowsData, noOfDays);
-  // let rowsData = getTransformedDataColWise(allRowsData, noOfDays);
-  renderTable(rowsData);
+function createTable(allRowsData, direction_btn) {
+  dataInTable = getTransformedData(allRowsData, noOfDays);
+  renderTable(dataInTable);
 }
 
-function getTransformedDataColWise(rowsData, noOfDays) {
-  let colsCount = noOfDays;
-  let totalRowsToRead = 0,
-    rowsCount = 0;
-
-  let rowIndex = rowsData.length - 1;
-  let prevDate = rowsData[rowIndex].split(",")[0];
-  let maxShareLength = 0;
-  while (colsCount > 0) {
-    let rowData = rowsData[rowIndex--].split(",");
-    totalRowsToRead++;
-    let currentDate = rowData[0];
-
-    if (prevDate === currentDate) {
-      maxShareLength++;
-    } else {
-      colsCount--;
-      rowsCount = maxShareLength > rowsCount ? maxShareLength : rowsCount;
-      prevDate = currentDate;
-      maxShareLength = 1;
-    }
-  }
-
-  console.log(totalRowsToRead, rowsCount);
-
-  let data = extractDataColWise(rowsData, noOfDays, rowsCount);
-  return data;
-}
-
-function extractDataColWise(rowsData, colCount, rowCount) {
-  let rowIndex = rowsData.length - 1;
-  let prevDate = "";
-  rowCount++; //increase one more row to accomodate date in first row
-  let data = initializeArray(rowCount, colCount);
-
-  for (let col = -1; col < colCount; col++) {
-    for (let row = 2; row < rowCount; row++) {
-      let rowData = rowsData[rowIndex--].split(",");
-      let currentDate = rowData[0];
-      if (prevDate === currentDate) {
-        data[row][col] = rowData[1];
-      } else {
-        prevDate = currentDate;
-        data[0][col + 1] = rowData[0];
-        data[1][col + 1] = rowData[1];
-        break;
-      }
-    }
-  }
-  return data;
-}
-
-const initializeArray = (rows, columns) =>
-  [...Array(rows).keys()].map((i) => Array(columns).fill(""));
 
 function getTransformedData(rowsData, noOfDays) {
   let rowindex = rowsData.length - 1;
@@ -123,7 +71,7 @@ function getTransformedData(rowsData, noOfDays) {
   return transformedData;
 }
 
-function renderTable(rowsData) {
+function renderTable(dataInTable) {
   // <table > <tbody>
   var tbodyEl = document
     .getElementById("tblcsvdata")
@@ -131,13 +79,13 @@ function renderTable(rowsData) {
   tbodyEl.innerHTML = "";
 
   // Loop on the row Array (change row=0 if you also want to read 1st row)
-  for (var row = 0; row < rowsData.length; row++) {
+  for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
     var newRow = tbodyEl.insertRow();
 
     // Split by comma (,) to get column Array
     // rowColData = rowsData[row].split(",");
-    rowColData = rowsData[row];
+    rowColData = dataInTable[row];
 
     // Loop on the row column Array
     for (var col = 0; col < rowColData.length; col++) {
@@ -149,10 +97,12 @@ function renderTable(rowsData) {
 }
 
 function highlightShare(event) {
+  let allTds = document.querySelectorAll("td");
+
   let selectedShare = event.srcElement.innerText;
 
   console.log(selectedShare);
-  console.log(allTds);
+  // console.log(allTds);
 
   allTds.forEach((td) => {
     if (td.innerText && td.innerText === selectedShare) {
@@ -164,13 +114,36 @@ function highlightShare(event) {
   });
 }
 
-function noOfDaysToDisplayDataINTable(){
-  let all_buttons = document.querySelectorAll('.days-btn');
-all_buttons.forEach(btn =>{
-    btn.addEventListener('click', (e) => {
-        let noOfDays = '';
-        noOfDays = e.target.innerHTML;
-        console.log(noOfDays);
-    })
+document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
+  noOfDays = event.target.innerText;
+  createTable(rowsData);
 });
+
+document.querySelector("#filterBtnGroup").addEventListener('click', (event) => {
+  let filter_btn = event.target.innerText;
+      let minAscii = filter_btn.charCodeAt(0);
+      let maxAscii = filter_btn.charCodeAt(2);
+      filterStocks(minAscii, maxAscii);
+});
+function filterStocks(minAscii, maxAscii) {
+let filteredTableData = [];
+for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
+  filteredTableData[rowIndex] = [];
+  for (let colIndex = 0; colIndex < dataInTable[rowIndex].length; colIndex++) {
+    let asciiChar = dataInTable[rowIndex][colIndex].charCodeAt(0);
+    if(((asciiChar >= 48 && asciiChar <= 57) || (asciiChar >= +minAscii && asciiChar <= +maxAscii))){
+         filteredTableData[rowIndex].push(dataInTable[rowIndex][colIndex]);
+        }
+      }
+    }
+renderTable(filteredTableData);
+}
+
+
+function toggleCssClass(){
+  let tds = document.querySelectorAll('td');
+  // console.log(td);
+  tds.forEach(td => {
+    td.classList.toggle('row-wrap');
+  });
 }
