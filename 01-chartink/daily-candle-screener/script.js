@@ -41,92 +41,10 @@ function getFileName(filename){
   return filename.replace('Backtest', '').replace(', Technical Analysis Scanner', '').replace('.csv', '').split('-').join(' ');
 }
 function createTable(allRowsData, direction_btn) {
-  if (!direction_btn || direction_btn === "horizontal") {
-    dataInTable = getTransformedData(allRowsData, noOfDays);
-  }
-  if (direction_btn === "vertical") {
-    dataInTable = getTransformedDataColWise(allRowsData, noOfDays);
-  }
+  dataInTable = getTransformedData(allRowsData, noOfDays);
   renderTable(dataInTable);
 }
 
-function getTransformedDataColWise(rowsData, noOfDays) {
-  let colsCount = noOfDays;
-  let totalRowsToRead = 0,
-    rowsCount = 0;
-
-  let rowIndex = rowsData.length - 1;
-  let prevDate = rowsData[rowIndex].split(",")[0];
-  let maxShareLength = 0;
-  while (colsCount > 0) {
-    let rowData = rowsData[rowIndex--].split(",");
-    totalRowsToRead++;
-    let currentDate = rowData[0];
-
-    if (prevDate === currentDate) {
-      maxShareLength++;
-    } else {
-      colsCount--;
-      rowsCount = maxShareLength > rowsCount ? maxShareLength : rowsCount;
-      prevDate = currentDate;
-      maxShareLength = 1;
-    }
-  }
-
-  console.log(totalRowsToRead, rowsCount);
-
-  let data = extractDataColWise(rowsData, noOfDays, rowsCount);
-  return data;
-}
-
-function extractDataColWise(rowsData, colCount, rowCount) {
-  let rowIndex = rowsData.length - 1;
-  let prevDate = "";
-  rowCount++; //increase one more row to accomodate date in first row
-  let data = initializeArray(rowCount, colCount);
-
-  for (let col = -1; col < colCount; col++) {
-    for (let row = 2; row < rowCount; row++) {
-      let rowData = rowsData[rowIndex--].split(",");
-      let currentDate = rowData[0];
-      if (prevDate === currentDate) {
-        data[row][col] = rowData[1];
-      } else {
-        prevDate = currentDate;
-        data[0][col + 1] = rowData[0];
-        data[1][col + 1] = rowData[1];
-        break;
-      }
-    }
-  }
-  return data;
-}
-
-// function extractDataColWise(rowsData, colCount, rowCount) {
-//   let rowIndex = rowsData.length - 1;
-//   let prevDate = "";
-//   rowCount++; //increase one more row to accomodate date in first row
-//   let data = initializeArray(rowCount, colCount);
-
-//   for (let col = -1; col < colCount; col++) {
-//     for (let row = 1; row < rowCount; row++) {
-//       let rowData = rowsData[rowIndex--].split(",");
-//       let currentDate = rowData[0];
-//       if (prevDate === currentDate) {
-//         data[row][col] = rowData[1];
-//       } else {
-//         prevDate = currentDate;
-//         data[0][col + 1] = rowData[0];
-//         // data[1][col + 1] = rowData[1];
-//         break;
-//       }
-//     }
-//   }
-//   return data;
-// }
-
-const initializeArray = (rows, columns) =>
-  [...Array(rows).keys()].map((i) => Array(columns).fill(""));
 
 function getTransformedData(rowsData, noOfDays) {
   let rowindex = rowsData.length - 1;
@@ -199,11 +117,6 @@ function highlightShare(event) {
 document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
   noOfDays = event.target.innerText;
   createTable(rowsData);
-});
-
-document.querySelector("#directionBtnGroup").addEventListener('click', (event) => {
-  let direction_btn = event.target.value;
-  createTable(rowsData, direction_btn);
 });
 
 document.querySelector("#filterBtnGroup").addEventListener('click', (event) => {
