@@ -21,14 +21,13 @@ table {
 td {
   border: 1px solid black;
   word-wrap: break-word;
-  /* width: 70px; */
+  width: 70px;
   overflow: hidden;
 }
 
 .row-wrap{
   display: inline-block;
   width: 110px;
-  /* background-color: red; */
 }
 
 td:first-child {
