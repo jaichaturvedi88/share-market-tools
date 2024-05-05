@@ -1,4 +1,6 @@
 let rowsData = "";
+let selectedHeaderName = "";
+let selectedHeaderNameIndex = "";
 function readCSVFile() {
   var files = document.querySelector("#file").files;
 
@@ -20,7 +22,7 @@ function readCSVFile() {
 
       // Split by line break to gets rows Array
       rowsData = csvdata.split("\n");
-
+      // console.log(rowsData);
       createHeaderDropDown(rowsData[0]);
     };
   } else {
@@ -29,47 +31,64 @@ function readCSVFile() {
 }
 
 function createHeaderDropDown(headerRowData) {
+  let dropDownContainer = document.querySelector(".headerDropDown");
+  dropDownContainer.innerHTML = "";
   // split by comma to get row arrar
   let headerRow = headerRowData.split(",");
   let select = document.createElement("select");
+  let createFIleButton = document.createElement("button");
+  createFIleButton.innerText = "Create Text File";
   for (let index = 0; index < headerRow.length; index++) {
     let option = document.createElement("option");
-    option.innerText = headerRow[index];
+    option.innerText = headerRow[index].replace(/"/g, "");
+    // console.log(option.innerText);
     select.appendChild(option);
   }
   select.setAttribute("class", "columnDropdown");
-  // select.setAttribute("onChange", "getHeaderOption()");
-  document.querySelector(".fileSelector").appendChild(select);
-  document.querySelector(".fileSelector").innerHTML += '<input type="button" value="Generate WatchList" onclick="getHeaderOption();" />';
+  select.setAttribute("onChange", "getHeaderOption()");
+  createFIleButton.setAttribute("onClick", "getColumnData()");
+  dropDownContainer.appendChild(select);
+  dropDownContainer.appendChild(createFIleButton);
 }
-let selectedHeaderName = "";
 function getHeaderOption() {
   let selectHeader = document.querySelector(".columnDropdown");
   // read selected option from dropdown
   selectedHeaderName = selectHeader.options[selectHeader.selectedIndex].text;
-  getColumnData(selectedHeaderName);
+  // getColumnData(selectedHeaderName);
 }
 
-function getColumnData(selectedHeaderName) {
+function getColumnData() {
+  let headerDataArray = [];
   let columnData = "";
-  let SelectedHeaderNameIndex = "";
-  for (let rowIndex = 0; rowIndex < rowsData.length; rowIndex++) {
-    // split by comma to get row array
+  let headerRow = rowsData[0].split(",");
+  for (let index = 0; index < headerRow.length; index++) {
+    let headerRowData = headerRow[index].replace(/"/g, "");
+    headerDataArray.push(headerRowData);
+    if (headerRowData === selectedHeaderName) {
+      selectedHeaderNameIndex = headerDataArray.indexOf(selectedHeaderName);
+      console.log(selectedHeaderNameIndex);
+      break;
+    }
+  }
+  
+
+  let stockSymbolSet = new Set();
+  for (let rowIndex = 1; rowIndex < rowsData.length; rowIndex++) {
     let rowData = rowsData[rowIndex].split(",");
-    for (let colIndex = 0; colIndex < rowData.length; colIndex++) {
-      if (rowData[colIndex] === selectedHeaderName) {
-        SelectedHeaderNameIndex = rowData.indexOf(selectedHeaderName);
-      }
-    }
-    if (rowIndex >= 1) {
-      columnData += `NSE:${rowData[SelectedHeaderNameIndex]}-EQ\n`;
-    }
+    stockSymbolSet.add(
+      `NSE:${rowData[selectedHeaderNameIndex].replace(/"/g, "")}-EQ\n`
+    );
+  }
+
+  for (const symbol of stockSymbolSet) {
+    columnData += symbol;
   }
 
   createTextFile(columnData);
 }
 
 function createTextFile(columnData) {
+  console.log(columnData);
   let link = document.createElement("a");
   // add content in fileof type text using blob object
   let file = new Blob([columnData], { type: "text/plain" });
