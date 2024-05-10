@@ -40,7 +40,7 @@ function readCSVFile() {
 function getFileName(filename){
   return filename.replace('Backtest', '').replace(', Technical Analysis Scanner', '').replace('.csv', '').split('-').join(' ');
 }
-function createTable(allRowsData, direction_btn) {
+function createTable(allRowsData) {
   dataInTable = getTransformedData(allRowsData, noOfDays);
   renderTable(dataInTable);
 }
@@ -146,4 +146,10 @@ function toggleCssClass(){
   tds.forEach(td => {
     td.classList.toggle('row-wrap');
   });
+  let rowWrapButton = document.querySelector('.rowWrapButton');
+  if (rowWrapButton.textContent === "Row-wrap") {
+    rowWrapButton.innerText = "No-Row-wrap";
+  } else {
+    rowWrapButton.innerText = "Row-wrap"
+  }
 }
