@@ -36,8 +36,8 @@ function createHeaderDropDown(headerRowData) {
   // split by comma to get row arrar
   let headerRow = headerRowData.split(",");
   let select = document.createElement("select");
-  let createFIleButton = document.createElement("button");
-  createFIleButton.innerText = "Create Text File";
+  let generateWatchlistButton = document.createElement("button");
+  generateWatchlistButton.innerText = "Generate WatchList";
   for (let index = 0; index < headerRow.length; index++) {
     let option = document.createElement("option");
     option.innerText = headerRow[index].replace(/"/g, "");
@@ -46,9 +46,10 @@ function createHeaderDropDown(headerRowData) {
   }
   select.setAttribute("class", "columnDropdown");
   select.setAttribute("onChange", "getHeaderOption()");
-  createFIleButton.setAttribute("onClick", "getColumnData()");
+  generateWatchlistButton.setAttribute("onClick", "getColumnData()");
+  generateWatchlistButton.classList.add('btn', 'btn')
   dropDownContainer.appendChild(select);
-  dropDownContainer.appendChild(createFIleButton);
+  dropDownContainer.appendChild(generateWatchlistButton);
 }
 function getHeaderOption() {
   let selectHeader = document.querySelector(".columnDropdown");
