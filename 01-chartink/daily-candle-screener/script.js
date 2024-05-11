@@ -2,6 +2,8 @@
 let noOfDays = 10;
 let rowsData = [];
 let dataInTable = [];
+let stocksModalPoupArray = [];
+
 let fileNameDiv = document.querySelector(".fileName");
 
 function readCSVFile() {
@@ -84,7 +86,6 @@ function renderTable(dataInTable) {
     .getElementById("tblcsvdata")
     .getElementsByTagName("tbody")[0];
   tbodyEl.innerHTML = "";
-  let stocksModalPoupArray = [];
   // Loop on the row Array (change row=0 if you also want to read 1st row)
   for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
@@ -107,7 +108,6 @@ function renderTable(dataInTable) {
       }
     }
   }
-  getStocksCounter(stocksModalPoupArray);
 }
 
 function highlightShare(event) {
@@ -167,52 +167,44 @@ function toggleCssClass() {
   });
 }
 
-function getStocksCounter(stocksModalPoupArray) {
-  // console.log(stocksModalPoupArray);
-  counter = 1;
-  let count = stocksModalPoupArray.reduce(function (value, value2) {
-    // console.log(counter++);
-    return value[value2] ? ++value[value2] : (value[value2] = 1), value;
+function stocksCounter() {
+  console.log(stocksModalPoupArray);
+  let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
+    return acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc;
   }, {});
- 
 
-  let sortable = [];
-  for (var key in count) {
-    sortable.push([key, count[key]]);
+  let stocksSortedArray = [];
+  for (var key in stocksCount) {
+    stocksSortedArray.push([key, stocksCount[key]]);
   }
 
-  sortable.sort(function (a, b) {
+  stocksSortedArray.sort(function (a, b) {
     return b[1] - a[1];
   });
-  // console.log(sortable);
-  // console.log(Object.keys(count));
 
-  createStocksCounterTable(sortable);
+  createStocksCounterTable(stocksSortedArray);
 }
 
-function createStocksCounterTable(sortable) {
+function createStocksCounterTable(stocksSortedArray) {
   let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
-  let stocksModalPopup = document
-    .querySelector(".fade")
-    .querySelector(".modal-body");
-  // console.log(stocksModalPopup);
-  stocksModalPopup.innerHTML = '';
-  stocksCounterContainer.innerHTML = '';
+  stocksCounterContainer.innerHTML = "";
+  let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
+  stocksModalPopup.innerHTML = "";
   let stocksCounterTable = document.createElement("table");
 
-  for (let index = 0; index < sortable.length; index++) {
+  for (let index = 0; index < stocksSortedArray.length; index++) {
     // Create row.
     var tr = document.createElement("tr");
     stocksCounterTable.appendChild(tr);
 
     // Create first column with value from key.
     var td = document.createElement("td");
-    td.appendChild(document.createTextNode(sortable[index][0]));
+    td.appendChild(document.createTextNode(stocksSortedArray[index][0]));
     tr.appendChild(td);
 
     // Create second column with value from value.
     var td2 = document.createElement("td");
-    td2.appendChild(document.createTextNode(sortable[index][1]));
+    td2.appendChild(document.createTextNode(stocksSortedArray[index][1]));
     tr.appendChild(td2);
   }
   // console.log(stocksCounterTable);
