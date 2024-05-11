@@ -142,7 +142,6 @@ renderTable(filteredTableData);
 
 function toggleCssClass(){
   let tds = document.querySelectorAll('td');
-  // console.log(td);
   tds.forEach(td => {
     td.classList.toggle('row-wrap');
   });
