@@ -19,7 +19,6 @@ table {
 
 td {
   border: 1px solid black;
-  word-wrap: break-word;
   width: 70px;
   overflow: hidden;
 }
