@@ -78,7 +78,7 @@ function getTransformedData(rowsData, noOfDays) {
 }
 
 function renderTable(dataInTable) {
-  console.log(dataInTable);
+  // console.log(dataInTable);
   // <table > <tbody>
   var tbodyEl = document
     .getElementById("tblcsvdata")
@@ -168,15 +168,13 @@ function toggleCssClass() {
 }
 
 function getStocksCounter(stocksModalPoupArray) {
-  console.log(stocksModalPoupArray);
+  // console.log(stocksModalPoupArray);
   counter = 1;
   let count = stocksModalPoupArray.reduce(function (value, value2) {
-    console.log(counter++);
+    // console.log(counter++);
     return value[value2] ? ++value[value2] : (value[value2] = 1), value;
   }, {});
-  // const keysSorted = Object.keys(list).sort(function(a,b){return b-a})
-  // const keysSorted = Object.values(count).sort(function(a,b){return b-a})
-  // count.sort((a, b) => b[1] - a[1])
+ 
 
   let sortable = [];
   for (var key in count) {
@@ -193,11 +191,13 @@ function getStocksCounter(stocksModalPoupArray) {
 }
 
 function createStocksCounterTable(sortable) {
+  let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
   let stocksModalPopup = document
     .querySelector(".fade")
     .querySelector(".modal-body");
   // console.log(stocksModalPopup);
   stocksModalPopup.innerHTML = '';
+  stocksCounterContainer.innerHTML = '';
   let stocksCounterTable = document.createElement("table");
 
   for (let index = 0; index < sortable.length; index++) {
@@ -216,5 +216,6 @@ function createStocksCounterTable(sortable) {
     tr.appendChild(td2);
   }
   // console.log(stocksCounterTable);
-  stocksModalPopup.appendChild(stocksCounterTable);
+  stocksCounterContainer.appendChild(stocksCounterTable);
+  stocksModalPopup.appendChild(stocksCounterContainer);
 }
