@@ -2,6 +2,8 @@
 let noOfDays = 5;
 let rowsData = [];
 let dataInTable = [];
+let stocksModalPoupArray = [];
+
 let fileNameDiv = document.querySelector('.fileName');
 
 function readCSVFile() {
@@ -92,6 +94,12 @@ function renderTable(dataInTable) {
       // Insert a cell at the end of the row
       var newCell = newRow.insertCell();
       newCell.innerHTML = rowColData[col];
+      if (
+        newCell.innerHTML[0].charCodeAt() < 48 ||
+        newCell.innerHTML[0].charCodeAt() > 57
+      ) {
+        stocksModalPoupArray.push(newCell.innerHTML);
+      }
     }
   }
 }
@@ -152,3 +160,48 @@ function toggleCssClass(){
     rowWrapButton.innerText = "Row-wrap"
   }
 }
+
+function stocksCounter() {
+  let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
+    return acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc;
+  }, {});
+
+  let stocksSortedArray = [];
+  for (var key in stocksCount) {
+    stocksSortedArray.push([key, stocksCount[key]]);
+  }
+
+  stocksSortedArray.sort(function (a, b) {
+    return b[1] - a[1];
+  });
+
+  createStocksCounterTable(stocksSortedArray);
+}
+
+function createStocksCounterTable(stocksSortedArray) {
+  let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
+  stocksCounterContainer.innerHTML = "";
+  let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
+  stocksModalPopup.innerHTML = "";
+  let stocksCounterTable = document.createElement("table");
+  // stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
+  for (let index = 0; index < stocksSortedArray.length; index++) {
+    // Create row.
+    var tr = document.createElement("tr");
+    stocksCounterTable.appendChild(tr);
+
+    // Create first column with value from key.
+    var td = document.createElement("td");
+    td.appendChild(document.createTextNode(stocksSortedArray[index][0]));
+    tr.appendChild(td);
+
+    // Create second column with value from value.
+    var td2 = document.createElement("td");
+    td2.appendChild(document.createTextNode(stocksSortedArray[index][1]));
+    tr.appendChild(td2);
+  }
+  // console.log(stocksCounterTable);
+  stocksCounterContainer.appendChild(stocksCounterTable);
+  stocksModalPopup.appendChild(stocksCounterContainer);
+}
+
