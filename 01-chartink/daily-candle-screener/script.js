@@ -191,7 +191,7 @@ function createStocksCounterTable(stocksSortedArray) {
   let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
   stocksModalPopup.innerHTML = "";
   let stocksCounterTable = document.createElement("table");
-
+  stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
   for (let index = 0; index < stocksSortedArray.length; index++) {
     // Create row.
     var tr = document.createElement("tr");
