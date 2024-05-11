@@ -30,14 +30,13 @@ td {
 
 .row-wrap{
   display: inline-block;
-  /* width: 110px; */
+  width: 110px;
 
 }
 
 td:first-child {
   white-space: nowrap;
   padding-right: 5px;
-  /* width: 110px; */
 
 }
 
