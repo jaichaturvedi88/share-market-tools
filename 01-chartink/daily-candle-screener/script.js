@@ -49,7 +49,7 @@ function getFileName(filename) {
     .split("-")
     .join(" ");
 }
-function createTable(allRowsData, direction_btn) {
+function createTable(allRowsData) {
   dataInTable = getTransformedData(allRowsData, noOfDays);
   renderTable(dataInTable);
 }
@@ -126,18 +126,49 @@ function highlightShare(event) {
     }
   });
 }
-
-document.querySelector("#daysBtnGroup").addEventListener("click", (event) => {
-  noOfDays = event.target.innerText;
-  createTable(rowsData);
-});
-
-document.querySelector("#filterBtnGroup").addEventListener("click", (event) => {
-  let filter_btn = event.target.innerText;
-  let minAscii = filter_btn.charCodeAt(0);
-  let maxAscii = filter_btn.charCodeAt(2);
-  filterStocks(minAscii, maxAscii);
-});
+let daysButtons = document.querySelector('#daysBtnGroup').querySelectorAll('.days-btn');
+for (let index = 0; index < daysButtons.length; index++) {
+  daysButtons[index].addEventListener("click", function() {
+    var currentDaysButton = document.querySelector('#daysBtnGroup').querySelectorAll(".active-btn");
+    currentDaysButton[0].className = currentDaysButton[0].className.replace(" active-btn", "");
+    this.className += " active-btn";
+    noOfDays = currentDaysButton[0].innerText;
+      stocksModalPoupArray.length = 0;
+      createTable(rowsData);
+    });
+  }
+  
+// document.querySelector("#daysBtnGroup").addEventListener("click", (event) => {
+//   noOfDays = event.target.innerText;
+//   stocksModalPoupArray.length = 0;
+//   createTable(rowsData);
+// });
+let filterButtons = document.querySelector('#filterBtnGroup').querySelectorAll('.filter-btn');
+for (let index = 0; index < filterButtons.length; index++) {
+  filterButtons[index].addEventListener("click", function() {
+    let currentfilterButton = document.querySelector('#filterBtnGroup').querySelectorAll(".active-btn");
+    currentfilterButton[0].className = currentfilterButton[0].className.replace(" active-btn", "");
+    this.className += " active-btn";
+    let filter_btn = currentfilterButton[0].innerText;
+     let minAscii = filter_btn.charCodeAt(0);
+     let maxAscii = filter_btn.charCodeAt(2);
+     if(filter_btn !== "All"){
+      console.log(filter_btn);
+        filterStocks(minAscii, maxAscii);
+     }
+     else{
+      createTable(rowsData);
+     }
+      // stocksModalPoupArray.length = 0;
+    });
+    // break;
+  }
+// document.querySelector("#filterBtnGroup").addEventListener("click", (event) => {
+//   let filter_btn = event.target.innerText;
+//   let minAscii = filter_btn.charCodeAt(0);
+//   let maxAscii = filter_btn.charCodeAt(2);
+//   filterStocks(minAscii, maxAscii);
+// });
 function filterStocks(minAscii, maxAscii) {
   let filteredTableData = [];
   for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
@@ -170,7 +201,7 @@ function toggleCssClass() {
 function stocksCounter() {
   console.log(stocksModalPoupArray);
   let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
-    return acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc;
+    return (acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc);
   }, {});
 
   let stocksSortedArray = [];
@@ -189,7 +220,7 @@ function createStocksCounterTable(stocksSortedArray) {
   let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
   stocksCounterContainer.innerHTML = "";
   let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
-  stocksModalPopup.innerHTML = "";
+  // stocksModalPopup.innerHTML = "";
   let stocksCounterTable = document.createElement("table");
   stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
   for (let index = 0; index < stocksSortedArray.length; index++) {

@@ -63,6 +63,6 @@ tr:nth-child(10n) {
     scrollbar-width: 50px;  
 }
 
-.active{
-  background-color: red;
+.active-btn, .active-btn:hover{
+  background-color: rgb(130, 127, 127);
 }
