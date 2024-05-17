@@ -92,6 +92,7 @@ function renderTable(dataInTable) {
       // Insert a cell at the end of the row
       var newCell = newRow.insertCell();
       newCell.innerHTML = rowColData[col];
+      newCell.innerHTML.includes('2024') ? newCell.classList.add('date-cell-background') : '';
     }
   }
 }
@@ -151,4 +152,25 @@ function toggleCssClass(){
   } else {
     rowWrapButton.innerText = "Row-wrap"
   }
+}
+
+function generateWatchlist(){
+  let stocksRows = [...dataInTable];
+  let stocks = new Set();
+
+  stocksRows.forEach(stocksRow => {
+    stocksRow.forEach((data, idx) => {
+      if(idx>0){
+        stocks.add(data);
+      }
+    });
+  });
+
+  let watchList = ''
+  for (const stock of stocks) {
+    watchList += "NSE:" + stock + "-EQ\n";
+  }
+
+  console.log(watchList);
+  console.log('Total Stocks: ', stocks.size);
 }
