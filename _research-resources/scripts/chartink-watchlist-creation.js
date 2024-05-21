@@ -3,9 +3,6 @@
 // it will create a watchlist and copy to clipboard as well as print in console.
 // We can also download the files as csv if we call createTextFile function.
 
-
-
-<script>
 function createTextFile(columnData) {
   let link = document.createElement("a");
   let file = new Blob([columnData], { type: "text/plain" });
@@ -60,4 +57,3 @@ function initiateWatchlistCreationCode() {
 }
 
 initiateWatchlistCreationCode();
-</script>

@@ -71,3 +71,7 @@ tr:nth-child(10n) {
 .thin_scroll{
     scrollbar-width: 50px;  
 }
+
+.active-btn, .active-btn:hover{
+  background-color: rgb(130, 127, 127);
+}
