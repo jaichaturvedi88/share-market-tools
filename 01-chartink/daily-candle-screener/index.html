@@ -19,33 +19,33 @@
       <input type="file" name="file" id="file" accept=".csv" onchange="readCSVFile()" />
       <input type="button" id="btnsubmit" value="Submit" onclick="readCSVFile();" />
     </div>
-    <div class="fileName" style='margin-left: 30px'></div>
-    <!-- <div id="daysBtnGroup" class="btn-group border ms-1" role="group" aria-label="Basic example"> -->
-    <div id="daysBtnGroup" class="btn-group ms-3" role="group" aria-label="Basic example">
-      <span>Days : </span>
-      <button type="button" value="30days" class="btn border py-0 days-btn active-btn">30</button>
-      <button type="button" value="45days" class="btn border py-0 days-btn">45</button>
-      <button type="button" value="60days" class="btn border py-0 days-btn">60</button>
-      <button type="button" value="75days" class="btn border py-0 days-btn">75</button>
-      <button type="button" value="90days" class="btn border py-0 days-btn">90</button>
+    <div class="fileName" style='margin-left: 100px'></div>
+    <div id="daysBtnGroup" class="btn-group border ms-1">
+      <span class="me-2">Days</span>
+      <button type="button" value="10days" class="btn btn-default border py-0 days-btn">5</button>
+      <button type="button" value="20days" class="btn btn-default border py-0 days-btn">10</button>
+      <button type="button" value="30days" class="btn btn-default border py-0 days-btn">22</button>
+      <button type="button" value="45days" class="btn btn-default border py-0 days-btn">33</button>
+      <button type="button" value="60days" class="btn btn-default border py-0 days-btn">44</button>
+      <button type="button" value="60days" class="btn btn-default border py-0 days-btn">66</button>
     </div>
-   
+
     <div id="filterBtnGroup" class="btn-group border ms-2">
       <button type="button" value="all" class="btn btn-default border py-0 filter-btn active-btn">All</button>
       <button type="button" value="65" class="btn btn-default border py-0 filter-btn">A-I</button>
       <button type="button" value="74" class="btn btn-default border py-0 filter-btn">J-R</button>
       <button type="button" value="83" class="btn btn-default border py-0 filter-btn">S-Z</button>
     </div>
-    <div class="row-wrap-container ms-3">
-      <button type="button" class="btn btn-secondary btn-sm" onclick="toggleCssClass()">Row-wrap</button>
+    <div class="row-wrap-container ms-2">
+      <button class="btn btn-secondary btn-sm rowWrapButton" type="button" onclick="toggleCssClass()">Row-wrap</button>
+      <button class="btn btn-secondary btn-sm rowWrapButton" type="button"
+        onclick="generateWatchlist()">Watchlist</button>
+      <button class="btn btn-secondary btn-sm rowWrapButton" type="button" onclick="stocksCounter()"
+        data-bs-toggle="modal" data-bs-target="#exampleModal">Stocks Popup</button>
     </div>
-<div>
-  <button type="button" onclick="stocksCounter()" class="btn btn-secondary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
-    Stocks Popup
-  </button>
-</div>
-    
-    <div class="modal fade modal-sm" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+    <div class="modal fade modal-sm" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+      aria-hidden="true" data-backdrop="static">
       <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable me-0">
         <div class="modal-content">
           <div class="modal-header">
@@ -57,7 +57,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+            <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
           </div>
         </div>
       </div>
@@ -68,10 +68,11 @@
   </div>
   <br />
   <!-- List CSV file data -->
-  <table id="tblcsvdata" border="1" style="border-collapse: collapse">
-    <tbody onclick="highlightShare(event)"></tbody>
-  </table>
-
+  <div class="table-container">
+    <table id="tblcsvdata" border="1" style="border-collapse: collapse">
+      <tbody onclick="highlightShare(event)"></tbody>
+    </table>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>

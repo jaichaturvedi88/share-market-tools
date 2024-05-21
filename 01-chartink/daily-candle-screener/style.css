@@ -12,7 +12,6 @@ table td {
 
 table {
   border-spacing: 0px;
-  /* table-layout: fixed; */
   margin-left: auto;
   margin-right: auto;
   display: block;
@@ -25,18 +24,28 @@ td {
   overflow: hidden;
 }
 
+.table-container{
+  width: 99vw ;
+} 
+
 .row-wrap{
   display: inline-block;
   width: 110px;
+
 }
 
 td:first-child {
   white-space: nowrap;
   padding-right: 5px;
+
 }
 
 tr:nth-child(10n) {
   background-color: #cd4a4a; /* Sets background color for rows that are multiples of 5 */
+}
+
+.date-cell-background{
+  background-color: #855f80;
 }
 
 .header{
