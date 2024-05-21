@@ -1,5 +1,5 @@
 // let allTds = "";
-let noOfDays = 10;
+let noOfDays = 5;
 let rowsData = [];
 let dataInTable = [];
 let stocksModalPoupArray = [];
