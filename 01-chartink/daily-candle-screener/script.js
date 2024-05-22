@@ -4,7 +4,7 @@ let rowsData = [];
 let dataInTable = [];
 let stocksModalPoupArray = [];
 
-let fileNameDiv = document.querySelector('.fileName');
+let fileNameDiv = document.querySelector(".fileName");
 
 function readCSVFile() {
   var files = document.querySelector("#file").files;
@@ -28,8 +28,10 @@ function readCSVFile() {
       // Split by line break to gets rows Array
       // var rowsData = csvdata.split("\n");
       rowsData = csvdata.split("\n");
-      rowsData.length = rowsData[rowsData.length-1] === "" ? rowsData.length-1 : rowsData.length; // Remove last row if it is empty
-
+      rowsData.length =
+        rowsData[rowsData.length - 1] === ""
+          ? rowsData.length - 1
+          : rowsData.length; // Remove last row if it is empty
 
       createTable(rowsData);
       // allTds = document.querySelectorAll("td");
@@ -39,14 +41,18 @@ function readCSVFile() {
   }
 }
 
-function getFileName(filename){
-  return filename.replace('Backtest', '').replace(', Technical Analysis Scanner', '').replace('.csv', '').split('-').join(' ');
+function getFileName(filename) {
+  return filename
+    .replace("Backtest", "")
+    .replace(", Technical Analysis Scanner", "")
+    .replace(".csv", "")
+    .split("-")
+    .join(" ");
 }
 function createTable(allRowsData) {
   dataInTable = getTransformedData(allRowsData, noOfDays);
   renderTable(dataInTable);
 }
-
 
 function getTransformedData(rowsData, noOfDays) {
   let rowindex = rowsData.length - 1;
@@ -122,48 +128,56 @@ function highlightShare(event) {
   });
 }
 
-document.querySelector("#daysBtnGroup").addEventListener('click', (event) => {
+document.querySelector("#daysBtnGroup").addEventListener("click", (event) => {
   noOfDays = event.target.innerText;
   createTable(rowsData);
 });
 
-document.querySelector("#filterBtnGroup").addEventListener('click', (event) => {
+document.querySelector("#filterBtnGroup").addEventListener("click", (event) => {
   let filter_btn = event.target.innerText;
-      let minAscii = filter_btn.charCodeAt(0);
-      let maxAscii = filter_btn.charCodeAt(2);
-      filterStocks(minAscii, maxAscii);
+  let minAscii = filter_btn.charCodeAt(0);
+  let maxAscii = filter_btn.charCodeAt(2);
+  filterStocks(minAscii, maxAscii);
 });
 function filterStocks(minAscii, maxAscii) {
-let filteredTableData = [];
-for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
-  filteredTableData[rowIndex] = [];
-  for (let colIndex = 0; colIndex < dataInTable[rowIndex].length; colIndex++) {
-    let asciiChar = dataInTable[rowIndex][colIndex].charCodeAt(0);
-    if(((asciiChar >= 48 && asciiChar <= 57) || (asciiChar >= +minAscii && asciiChar <= +maxAscii))){
-         filteredTableData[rowIndex].push(dataInTable[rowIndex][colIndex]);
-        }
+  let filteredTableData = [];
+  for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
+    filteredTableData[rowIndex] = [];
+    for (
+      let colIndex = 0;
+      colIndex < dataInTable[rowIndex].length;
+      colIndex++
+    ) {
+      let asciiChar = dataInTable[rowIndex][colIndex].charCodeAt(0);
+      if (
+        (asciiChar >= 48 && asciiChar <= 57) ||
+        (asciiChar >= +minAscii && asciiChar <= +maxAscii)
+      ) {
+        filteredTableData[rowIndex].push(dataInTable[rowIndex][colIndex]);
       }
     }
-renderTable(filteredTableData);
+  }
+  renderTable(filteredTableData);
 }
 
-
-function toggleCssClass(){
-  let tds = document.querySelectorAll('td');
-  tds.forEach(td => {
-    td.classList.toggle('row-wrap');
+function toggleCssClass() {
+  let tds = document.querySelectorAll("td");
+  tds.forEach((td) => {
+    td.classList.toggle("row-wrap");
   });
-  let rowWrapButton = document.querySelector('.rowWrapButton');
+  let rowWrapButton = document.querySelector(".rowWrapButton");
   if (rowWrapButton.textContent === "Row-wrap") {
     rowWrapButton.innerText = "No-Row-wrap";
   } else {
-    rowWrapButton.innerText = "Row-wrap"
+    rowWrapButton.innerText = "Row-wrap";
   }
 }
 
 function stocksCounter() {
   let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
-    return acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc;
+    return (
+      acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc
+    );
   }, {});
 
   let stocksSortedArray = [];
@@ -179,9 +193,13 @@ function stocksCounter() {
 }
 
 function createStocksCounterTable(stocksSortedArray) {
-  let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
+  let stocksCounterContainer = document.querySelector(
+    ".stocksCounterContainer"
+  );
   stocksCounterContainer.innerHTML = "";
-  let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
+  let stocksModalPopup = document
+    .querySelector(".fade")
+    .querySelector(".modal-body");
   stocksModalPopup.innerHTML = "";
   let stocksCounterTable = document.createElement("table");
   // stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
@@ -204,4 +222,3 @@ function createStocksCounterTable(stocksSortedArray) {
   stocksCounterContainer.appendChild(stocksCounterTable);
   stocksModalPopup.appendChild(stocksCounterContainer);
 }
-
