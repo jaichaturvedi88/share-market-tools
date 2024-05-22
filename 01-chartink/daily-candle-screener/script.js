@@ -86,6 +86,7 @@ function renderTable(dataInTable) {
     .getElementById("tblcsvdata")
     .getElementsByTagName("tbody")[0];
   tbodyEl.innerHTML = "";
+  stocksModalPoupArray.length = 0;
   // Loop on the row Array (change row=0 if you also want to read 1st row)
   for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
@@ -140,7 +141,7 @@ function highLightActiveDaysButtons (event) {
    let currentBtn = event.target;
    currentBtn.classList.add('active-btn');
    noOfDays = currentBtn.innerText;
-   stocksModalPoupArray.length = 0;
+  //  stocksModalPoupArray.length = 0;
    createTable(rowsData);
    console.log(currentBtn);
 }
@@ -165,7 +166,6 @@ function highLightActiveFilterButtons (event) {
     else {
       createTable(rowsData);
     }
-    stocksModalPoupArray.length = 0;
 }
 
 function filterStocks(minAscii, maxAscii) {
@@ -203,58 +203,10 @@ function toggleCssClass() {
   }
 }
 
-function stocksCounter() {
-  let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
-    return (
-      acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc
-    );
-  }, {});
 
-  let stocksSortedArray = [];
-  for (var key in stocksCount) {
-    stocksSortedArray.push([key, stocksCount[key]]);
-  }
-
-  stocksSortedArray.sort(function (a, b) {
-    return b[1] - a[1];
-  });
-
-  createStocksCounterTable(stocksSortedArray);
-}
-
-function createStocksCounterTable(stocksSortedArray) {
-  let stocksCounterContainer = document.querySelector(
-    ".stocksCounterContainer"
-  );
-  stocksCounterContainer.innerHTML = "";
-  let stocksModalPopup = document
-    .querySelector(".fade")
-    .querySelector(".modal-body");
-  stocksModalPopup.innerHTML = "";
-  let stocksCounterTable = document.createElement("table");
-  // stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
-  for (let index = 0; index < stocksSortedArray.length; index++) {
-    // Create row.
-    var tr = document.createElement("tr");
-    stocksCounterTable.appendChild(tr);
-
-    // Create first column with value from key.
-    var td = document.createElement("td");
-    td.appendChild(document.createTextNode(stocksSortedArray[index][0]));
-    tr.appendChild(td);
-
-    // Create second column with value from value.
-    var td2 = document.createElement("td");
-    td2.appendChild(document.createTextNode(stocksSortedArray[index][1]));
-    tr.appendChild(td2);
-  }
-  // console.log(stocksCounterTable);
-  stocksCounterContainer.appendChild(stocksCounterTable);
-  stocksModalPopup.appendChild(stocksCounterContainer);
-}
 
 function stocksCounter() {
-  console.log(stocksModalPoupArray);
+  console.log(stocksModalPoupArray);  
   let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
     return (acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc);
   }, {});
@@ -318,67 +270,3 @@ function generateWatchlist() {
   console.log('Total Stocks: ', stocks.size);
 }
 
-function stocksCounter() {
-  console.log(stocksModalPoupArray);
-  let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
-    return (acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc);
-  }, {});
-
-  let stocksSortedArray = [];
-  for (var key in stocksCount) {
-    stocksSortedArray.push([key, stocksCount[key]]);
-  }
-
-  stocksSortedArray.sort(function (a, b) {
-    return b[1] - a[1];
-  });
-
-  createStocksCounterTable(stocksSortedArray);
-}
-
-function createStocksCounterTable(stocksSortedArray) {
-  let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
-  stocksCounterContainer.innerHTML = "";
-  let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
-  // stocksModalPopup.innerHTML = "";
-  let stocksCounterTable = document.createElement("table");
-  stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
-  for (let index = 0; index < stocksSortedArray.length; index++) {
-    // Create row.
-    var tr = document.createElement("tr");
-    stocksCounterTable.appendChild(tr);
-
-    // Create first column with value from key.
-    var td = document.createElement("td");
-    td.appendChild(document.createTextNode(stocksSortedArray[index][0]));
-    tr.appendChild(td);
-
-    // Create second column with value from value.
-    var td2 = document.createElement("td");
-    td2.appendChild(document.createTextNode(stocksSortedArray[index][1]));
-    tr.appendChild(td2);
-  }
-  // console.log(stocksCounterTable);
-  stocksCounterContainer.appendChild(stocksCounterTable);
-  stocksModalPopup.appendChild(stocksCounterContainer);
-}
-function generateWatchlist() {
-  let stocksRows = [...dataInTable];
-  let stocks = new Set();
-
-  stocksRows.forEach(stocksRow => {
-    stocksRow.forEach((data, idx) => {
-      if (idx > 0) {
-        stocks.add(data);
-      }
-    });
-  });
-
-  let watchList = ''
-  for (const stock of stocks) {
-    watchList += "NSE:" + stock + "-EQ\n";
-  }
-
-  console.log(watchList);
-  console.log('Total Stocks: ', stocks.size);
-}
