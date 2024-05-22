@@ -80,12 +80,12 @@ function getTransformedData(rowsData, noOfDays) {
 }
 
 function renderTable(dataInTable) {
+  // console.log(dataInTable);
   // <table > <tbody>
   var tbodyEl = document
     .getElementById("tblcsvdata")
     .getElementsByTagName("tbody")[0];
   tbodyEl.innerHTML = "";
-
   // Loop on the row Array (change row=0 if you also want to read 1st row)
   for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
@@ -100,6 +100,8 @@ function renderTable(dataInTable) {
       // Insert a cell at the end of the row
       var newCell = newRow.insertCell();
       newCell.innerHTML = rowColData[col];
+      newCell.innerHTML.includes('2024') ? newCell.classList.add('date-cell-background') : '';
+
       if (
         newCell.innerHTML[0].charCodeAt() < 48 ||
         newCell.innerHTML[0].charCodeAt() > 57
@@ -112,10 +114,9 @@ function renderTable(dataInTable) {
 
 function highlightShare(event) {
   let allTds = document.querySelectorAll("td");
-
   let selectedShare = event.srcElement.innerText;
 
-  console.log(selectedShare);
+  // console.log(selectedShare);
   // console.log(allTds);
 
   allTds.forEach((td) => {
@@ -128,17 +129,55 @@ function highlightShare(event) {
   });
 }
 
-document.querySelector("#daysBtnGroup").addEventListener("click", (event) => {
-  noOfDays = event.target.innerText;
-  createTable(rowsData);
+let daysButtonGroup = document.querySelector('#daysBtnGroup')
+let daysButtons = document.querySelector('#daysBtnGroup').querySelectorAll(".days-btn");
+
+daysButtonGroup.addEventListener("click", function (event) {
+  let clickedButton = event.target;
+  for (let index = 0; index < daysButtons.length; index++) {
+    let currentButton = daysButtons[index];
+    if (clickedButton.innerText === currentButton.innerText) {
+      currentButton.classList.add('active-btn')
+      noOfDays = currentButton.innerText;
+      stocksModalPoupArray.length = 0;
+      createTable(rowsData);
+    } else {
+      currentButton.classList.remove('active-btn')
+    }
+  }
 });
 
-document.querySelector("#filterBtnGroup").addEventListener("click", (event) => {
-  let filter_btn = event.target.innerText;
-  let minAscii = filter_btn.charCodeAt(0);
-  let maxAscii = filter_btn.charCodeAt(2);
-  filterStocks(minAscii, maxAscii);
-});
+// document.querySelector("#daysBtnGroup").addEventListener("click", (event) => {
+//   noOfDays = event.target.innerText;
+//   stocksModalPoupArray.length = 0;
+//   createTable(rowsData);
+// });
+let filterButtons = document.querySelector('#filterBtnGroup').querySelectorAll('.filter-btn');
+for (let index = 0; index < filterButtons.length; index++) {
+  filterButtons[index].addEventListener("click", function () {
+    let currentfilterButton = document.querySelector('#filterBtnGroup').querySelectorAll(".active-btn");
+    currentfilterButton[0].className = currentfilterButton[0].className.replace(" active-btn", "");
+    this.className += " active-btn";
+    let filter_btn = currentfilterButton[0].innerText;
+    let minAscii = filter_btn.charCodeAt(0);
+    let maxAscii = filter_btn.charCodeAt(2);
+    if (filter_btn !== "All") {
+      console.log(filter_btn);
+      filterStocks(minAscii, maxAscii);
+    }
+    else {
+      createTable(rowsData);
+    }
+    // stocksModalPoupArray.length = 0;
+  });
+  // break;
+}
+// document.querySelector("#filterBtnGroup").addEventListener("click", (event) => {
+//   let filter_btn = event.target.innerText;
+//   let minAscii = filter_btn.charCodeAt(0);
+//   let maxAscii = filter_btn.charCodeAt(2);
+//   filterStocks(minAscii, maxAscii);
+// });
 function filterStocks(minAscii, maxAscii) {
   let filteredTableData = [];
   for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
@@ -160,10 +199,11 @@ function filterStocks(minAscii, maxAscii) {
   renderTable(filteredTableData);
 }
 
+
 function toggleCssClass() {
-  let tds = document.querySelectorAll("td");
-  tds.forEach((td) => {
-    td.classList.toggle("row-wrap");
+  let tds = document.querySelectorAll('td');
+  tds.forEach(td => {
+    td.classList.toggle('row-wrap');
   });
   let rowWrapButton = document.querySelector(".rowWrapButton");
   if (rowWrapButton.textContent === "Row-wrap") {
@@ -221,4 +261,134 @@ function createStocksCounterTable(stocksSortedArray) {
   // console.log(stocksCounterTable);
   stocksCounterContainer.appendChild(stocksCounterTable);
   stocksModalPopup.appendChild(stocksCounterContainer);
+}
+
+function stocksCounter() {
+  console.log(stocksModalPoupArray);
+  let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
+    return (acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc);
+  }, {});
+
+  let stocksSortedArray = [];
+  for (var key in stocksCount) {
+    stocksSortedArray.push([key, stocksCount[key]]);
+  }
+
+  stocksSortedArray.sort(function (a, b) {
+    return b[1] - a[1];
+  });
+
+  createStocksCounterTable(stocksSortedArray);
+}
+
+function createStocksCounterTable(stocksSortedArray) {
+  let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
+  stocksCounterContainer.innerHTML = "";
+  let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
+  // stocksModalPopup.innerHTML = "";
+  let stocksCounterTable = document.createElement("table");
+  stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
+  for (let index = 0; index < stocksSortedArray.length; index++) {
+    // Create row.
+    var tr = document.createElement("tr");
+    stocksCounterTable.appendChild(tr);
+
+    // Create first column with value from key.
+    var td = document.createElement("td");
+    td.appendChild(document.createTextNode(stocksSortedArray[index][0]));
+    tr.appendChild(td);
+
+    // Create second column with value from value.
+    var td2 = document.createElement("td");
+    td2.appendChild(document.createTextNode(stocksSortedArray[index][1]));
+    tr.appendChild(td2);
+  }
+  // console.log(stocksCounterTable);
+  stocksCounterContainer.appendChild(stocksCounterTable);
+  stocksModalPopup.appendChild(stocksCounterContainer);
+}
+function generateWatchlist() {
+  let stocksRows = [...dataInTable];
+  let stocks = new Set();
+
+  stocksRows.forEach(stocksRow => {
+    stocksRow.forEach((data, idx) => {
+      if (idx > 0) {
+        stocks.add(data);
+      }
+    });
+  });
+
+  let watchList = ''
+  for (const stock of stocks) {
+    watchList += "NSE:" + stock + "-EQ\n";
+  }
+
+  console.log(watchList);
+  console.log('Total Stocks: ', stocks.size);
+}
+
+function stocksCounter() {
+  console.log(stocksModalPoupArray);
+  let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
+    return (acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc);
+  }, {});
+
+  let stocksSortedArray = [];
+  for (var key in stocksCount) {
+    stocksSortedArray.push([key, stocksCount[key]]);
+  }
+
+  stocksSortedArray.sort(function (a, b) {
+    return b[1] - a[1];
+  });
+
+  createStocksCounterTable(stocksSortedArray);
+}
+
+function createStocksCounterTable(stocksSortedArray) {
+  let stocksCounterContainer = document.querySelector(".stocksCounterContainer");
+  stocksCounterContainer.innerHTML = "";
+  let stocksModalPopup = document.querySelector(".fade").querySelector(".modal-body");
+  // stocksModalPopup.innerHTML = "";
+  let stocksCounterTable = document.createElement("table");
+  stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
+  for (let index = 0; index < stocksSortedArray.length; index++) {
+    // Create row.
+    var tr = document.createElement("tr");
+    stocksCounterTable.appendChild(tr);
+
+    // Create first column with value from key.
+    var td = document.createElement("td");
+    td.appendChild(document.createTextNode(stocksSortedArray[index][0]));
+    tr.appendChild(td);
+
+    // Create second column with value from value.
+    var td2 = document.createElement("td");
+    td2.appendChild(document.createTextNode(stocksSortedArray[index][1]));
+    tr.appendChild(td2);
+  }
+  // console.log(stocksCounterTable);
+  stocksCounterContainer.appendChild(stocksCounterTable);
+  stocksModalPopup.appendChild(stocksCounterContainer);
+}
+function generateWatchlist() {
+  let stocksRows = [...dataInTable];
+  let stocks = new Set();
+
+  stocksRows.forEach(stocksRow => {
+    stocksRow.forEach((data, idx) => {
+      if (idx > 0) {
+        stocks.add(data);
+      }
+    });
+  });
+
+  let watchList = ''
+  for (const stock of stocks) {
+    watchList += "NSE:" + stock + "-EQ\n";
+  }
+
+  console.log(watchList);
+  console.log('Total Stocks: ', stocks.size);
 }

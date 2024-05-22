@@ -44,6 +44,10 @@ tr:nth-child(10n) {
   background-color: #cd4a4a; /* Sets background color for rows that are multiples of 5 */
 }
 
+.date-cell-background{
+  background-color: #855f80;
+}
+
 .header{
   display: flex;
   /* justify-content: space-between; */
@@ -66,4 +70,8 @@ tr:nth-child(10n) {
 
 .thin_scroll{
     scrollbar-width: 50px;  
+}
+
+.active-btn, .active-btn:hover{
+  background-color: rgb(130, 127, 127);
 }
