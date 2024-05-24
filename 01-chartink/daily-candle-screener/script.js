@@ -86,7 +86,6 @@ function renderTable(dataInTable) {
     .getElementById("tblcsvdata")
     .getElementsByTagName("tbody")[0];
   tbodyEl.innerHTML = "";
-  stocksModalPoupArray.length = 0;
   // Loop on the row Array (change row=0 if you also want to read 1st row)
   for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
@@ -109,8 +108,18 @@ function renderTable(dataInTable) {
       ) {
         stocksModalPoupArray.push(newCell.innerHTML);
       }
+      
     }
   }
+  let rowWrapButton = document.querySelector(".rowWrapButton");
+  let allTds = document.querySelectorAll("td");
+  //check if tds contain row-wrap class or not
+    if(allTds[0].classList.contains('row-wrap')){
+      rowWrapButton.innerText = 'Row-Unwrap';
+    }
+    else{
+      rowWrapButton.innerText = 'Row-Wrap';
+    }
 }
 
 function highlightShare(event) {
@@ -141,7 +150,7 @@ function highLightActiveDaysButtons (event) {
    let currentBtn = event.target;
    currentBtn.classList.add('active-btn');
    noOfDays = currentBtn.innerText;
-  //  stocksModalPoupArray.length = 0;
+   stocksModalPoupArray.length = 0;
    createTable(rowsData);
    console.log(currentBtn);
 }
@@ -151,6 +160,7 @@ let filterButtons = filterButtonGroup.querySelectorAll('.filter-btn');
 
 filterButtonGroup.addEventListener('click', highLightActiveFilterButtons);
 function highLightActiveFilterButtons (event) {
+  stocksModalPoupArray.length = 0;
   for (let index = 0; index < filterButtons.length; index++) {
     filterButtons[index].classList.remove('active-btn');
    }
@@ -160,7 +170,7 @@ function highLightActiveFilterButtons (event) {
     let minAscii = filter_btn.charCodeAt(0);
     let maxAscii = filter_btn.charCodeAt(2);
     if (filter_btn !== "All") {
-      console.log(filter_btn);
+      // console.log(filter_btn);
       filterStocks(minAscii, maxAscii);
     }
     else {
@@ -189,17 +199,16 @@ function filterStocks(minAscii, maxAscii) {
   renderTable(filteredTableData);
 }
 
-
 function toggleCssClass() {
   let tds = document.querySelectorAll('td');
   tds.forEach(td => {
     td.classList.toggle('row-wrap');
   });
   let rowWrapButton = document.querySelector(".rowWrapButton");
-  if (rowWrapButton.textContent === "Row-wrap") {
-    rowWrapButton.innerText = "No-Row-wrap";
+  if (rowWrapButton.textContent === "Row-Wrap") {
+    rowWrapButton.innerText = "Row-Unwrap";
   } else {
-    rowWrapButton.innerText = "Row-wrap";
+    rowWrapButton.innerText = "Row-Wrap";
   }
 }
 
