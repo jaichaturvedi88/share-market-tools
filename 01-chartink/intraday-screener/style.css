@@ -54,3 +54,16 @@ tr:nth-child(10n) {
 .highlight {
   background-color: #8c8c00;
 }
+
+#table-stats {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+/* #table-stats  span.date {
+  color: grey;
+} */
+
+#table-stats  span.count {
+  color: rgb(44, 188, 9);
+}
