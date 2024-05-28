@@ -25,15 +25,16 @@ function readCSVFile() {
       // Split by line break to gets rows Array
       var rowsData = csvdata.split("\n");
 
-      createTable(rowsData);
+      createTable(rowsData.reverse());
       allTds = document.querySelectorAll("td");
+      showRecordsCountDayWise(rowsData);
     };
   } else {
     alert("Please select a file.");
   }
 }
 
-function getFileName(filename){
+function getFileName(filename) {
   return filename.replace('Backtest', '').replace(', Technical Analysis Scanner', '').replace('.csv', '').split('-').join(' ');
 }
 
@@ -47,7 +48,7 @@ const initializeArray = (rows, columns) =>
   [...Array(rows).keys()].map((i) => Array(columns).fill(""));
 
 function getTransformedData(rowsData) {
-  return rowsData.map(rowData => rowData.split(",").slice(0,2))
+  return rowsData.map(rowData => rowData.split(",").slice(0, 2))
 }
 
 function renderTable(rowsData) {
@@ -78,9 +79,6 @@ function renderTable(rowsData) {
 function highlightShare(event) {
   let selectedShare = event.srcElement.innerText;
 
-  console.log(selectedShare);
-  console.log(allTds);
-
   allTds.forEach((td) => {
     if (td.innerText && td.innerText === selectedShare) {
       navigator.clipboard.writeText(selectedShare);
@@ -93,13 +91,36 @@ function highlightShare(event) {
   });
 }
 
-function noOfDaysToDisplayDataINTable(){
+function noOfDaysToDisplayDataINTable() {
   let all_buttons = document.querySelectorAll('.days-btn');
-all_buttons.forEach(btn =>{
+  all_buttons.forEach(btn => {
     btn.addEventListener('click', (e) => {
-        let noOfDays = '';
-        noOfDays = e.target.innerHTML;
-        console.log(noOfDays);
+      let noOfDays = '';
+      noOfDays = e.target.innerHTML;
+      console.log(noOfDays);
     })
-});
+  });
+}
+
+function showRecordsCountDayWise(rowsData) {
+  let counter = {};
+  rowsData.forEach((row, idx) => {
+    if (idx < rowsData.length - 1) {       // to exclude last row which is excel header
+      let date = row.substr(0, row.indexOf('2024') + 4);
+      if (!counter[date]) {
+        counter[date] = 1;
+      } else {
+        counter[date] += 1;
+      }
+    }
+  })
+  console.log(counter);
+  console.log('Total Rows: ', rowsData.length - 1)
+
+  let counterDataStr = '';
+  Object.keys(counter).forEach(date => {
+    counterDataStr += `<div><span class='date'>${date}: </span><span class='count'>${counter[date]}</span></div>`
+  })
+
+  document.querySelector('#table-stats').innerHTML = counterDataStr;
 }
