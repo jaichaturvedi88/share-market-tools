@@ -111,23 +111,20 @@ function renderTable(dataInTable) {
       
     }
   }
-  let rowWrapButton = document.querySelector(".rowWrapButton");
-  let allTds = document.querySelectorAll("td");
-  //check if tds contain row-wrap class or not
-    if(allTds[0].classList.contains('row-wrap')){
-      rowWrapButton.innerText = 'Row-Unwrap';
-    }
-    else{
-      rowWrapButton.innerText = 'Row-Wrap';
-    }
+
+  let rowWrapSwitchBtn = document.querySelector('.row-wrap-container').querySelector('input');
+  let allTds = document.querySelectorAll('td');
+  if (rowWrapSwitchBtn.checked === true){
+    allTds.forEach((td) =>{
+      td.classList.add('row-wrap');
+    });
+  } 
+ 
 }
 
 function highlightShare(event) {
   let allTds = document.querySelectorAll("td");
   let selectedShare = event.srcElement.innerText;
-
-  // console.log(selectedShare);
-  // console.log(allTds);
 
   allTds.forEach((td) => {
     if (td.innerText && td.innerText === selectedShare) {
@@ -152,7 +149,6 @@ function highLightActiveDaysButtons (event) {
    noOfDays = currentBtn.innerText;
    stocksModalPoupArray.length = 0;
    createTable(rowsData);
-   console.log(currentBtn);
 }
 
 let filterButtonGroup = document.querySelector('#filterBtnGroup');
@@ -170,7 +166,6 @@ function highLightActiveFilterButtons (event) {
     let minAscii = filter_btn.charCodeAt(0);
     let maxAscii = filter_btn.charCodeAt(2);
     if (filter_btn !== "All") {
-      // console.log(filter_btn);
       filterStocks(minAscii, maxAscii);
     }
     else {
@@ -199,17 +194,12 @@ function filterStocks(minAscii, maxAscii) {
   renderTable(filteredTableData);
 }
 
-function toggleCssClass() {
+function toggleRowWrap() {
   let tds = document.querySelectorAll('td');
   tds.forEach(td => {
     td.classList.toggle('row-wrap');
+    // if(checkBox.checked == true)
   });
-  let rowWrapButton = document.querySelector(".rowWrapButton");
-  if (rowWrapButton.textContent === "Row-Wrap") {
-    rowWrapButton.innerText = "Row-Unwrap";
-  } else {
-    rowWrapButton.innerText = "Row-Wrap";
-  }
 }
 
 
