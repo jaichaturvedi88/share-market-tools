@@ -86,6 +86,9 @@ function renderTable(dataInTable) {
     .getElementById("tblcsvdata")
     .getElementsByTagName("tbody")[0];
   tbodyEl.innerHTML = "";
+
+  let rowWrapSwitchBtn = document.querySelector('.row-wrap-container').querySelector('input');
+
   // Loop on the row Array (change row=0 if you also want to read 1st row)
   for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
@@ -108,6 +111,10 @@ function renderTable(dataInTable) {
       ) {
         stocksModalPoupArray.push(newCell.innerHTML);
       }
+      if (rowWrapSwitchBtn.checked === true){
+        newCell.classList.add('row-wrap');
+      } 
+      
     }
   }
 }
@@ -115,9 +122,6 @@ function renderTable(dataInTable) {
 function highlightShare(event) {
   let allTds = document.querySelectorAll("td");
   let selectedShare = event.srcElement.innerText;
-
-  // console.log(selectedShare);
-  // console.log(allTds);
 
   allTds.forEach((td) => {
     if (td.innerText && td.innerText === selectedShare) {
@@ -129,55 +133,43 @@ function highlightShare(event) {
   });
 }
 
-let daysButtonGroup = document.querySelector('#daysBtnGroup')
-let daysButtons = document.querySelector('#daysBtnGroup').querySelectorAll(".days-btn");
+let daysButtonGroup = document.querySelector('#daysBtnGroup');
+let daysButtons = daysButtonGroup.querySelectorAll(".days-btn");
 
-daysButtonGroup.addEventListener("click", function (event) {
-  let clickedButton = event.target;
+daysButtonGroup.addEventListener('click', highLightActiveDaysButtons);
+function highLightActiveDaysButtons (event) {
   for (let index = 0; index < daysButtons.length; index++) {
-    let currentButton = daysButtons[index];
-    if (clickedButton.innerText === currentButton.innerText) {
-      currentButton.classList.add('active-btn')
-      noOfDays = currentButton.innerText;
-      stocksModalPoupArray.length = 0;
-      createTable(rowsData);
-    } else {
-      currentButton.classList.remove('active-btn')
-    }
-  }
-});
+     daysButtons[index].classList.remove('active-btn');
+   }
+   let currentBtn = event.target;
+   currentBtn.classList.add('active-btn');
+   noOfDays = currentBtn.innerText;
+   stocksModalPoupArray.length = 0;
+   createTable(rowsData);
+}
 
-// document.querySelector("#daysBtnGroup").addEventListener("click", (event) => {
-//   noOfDays = event.target.innerText;
-//   stocksModalPoupArray.length = 0;
-//   createTable(rowsData);
-// });
-let filterButtons = document.querySelector('#filterBtnGroup').querySelectorAll('.filter-btn');
-for (let index = 0; index < filterButtons.length; index++) {
-  filterButtons[index].addEventListener("click", function () {
-    let currentfilterButton = document.querySelector('#filterBtnGroup').querySelectorAll(".active-btn");
-    currentfilterButton[0].className = currentfilterButton[0].className.replace(" active-btn", "");
-    this.className += " active-btn";
-    let filter_btn = currentfilterButton[0].innerText;
+let filterButtonGroup = document.querySelector('#filterBtnGroup');
+let filterButtons = filterButtonGroup.querySelectorAll('.filter-btn');
+
+filterButtonGroup.addEventListener('click', highLightActiveFilterButtons);
+function highLightActiveFilterButtons (event) {
+  stocksModalPoupArray.length = 0;
+  for (let index = 0; index < filterButtons.length; index++) {
+    filterButtons[index].classList.remove('active-btn');
+   }
+   let currentFilterBtn = event.target;
+   let filter_btn = currentFilterBtn.innerText;
+   currentFilterBtn.classList.add('active-btn');
     let minAscii = filter_btn.charCodeAt(0);
     let maxAscii = filter_btn.charCodeAt(2);
     if (filter_btn !== "All") {
-      console.log(filter_btn);
       filterStocks(minAscii, maxAscii);
     }
     else {
       createTable(rowsData);
     }
-    // stocksModalPoupArray.length = 0;
-  });
-  // break;
 }
-// document.querySelector("#filterBtnGroup").addEventListener("click", (event) => {
-//   let filter_btn = event.target.innerText;
-//   let minAscii = filter_btn.charCodeAt(0);
-//   let maxAscii = filter_btn.charCodeAt(2);
-//   filterStocks(minAscii, maxAscii);
-// });
+
 function filterStocks(minAscii, maxAscii) {
   let filteredTableData = [];
   for (let rowIndex = 0; rowIndex < dataInTable.length; rowIndex++) {
@@ -199,22 +191,16 @@ function filterStocks(minAscii, maxAscii) {
   renderTable(filteredTableData);
 }
 
-
-function toggleCssClass() {
+function toggleRowWrap() {
   let tds = document.querySelectorAll('td');
   tds.forEach(td => {
     td.classList.toggle('row-wrap');
   });
-  let rowWrapButton = document.querySelector('.rowWrapButton');
-  if (rowWrapButton.textContent === "Row-wrap") {
-    rowWrapButton.innerText = "No-Row-wrap";
-  } else {
-    rowWrapButton.innerText = "Row-wrap"
-  }
 }
 
+
 function stocksCounter() {
-  console.log(stocksModalPoupArray);
+  console.log(stocksModalPoupArray);  
   let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
     return (acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc);
   }, {});
@@ -277,3 +263,4 @@ function generateWatchlist() {
   console.log(watchList);
   console.log('Total Stocks: ', stocks.size);
 }
+
