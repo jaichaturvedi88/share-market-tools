@@ -264,3 +264,11 @@ function generateWatchlist() {
   console.log('Total Stocks: ', stocks.size);
 }
 
+let stocksModalContainer = document.querySelector('#exampleModal');
+let tableContainer = document.querySelector('.table-container');
+stocksModalContainer.addEventListener('show.bs.modal', function (e) {
+  tableContainer.style.width = "88vw";
+});
+stocksModalContainer.addEventListener('hide.bs.modal', function (e) {
+  tableContainer.style.width = '99vw';
+});
