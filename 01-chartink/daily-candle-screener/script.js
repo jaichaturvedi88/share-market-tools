@@ -86,6 +86,9 @@ function renderTable(dataInTable) {
     .getElementById("tblcsvdata")
     .getElementsByTagName("tbody")[0];
   tbodyEl.innerHTML = "";
+
+  let rowWrapSwitchBtn = document.querySelector('.row-wrap-container').querySelector('input');
+
   // Loop on the row Array (change row=0 if you also want to read 1st row)
   for (var row = 0; row < dataInTable.length; row++) {
     // Insert a row at the end of table
@@ -108,18 +111,12 @@ function renderTable(dataInTable) {
       ) {
         stocksModalPoupArray.push(newCell.innerHTML);
       }
+      if (rowWrapSwitchBtn.checked === true){
+        newCell.classList.add('row-wrap');
+      } 
       
     }
   }
-
-  let rowWrapSwitchBtn = document.querySelector('.row-wrap-container').querySelector('input');
-  let allTds = document.querySelectorAll('td');
-  if (rowWrapSwitchBtn.checked === true){
-    allTds.forEach((td) =>{
-      td.classList.add('row-wrap');
-    });
-  } 
- 
 }
 
 function highlightShare(event) {
@@ -198,10 +195,8 @@ function toggleRowWrap() {
   let tds = document.querySelectorAll('td');
   tds.forEach(td => {
     td.classList.toggle('row-wrap');
-    // if(checkBox.checked == true)
   });
 }
-
 
 
 function stocksCounter() {
