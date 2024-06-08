@@ -116,17 +116,19 @@ function renderTable(dataInTable) {
   }
 }
 
-let leftSidetbody = document.querySelector('#leftSideTablecsvdata').querySelector('tbody');
-leftSidetbody.addEventListener('click', (event) =>{
-  let selectedTd = event.target;
-  let selectedShare = event.target.innerText;
-  console.log(selectedShare);
-  highlightShare(selectedShare);
-})
-function highlightShare(selectedShare) {
-  let allTds = document.querySelector('#rightSideTablecsvdata').querySelectorAll("td");
+// let leftSidetbody = document.querySelector('#leftSideTablecsvdata').querySelector('tbody');
+// leftSidetbody.addEventListener('click', (event) =>{
+//   let selectedTd = event.target;
+//   let selectedShare = event.target.innerText;
+//   console.log(selectedShare);
+//   highlightShare(selectedShare);
+// })
+function highlightShare(event) {
+  let allTds = document.querySelectorAll("td");
+  let selectedShare = event.srcElement.innerText;
+
   allTds.forEach((td) => {
-    if (td.innerText === selectedShare) {
+    if (td.innerText && td.innerText === selectedShare) {
       navigator.clipboard.writeText(selectedShare);
       td.style.backgroundColor = "#8c8c00";
     } else {
@@ -134,6 +136,17 @@ function highlightShare(selectedShare) {
     }
   });
 }
+// function highlightShare(selectedShare) {
+//   let allTds = document.querySelector('#rightSideTablecsvdata').querySelectorAll("td");
+//   allTds.forEach((td) => {
+//     if (td.innerText === selectedShare) {
+//       navigator.clipboard.writeText(selectedShare);
+//       td.style.backgroundColor = "#8c8c00";
+//     } else {
+//       td.style.backgroundColor = "";
+//     }
+//   });
+// }
 
 let daysButtonGroup = document.querySelector('#daysBtnGroup');
 let daysButtons = daysButtonGroup.querySelectorAll(".days-btn");
