@@ -1,19 +1,15 @@
 
 body {
   scrollbar-width: auto;
-  /* scrollbar-width: thin;
-  scrollbar-width: none; */
   font-size: 0.93rem;
 }
 .header{
   display: flex;
-  /* overflow: hidden; */
   flex-wrap: wrap;
   justify-content: space-between;
 }
 .rightSideFileSelector , .leftSideFileSelector{
-  width: 49vw;
-  border: 2px solid red;
+  width: 49.5vw;
 }
 
 table th,
@@ -40,7 +36,7 @@ display: inline-block;
 width: 49.5vw ;
 } 
 .fileSelector{
-  width: 99vw;
+  width: 100vw;
 }
 
 

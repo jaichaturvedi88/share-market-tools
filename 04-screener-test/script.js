@@ -93,11 +93,6 @@ function renderTable(dataInTable) {
     .getElementById("rightSideTablecsvdata")
     .getElementsByTagName("tbody")[0];
   }
-  // if(inputFile.id === 'rightSideFile' || parentEleOfcurrentBtn.id === 'rightSideDaysBtnGroup'){
-  //   tbodyEl = document
-  //   .getElementById("rightSideTablecsvdata")
-  //   .getElementsByTagName("tbody")[0];
-  // }
   
   tbodyEl.innerHTML = "";
 
@@ -145,10 +140,11 @@ let daysButtons = daysButtonGroup.querySelectorAll(".days-btn");
 
 daysButtonGroup.addEventListener('click', highLightActiveDaysButtons);
 function highLightActiveDaysButtons (event) {
+  let currentBtn = event.target;
+
   for (let index = 0; index < daysButtons.length; index++) {
      daysButtons[index].classList.remove('active-btn');
    }
-   let currentBtn = event.target;
    currentBtn.classList.add('active-btn');
    noOfDays = currentBtn.innerText;
    parentEleOfcurrentBtn = currentBtn.parentNode;

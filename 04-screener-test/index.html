@@ -14,7 +14,7 @@
 
 <body data-bs-theme="dark">
   <!-- Read CSV file -->
-  <div class="header border border-1 border-primary">
+  <div class="header">
     <div class="fileSelector d-flex justify-content-between">
       <div class="leftSideFileSelector"> 
         <input type="file" name="file" id="leftSideFile" accept=".csv" onchange="readCSVFile()" />
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div id="daysBtnGroup">
+    <div id="daysBtnGroup" class="w-100 d-flex justify-content-between">
       <div id="leftSideDaysBtnGroup" class="btn-group border">
         <span class="me-2">Days</span>
         <button type="button" value="10days" class="btn btn-default border py-0 days-btn active-btn">5</button>
@@ -47,19 +47,20 @@
       </div>
     </div>
    
-    <div class="form-check form-switch position-fixed top-0 end-0 mt-2 me-2">
+    <div class="form-check form-switch position-fixed top-0 end-0">
       <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault" onclick="toggleTheme()">
     </div>
   </div>
+
   <br />
   
   <div class="tables-section d-flex justify-content-between">
-    <div class="table-container border border-1 border-danger">
+    <div class="table-container border border-1">
       <table id="leftSideTablecsvdata" border="1" style="border-collapse: collapse">
         <tbody></tbody>
       </table>
     </div>
-    <div class="table-container border border-1 border-info">
+    <div class="table-container border border-1">
       <table id="rightSideTablecsvdata" border="1" style="border-collapse: collapse">
         <tbody></tbody>
       </table>
