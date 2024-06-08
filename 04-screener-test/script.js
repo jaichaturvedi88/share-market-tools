@@ -114,15 +114,10 @@ function renderTable(dataInTable) {
 
     }
   }
+console.log(noOfDays);
+
 }
 
-// let leftSidetbody = document.querySelector('#leftSideTablecsvdata').querySelector('tbody');
-// leftSidetbody.addEventListener('click', (event) =>{
-//   let selectedTd = event.target;
-//   let selectedShare = event.target.innerText;
-//   console.log(selectedShare);
-//   highlightShare(selectedShare);
-// })
 function highlightShare(event) {
   let allTds = document.querySelectorAll("td");
   let selectedShare = event.srcElement.innerText;
@@ -136,31 +131,22 @@ function highlightShare(event) {
     }
   });
 }
-// function highlightShare(selectedShare) {
-//   let allTds = document.querySelector('#rightSideTablecsvdata').querySelectorAll("td");
-//   allTds.forEach((td) => {
-//     if (td.innerText === selectedShare) {
-//       navigator.clipboard.writeText(selectedShare);
-//       td.style.backgroundColor = "#8c8c00";
-//     } else {
-//       td.style.backgroundColor = "";
-//     }
-//   });
-// }
 
 let daysButtonGroup = document.querySelector('#daysBtnGroup');
-let daysButtons = daysButtonGroup.querySelectorAll(".days-btn");
 
 daysButtonGroup.addEventListener('click', highLightActiveDaysButtons);
+
 function highLightActiveDaysButtons (event) {
   let currentBtn = event.target;
+  parentEleOfcurrentBtn = currentBtn.parentNode;
+  let daysButtons = parentEleOfcurrentBtn.querySelectorAll(".days-btn");
 
-  for (let index = 0; index < daysButtons.length; index++) {
-     daysButtons[index].classList.remove('active-btn');
-   }
+    for (let index = 0; index < daysButtons.length; index++) {
+      daysButtons[index].classList.remove('active-btn');
+    }
+
    currentBtn.classList.add('active-btn');
    noOfDays = currentBtn.innerText;
-   parentEleOfcurrentBtn = currentBtn.parentNode;
    if(parentEleOfcurrentBtn.id === 'leftSideDaysBtnGroup'){
     createTable(leftSideRowsData);
    }
