@@ -1,0 +1,7 @@
+/* directory path h1 element */
+h1{
+    display: none !important;
+}
+#nameColumnHeader{
+    display: none;
+}
