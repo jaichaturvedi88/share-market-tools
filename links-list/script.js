@@ -1,11 +1,11 @@
 function fetchJSONData() {
   fetch("links.json")
     .then((response) => response.json())
-    .then((data) => displayData(data));
+    .then((data) => displayDataAsLink(data));
 }
 fetchJSONData();
 
-function displayData(data) {
+function displayDataAsLink(data) {
   let ulList = document.querySelector("ul");
   let objLength = Object.keys(data).length;
 
