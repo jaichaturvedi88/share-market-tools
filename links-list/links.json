@@ -1,6 +1,37 @@
 {
-    "Telegram":"https://web.telegram.org/",
-    "facebook":"https://www.facebook.com/",
-    "Instagram":"https://www.instagram.com/"
-
+  "normalLinks": {
+    "Telegram": "https://web.telegram.org/",
+    "facebook": "https://www.facebook.com/",
+    "Instagram": "https://www.instagram.com/"
+  },
+  "intraday": [
+    {
+      "title": "whatsapp",
+      "url": "https://web.whatsapp.com/"
+    },
+    {
+      "title": "wikipedia",
+      "url": "https://www.wikipedia.org/"
+    }
+  ],
+  "short-term": [
+    {
+      "title": "stack overflow",
+      "url": "https://stackoverflow.com/"
+    },
+    {
+      "title": "w3schools",
+      "url": "https://www.w3schools.com/"
+    }
+  ],
+  "long-term": [
+    {
+      "title": "github",
+      "url": "https://github.com/"
+    },
+    {
+      "title": "facebook",
+      "url": "longterm2"
+    }
+  ]
 }
