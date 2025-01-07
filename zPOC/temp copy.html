@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Map to HTML Table</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+
+<div id="tableContainer"></div>
+
+<script>
+    // Sample JavaScript map with nested arrays
+    const myMap = new Map();
+    myMap.set('Name', ['John', 'Doe']);
+    myMap.set('Age', [30]);
+    myMap.set('Location', ['New York', 'USA']);
+
+    // Function to convert map to HTML table
+    function mapToHTMLTable(map) {
+        let tableHTML = '<table>';
+        map.forEach((value, key) => {
+            tableHTML += `<tr><th>${key}</th>`;
+            if (Array.isArray(value)) {
+                value.forEach((item) => {
+                    tableHTML += `<td>${item}</td>`;
+                });
+            } else {
+                tableHTML += `<td>${value}</td>`;
+            }
+            tableHTML += '</tr>';
+        });
+        tableHTML += '</table>';
+        return tableHTML;
+    }
+
+    // Get the container element
+    const tableContainer = document.getElementById('tableContainer');
+
+    // Convert map to HTML table and append to container
+    tableContainer.innerHTML = mapToHTMLTable(myMap);
+</script>
+
+</body>
+</html>
