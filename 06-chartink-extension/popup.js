@@ -32,42 +32,63 @@ function addButtonToPage(url) {
 
   function createDashboardButton() {
     let wrapper = document.createElement('div');
-    wrapper.innerHTML = `<a title="Create Watchlist"
-      class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
-      <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">
-      Download Watchlist</span></a>`;
-    let anchor = wrapper.firstChild;
-    anchor.onclick = function () {
+    wrapper.innerHTML = `<a id="downloadWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
+                            <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Download WL</span>
+                        </a>
+                        <a id="createTvWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
+                            <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Copy TV Watchlist</span>
+                        </a>
+                      `;
+    // let anchor = wrapper.firstChild;
+    let downloadWL = wrapper.querySelector('#downloadWL');
+    downloadWL.onclick = function () {
       console.log('creating watchlist...');
-      // let screenerName = "Monthly %Ch > 10";
       var screenerName = prompt("Screener Name?");
       let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
-      // let stockList = [];
       let stockListAsTxt = "";
   
-      screenerList.forEach(node => {
-        if (node.innerText.trim() === screenerName.trim()) {
-          // screenerNode = node.parentNode.parentNode.parentNode.parentNode;
-          let screenerNode = node.closest(".vue-grid-item");
-          let tableRows = screenerNode.querySelectorAll('tr')
-  
-          tableRows.forEach((row, idx) => {
-            if (idx > 0) {
-              let stock = row.querySelector('td>span>a').innerText;
-              // stockList.push(stock);
-              stockListAsTxt += "NSE:" + stock + "-EQ\n";
-            }
-          });
-        }
-      });
+      stockListAsTxt = getWatchlist(screenerList, screenerName, true);
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     };
+
+    let copyTvWL = wrapper.querySelector('#createTvWL');
+    copyTvWL.onclick = function() {
+      var screenerName = prompt("Screener Name?");
+      let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
+      let stockListAsTxt = "";
+  
+      stockListAsTxt = getWatchlist(screenerList, screenerName, false);
+      navigator.clipboard.writeText(stockListAsTxt);
+      console.log(stockListAsTxt)
+    }
   
     let refreshButton = document.querySelector('div[title="Toggle auto refresh"');
-    refreshButton.insertAdjacentElement("afterend", anchor)
+    refreshButton.insertAdjacentElement("afterend", downloadWL)
+    refreshButton.insertAdjacentElement("afterend", copyTvWL)
   
     console.log(refreshButton);
+  }
+
+  function getWatchlist(screenerList, screenerName, isDownloadWatchList = true) {
+    stockListAsTxt = '';
+    screenerList.forEach(node => {
+      if (node.innerText.trim() === screenerName.trim()) {
+        let screenerNode = node.closest(".vue-grid-item");
+        let tableRows = screenerNode.querySelectorAll('tr')
+
+        tableRows.forEach((row, idx) => {
+          if (idx > 0) {
+            let stock = row.querySelector('td>span>a').innerText;
+            if (isDownloadWatchList) 
+              stockListAsTxt += "NSE:" + stock + "-EQ\n";
+            else
+              stockListAsTxt += "NSE:" + stock + ",";
+          }
+        });
+      }
+    });
+    return stockListAsTxt;
   }
   
   function createScreenerButton() {
