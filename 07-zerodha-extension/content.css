@@ -1,0 +1,15 @@
+.refresh-button {
+    background-color: #4CAF50; /* Green background */
+    border: none; /* No border */
+    color: white; /* White text */
+    padding: 5px 10px; /* Padding */
+    font-size: 14px; /* Font size */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+  }
+  
+  .refresh-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+  }
+  
