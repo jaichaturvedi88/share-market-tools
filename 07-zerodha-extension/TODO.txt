@@ -1,0 +1,5 @@
+PNL Summary panel 
+    It should show CE and PE count (Cu running trade with qty > 0)
+    Round off all the values to 0 or 1 digit
+    Make the panel floatble 
+

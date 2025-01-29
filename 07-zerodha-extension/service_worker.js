@@ -36,3 +36,14 @@ function scrollPage() {
         window.scrollTo(0, 160);
     }
 }
+
+chrome.scripting
+  .registerContentScripts([{
+    id: "session-script",
+    js: ["content.js"],
+    persistAcrossSessions: false,
+    matches: ["*://zerodha.com/*"],
+    runAt: "document_start",
+  }])
+  .then(() => console.log("registration complete"))
+  .catch((err) => console.warn("unexpected error", err))
