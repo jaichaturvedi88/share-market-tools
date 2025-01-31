@@ -1,27 +1,13 @@
 .refresh-button {
-    background-color: #4CAF50; /* Green background */
-    border: none; /* No border */
-    color: white; /* White text */
-    padding: 5px 10px; /* Padding */
-    font-size: 14px; /* Font size */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor */
-    transition: background-color 0.3s ease; /* Smooth hover effect */
-  }
+  background-color: white; 
+  border: none; 
+  color: yellow;; 
+  font-size: 18px;
+  cursor: pointer; 
+  transition: transform 0.5s ease-in-out;
+}
   
-  .refresh-button:hover {
-    background-color: #45a049; /* Darker green on hover */
-  }
-  
-
-  .custom-count-box {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    background: rgb(74, 234, 101);
-    color: rgb(46, 20, 20);
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 16px;
-    z-index: 10000;
+.refresh-button:hover {
+  color: #4CAF50;
+  transform: rotate(360deg);
 }

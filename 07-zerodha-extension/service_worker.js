@@ -20,30 +20,3 @@ chrome.action.onClicked.addListener(tab => {
         }
     })
 })
-
-chrome.tabs.onActivated.addListener((activeInfo) => {
-    console.log('1111');
-    chrome.scripting.executeScript({
-        target: { tabId: activeInfo.tabId },
-        function: scrollPage
-    });
-});
-
-function scrollPage() {
-    console.log('2222');
-    if(window.location.href.includes('chartink.com/stocks/')){
-        console.log('3333');
-        window.scrollTo(0, 160);
-    }
-}
-
-chrome.scripting
-  .registerContentScripts([{
-    id: "session-script",
-    js: ["content.js"],
-    persistAcrossSessions: false,
-    matches: ["*://zerodha.com/*"],
-    runAt: "document_start",
-  }])
-  .then(() => console.log("registration complete"))
-  .catch((err) => console.warn("unexpected error", err))
