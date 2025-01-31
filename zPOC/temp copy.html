@@ -3,57 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JavaScript Map to HTML Table</title>
+    <title>Indian Accent Days Pronunciation</title>
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #f4f4f4;
         }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
+
+        h2 {
+            color: #333;
         }
-        th {
-            background-color: #f2f2f2;
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
-<div id="tableContainer"></div>
+    <h2>Click to Pronounce Days in Indian Accent</h2>
+    <button onclick="startPronunciation()">Start Pronunciation</button>
 
-<script>
-    // Sample JavaScript map with nested arrays
-    const myMap = new Map();
-    myMap.set('Name', ['John', 'Doe']);
-    myMap.set('Age', [30]);
-    myMap.set('Location', ['New York', 'USA']);
+    <script>
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        let loopCount = 0;
+        const maxLoops = 5; // Loop 5 times
 
-    // Function to convert map to HTML table
-    function mapToHTMLTable(map) {
-        let tableHTML = '<table>';
-        map.forEach((value, key) => {
-            tableHTML += `<tr><th>${key}</th>`;
-            if (Array.isArray(value)) {
-                value.forEach((item) => {
-                    tableHTML += `<td>${item}</td>`;
-                });
-            } else {
-                tableHTML += `<td>${value}</td>`;
+        function speakDay(day) {
+            let speech = new SpeechSynthesisUtterance(day);
+            
+            // Try to find an Indian English female voice
+            let voices = speechSynthesis.getVoices();
+            let indianVoice = voices.find(voice => voice.lang.includes('en-IN') && voice.name.toLowerCase().includes('female'));
+
+            if (indianVoice) {
+                speech.voice = indianVoice;
             }
-            tableHTML += '</tr>';
-        });
-        tableHTML += '</table>';
-        return tableHTML;
-    }
 
-    // Get the container element
-    const tableContainer = document.getElementById('tableContainer');
+            speech.lang = "en-IN"; // Set language to Indian English
+            speech.rate = 1; // Normal speed
+            speech.pitch = 1; // Normal pitch
+            window.speechSynthesis.speak(speech);
+        }
 
-    // Convert map to HTML table and append to container
-    tableContainer.innerHTML = mapToHTMLTable(myMap);
-</script>
+        function pronounceDays() {
+            let index = 0;
+            function speakNextDay() {
+                if (index < days.length) {
+                    speakDay(days[index]);
+                    index++;
+                    setTimeout(speakNextDay, 1500); // Wait before saying the next day
+                } else {
+                    loopCount++;
+                    if (loopCount < maxLoops) {
+                        index = 0; // Reset index for next loop
+                        setTimeout(speakNextDay, 2000); // Delay before restarting the loop
+                    }
+                }
+            }
+            speakNextDay();
+        }
+
+        function startPronunciation() {
+            loopCount = 0; // Reset loop count
+            window.speechSynthesis.onvoiceschanged = pronounceDays; // Ensure voices are loaded
+            pronounceDays(); // Start pronunciation
+        }
+    </script>
 
 </body>
 </html>
