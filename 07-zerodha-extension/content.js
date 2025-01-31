@@ -28,7 +28,7 @@ function addPositionsReport() {
     openPositionsHeader.insertAdjacentElement("afterend", wrapper)
     refreshPositionsPnl();  // Refresh pnl on every click
 
-    startAutoRefresOfPnl(1); // This will auto refresh the Pnl panel after n number of minutes
+    startAutoRefresOfPnl(2); // This will auto refresh the Pnl panel after n number of minutes
   }
   
   function startAutoRefresOfPnl(minutes) {
