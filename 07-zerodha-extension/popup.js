@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
       chrome.scripting.executeScript(
         {
           target: { tabId: activeTab.id },
-          // function: addPositionsReport,
+          function: addPositionsReport,
           args: [activeTabUrl]
         },
         (results) => {

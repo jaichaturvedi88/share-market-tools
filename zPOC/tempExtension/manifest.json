@@ -1,20 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "My Chrome Extension",
+  "name": "Extension Example",
   "version": "1.0",
-  "permissions": ["scripting", "activeTab"],
+  "permissions": ["scripting"],
   "host_permissions": ["<all_urls>"],
-  "action": {},  
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
   "content_scripts": [
     {
-      "matches": ["https://example.com/*"], 
-      "js": ["content.js"],
-      "run_at": "document_idle",
-      "type": "module"
+      "matches": ["<all_urls>"], 
+      "js": ["content.js"]
     }
-  ],
-  "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  }
+  ]
 }

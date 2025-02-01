@@ -1,7 +1,15 @@
-(async () => {
-    console.log('atleast content js is loading')
-    console.log('trying to load ', chrome.runtime.getURL("utils.js"))
-    // const { greet } = await import(chrome.runtime.getURL("utils.js"));
-    // greet("Chrome Extension");
-    // console.log(greet)
-})();
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//     if (message.action === "sendData") {
+//         console.log("Received data in content script:", message.data);
+
+//         // Example: Modify webpage based on received data
+//         document.body.style.backgroundColor = message.data;
+//     }
+// });
+
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "sendData") {
+        document.body.style.backgroundColor = message.data;
+    }
+});

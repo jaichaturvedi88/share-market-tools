@@ -1,3 +1,5 @@
+console.log('Hi! from service_worker.js')
+
 chrome.action.onClicked.addListener(tab => {
     chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
         console.log('log from tabs')
