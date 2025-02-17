@@ -1,0 +1,39 @@
+// RSI
+// Trading view strategy for below conditions.
+// Buy - Buy share when rsi is 30 
+// Sell - Sell when rsi reaches 80.
+// Capital - 10000 INR
+// Order date - greater than 01-01-2021 to 01-01-2022
+
+
+
+//@version=6
+strategy("RSI Based Strategy (2021-2022)", overlay=true, initial_capital=10000, currency=currency.INR)
+
+// Input parameters
+rsiLength = input.int(14, title="RSI Length")
+capital = 10000  // Fixed capital in INR
+
+// Set order date range
+startDate = timestamp(2021, 01, 01, 00, 00)
+endDate = timestamp(2022, 01, 01, 00, 00)
+
+// Calculate RSI
+rsiValue = ta.rsi(close, rsiLength)
+
+// Calculate number of shares to buy for ₹10,000 INR
+sharesToBuy = capital / close
+
+// Buy condition: RSI reaches exactly 30
+buyCondition = rsiValue <= 30
+
+// Sell condition: RSI reaches 80
+sellCondition = rsiValue >= 80
+
+// Execute trades within the date range
+if (time >= startDate and time < endDate)
+    if buyCondition
+        strategy.entry("Buy", strategy.long, qty=sharesToBuy)
+
+    if sellCondition
+        strategy.close("Buy")
