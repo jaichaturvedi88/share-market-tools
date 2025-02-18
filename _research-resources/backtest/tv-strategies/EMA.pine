@@ -1,0 +1,39 @@
+// EMA
+// Trading view strategy for below conditions.
+// Buy - When candle close > ema 9
+// Sell - When candle high < ema 26
+// Capital - 10000
+// startDate = 2021-01-01
+
+
+//@version=6
+strategy("EMA Crossover Strategy (Start Date: 2021-01-01)", overlay=true, initial_capital=10000, currency=currency.INR)
+
+// Input parameters
+emaShortLength = input.int(9, title="Short EMA (9-day)")
+emaLongLength = input.int(26, title="Long EMA (26-day)")
+capital = 10000  // Fixed capital in INR
+
+// Set start date
+startDate = timestamp(2021, 01, 01, 00, 00)
+
+// Calculate EMAs
+ema9 = ta.ema(close, emaShortLength)
+ema26 = ta.ema(close, emaLongLength)
+
+// Calculate number of shares to buy for ₹10,000 INR
+sharesToBuy = capital / close
+
+// Buy condition: Candle close is above EMA 9
+buyCondition = close > ema9
+
+// Sell condition: Candle high is below EMA 26
+sellCondition = high < ema26
+
+// Execute trades only after the start date
+if (time >= startDate)
+    if buyCondition
+        strategy.entry("Buy", strategy.long, qty=sharesToBuy)
+
+    if sellCondition
+        strategy.close("Buy")

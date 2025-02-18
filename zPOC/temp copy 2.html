@@ -3,57 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JavaScript Map to HTML Table</title>
+    <title>Key-Value Layout</title>
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
+       #open-position-report {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Left column auto-width, right column takes remaining space */
+    gap: 10px 15px; /* Adds space between rows and columns */
+    max-width: 400px; /* Adjust width */
+    margin: auto;
+    padding: 15px;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Ensure spans inside divs follow the two-column layout */
+#open-position-report div {
+    display: contents; /* Allows direct grid positioning of spans */
+}
+
+#open-position-report div span:first-child {
+    text-align: left;
+    background: #e0e0e0;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+#open-position-report div span:last-child {
+    text-align: right;
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+/* Center the refresh button below */
+.refresh-button {
+    grid-column: span 2; /* Makes the button take full width */
+    margin: 10px auto;
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.refresh-button:hover {
+    background: #0056b3;
+}
+
     </style>
 </head>
 <body>
 
-<div id="tableContainer"></div>
-
-<script>
-    // Sample JavaScript map with nested arrays
-    const myMap = new Map();
-    myMap.set('Name', ['John', 'Doe']);
-    myMap.set('Age', [30]);
-    myMap.set('Location', ['New York', 'USA']);
-
-    // Function to convert map to HTML table
-    function mapToHTMLTable(map) {
-        let tableHTML = '<table>';
-        map.forEach((value, key) => {
-            tableHTML += `<tr><th>${key}</th>`;
-            if (Array.isArray(value)) {
-                value.forEach((item) => {
-                    tableHTML += `<td>${item}</td>`;
-                });
-            } else {
-                tableHTML += `<td>${value}</td>`;
-            }
-            tableHTML += '</tr>';
-        });
-        tableHTML += '</table>';
-        return tableHTML;
-    }
-
-    // Get the container element
-    const tableContainer = document.getElementById('tableContainer');
-
-    // Convert map to HTML table and append to container
-    tableContainer.innerHTML = mapToHTMLTable(myMap);
-</script>
+    <div id="open-position-report">
+        <div><span>Book: </span><span id="amount-booked">0</span></div>
+        <div><span>Invest: </span><span id="amount-invested">0</span></div>
+        <div><span>Cur PnL: </span><span id="current-pnl"></span></div>
+        <div><span>CE: </span><span id="count-ce"></span></div>
+        <div><span>PE: </span><span id="count-pe"></span></div>
+        <input id="refreshPnl" class="refresh-button" type="button" value="&#x21bb;">
+    </div>
 
 </body>
 </html>

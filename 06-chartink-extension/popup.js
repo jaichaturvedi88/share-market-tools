@@ -33,7 +33,7 @@ function addButtonToPage(url) {
   function createDashboardButton() {
     let wrapper = document.createElement('div');
     wrapper.innerHTML = `<a id="downloadWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
-                            <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Download WL</span>
+                            <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Fyers WL</span>
                         </a>
                         <a id="createTvWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
                             <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Copy TV Watchlist</span>
@@ -92,34 +92,58 @@ function addButtonToPage(url) {
   }
   
   function createScreenerButton() {
+    const Platform = Object.freeze({
+      FYERS: "fyers",
+      TRADING_VIEW: "tradingview"
+    });
+
     let wrapper = document.createElement('div');
-    wrapper.innerHTML = `<button type="button" data-toggle="tooltip" id="save_as_scan" class="btn bg-blue-500" style="color:antiquewhite">
-      <i aria-hidden="true" ></i>Create Watchlist </button>`;
+    wrapper.innerHTML = `<button type="button" data-toggle="tooltip" id="copy-scan-as-fyers-wl" class="btn bg-blue-500" style="color:antiquewhite">
+                          <i aria-hidden="true" ></i>Copy WL
+                        </button>
+                        <button type="button" data-toggle="tooltip" id="copy-scan-as-tv-wl" class="btn bg-blue-500" style="color:antiquewhite">
+                          <i aria-hidden="true" ></i>Copy TV Wl
+                        </button>
+                      `;
   
-    let anchor = wrapper.firstChild;
-    anchor.onclick = function () {
+    let btnScanAsFyersWl = wrapper.querySelector('#copy-scan-as-fyers-wl');
+    let btnScanAsTvWl = wrapper.querySelector('#copy-scan-as-tv-wl');
+    btnScanAsFyersWl.onclick = function () {
       console.log('creating watchlist...');
-  
-      let tableRows = document.querySelectorAll('table.scan_results_table tr')
-      // let stockList = [];
-      let stockListAsTxt = "";
-  
-      tableRows.forEach((row, idx) => {
-        if (idx > 0) {  //Exclude header row
-          // screenerNode = node.parentNode.parentNode.parentNode.parentNode;
-          let stockSymbol = row.querySelectorAll("td")[2].innerText; //Symbol is the 3rd column
-          stockListAsTxt += "NSE:" + stockSymbol + "-EQ\n";
-        }
-      });
+      let stockListAsTxt = copyScanWatchlist(Platform.FYERS)
+      
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
       // createTextFile(stockListAsTxt);
     }
-  
+
+    btnScanAsTvWl.onclick = function () {
+      let stockListAsTxt = copyScanWatchlist(Platform.FYERS)
+      
+      navigator.clipboard.writeText(stockListAsTxt);
+      console.log(stockListAsTxt)
+    }
     let refreshButton = document.querySelector('button#view_backtest');
-    refreshButton.insertAdjacentElement("afterend", anchor)
+    refreshButton.insertAdjacentElement("afterend", btnScanAsFyersWl)
+    refreshButton.insertAdjacentElement("afterend", btnScanAsTvWl)
   
     console.log(refreshButton);
+  }
+
+  function copyScanWatchlist(platform){
+    let stockListAsTxt = "";
+    let tableRows = document.querySelectorAll('table.scan_results_table tr')
+    tableRows.forEach((row, idx) => {
+      if (idx > 0) {  //Exclude header row
+        let stockSymbol = row.querySelectorAll("td")[2].innerText; //Symbol is the 3rd column
+        if(platform === platform.FYERS){
+          stockListAsTxt += "NSE:" + stockSymbol + "-EQ\n";
+        }else{
+          stockListAsTxt += "NSE:" + stockSymbol + "-EQ,";
+        }
+      }
+    });
+    return stockListAsTxt;
   }
 }
 

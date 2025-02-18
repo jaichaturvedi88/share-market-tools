@@ -1,0 +1,39 @@
+// MACD 
+Trading view strategy for below conditions.
+Buy - Macd line crosses above signal line
+Sell - Macd line crosses below signal line
+Capital - 10000
+startDate = 2021-01-01
+
+
+//@version=6
+strategy("MACD Crossover Strategy", overlay=true, initial_capital=10000, currency=currency.INR)
+
+// Input parameters
+macdShortLength = input.int(12, title="MACD Short Length")
+macdLongLength = input.int(26, title="MACD Long Length")
+macdSignalLength = input.int(9, title="MACD Signal Length")
+capital = 10000  // Fixed capital in INR
+
+// Set start date
+startDate = timestamp(2021, 01, 01, 00, 00)
+
+// Calculate MACD
+[macdLine, signalLine, _] = ta.macd(close, macdShortLength, macdLongLength, macdSignalLength)
+
+// Calculate number of shares to buy for ₹10,000 INR
+sharesToBuy = capital / close
+
+// Buy condition: MACD line crosses above Signal line (Bullish)
+buyCondition = ta.crossover(macdLine, signalLine)
+
+// Sell condition: MACD line crosses below Signal line (Bearish)
+sellCondition = ta.crossunder(macdLine, signalLine)
+
+// Execute trades only after the start date
+if (time >= startDate)
+    if buyCondition
+        strategy.entry("Buy", strategy.long, qty=sharesToBuy)
+
+    if sellCondition
+        strategy.close("Buy")

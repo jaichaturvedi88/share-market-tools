@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "version": "1.0.0",
+    "name": "zerodha extension",
+    "icons": {
+        "512": "kite-logo.png"
+    },
+    "background": {
+        "service_worker": "service_worker.js",
+        "type": "module"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Kite Helper"
+    },
+    "permissions": [
+        "tabs",
+        "activeTab",
+        "scripting"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": ["https://kite.zerodha.com/*"],
+            "js": ["content-utils.js", "content.js"],
+            "css": ["content.css"]
+        }
+    ]
+}
