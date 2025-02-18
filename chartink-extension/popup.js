@@ -35,7 +35,7 @@ function addButtonToPage(url) {
     wrapper.innerHTML = `<a id="downloadWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
                             <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Fyers WL</span>
                         </a>
-                        <a id="createTvWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
+                        <a id="createTvWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-1 md:px-2 rounded mr-2">
                             <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Copy TV Watchlist</span>
                         </a>
                       `;
@@ -63,7 +63,7 @@ function addButtonToPage(url) {
       console.log(stockListAsTxt)
     }
   
-    let refreshButton = document.querySelector('div[title="Toggle auto refresh"');
+    let refreshButton = document.querySelector('div[title="Toggle Auto Refresh"');
     refreshButton.insertAdjacentElement("afterend", downloadWL)
     refreshButton.insertAdjacentElement("afterend", copyTvWL)
   
@@ -79,7 +79,7 @@ function addButtonToPage(url) {
 
         tableRows.forEach((row, idx) => {
           if (idx > 0) {
-            let stock = row.querySelector('td>span>a').innerText;
+            let stock = row.querySelector('td > span > div > a').innerText;
             if (isDownloadWatchList) 
               stockListAsTxt += "NSE:" + stock + "-EQ\n";
             else
