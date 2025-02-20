@@ -83,11 +83,11 @@ function refreshPositionsPnl() {
 
   currentPositions.forEach(tr => {
     let symbol = tr.querySelector('td[data-label="Instrument"] > a > span.tradingsymbol').textContent;
-    let quantity = tr.querySelector('td[data-label="Qty."] > span').textContent;
-    let avgPrice = tr.querySelector('td[data-label="Avg."] > span').textContent;
-    let pnl = parseFloat(tr.querySelector('td[data-label="P&L"] > span').textContent.replaceAll(',', ''));
+    let quantity = readNumberFromTableCell('td[data-label="Qty."] > span');
+    let avgPrice = readNumberFromTableCell('td[data-label="Avg."] > span');
+    let pnl = readNumberFromTableCell('td[data-label="P&L"] > span')
 
-    if (quantity != 0) {
+    if (quantity >= 0) {
       POSITIONS.CURRENT_INVESTED += quantity * avgPrice;
       POSITIONS.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
       symbol.includes(" CE") ? POSITIONS.COUNT_CE += 1 : POSITIONS.COUNT_PE += 1;
@@ -100,6 +100,10 @@ function refreshPositionsPnl() {
   console.log(POSITIONS)
 
   updatePositionsPanel(POSITIONS);
+}
+
+function readNumberFromTableCell(selector) {
+  return parseFloat(tr.querySelector(selector).textContent.replaceAll(',', ''));
 }
 
 function updatePositionsPanel(POSITIONS) {
