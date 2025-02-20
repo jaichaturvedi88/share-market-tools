@@ -1,0 +1,77 @@
+body {
+    scrollbar-width: auto;
+    /* scrollbar-width: thin;
+    scrollbar-width: none; */
+    font-size: 0.93rem;
+}
+
+table th,
+table td {
+  padding: 1px;
+}
+
+table {
+  border-spacing: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+
+td {
+  border: 1px solid black;
+  width: 70px;
+  overflow: hidden;
+}
+
+.table-container{
+  width: 99vw ;
+} 
+
+.row-wrap{
+  display: inline-block;
+  width: 100px;
+
+}
+
+td:first-child {
+  white-space: nowrap;
+  padding-right: 5px;
+
+}
+
+tr:nth-child(10n) {
+  background-color: #cd4a4a; /* Sets background color for rows that are multiples of 5 */
+}
+
+.date-cell-background{
+  background-color: #855f80;
+}
+
+.header{
+  display: flex;
+  /* justify-content: space-between; */
+}
+
+
+::-webkit-scrollbar {
+    width: 1em;
+    height: 1em
+}
+::-webkit-scrollbar-button {
+    background: #463434
+}
+::-webkit-scrollbar-track-piece {
+    background: #f7baba
+}
+::-webkit-scrollbar-thumb {
+    background: #ff7979
+}   
+
+.thin_scroll{
+    scrollbar-width: 50px;  
+}
+
+.active-btn, .active-btn:hover{
+  background-color: rgb(130, 127, 127);
+}

@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Count 'Bank' Extension",
+  "version": "1.0",
+  "description": "Counts the number of 'Bank' words on a webpage and displays it.",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["styles.js", "utils.js", "ui.js", "dom.js", "observer.js", "storage.js", "content.js"],
+      "run_at": "document_end"
+    }
+  ]
+}

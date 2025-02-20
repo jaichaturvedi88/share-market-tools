@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movable Div with Button</title>
+    <style>
+        /* Draggable Div Styling */
+        #movable-div {
+            width: 200px;
+            min-height: 100px;
+            background-color: lightblue;
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* Button Styling */
+        #add-content-btn {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #add-content-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Movable Div -->
+    <div id="movable-div">
+        <span id="content">Drag me!</span>
+    </div>
+
+    <button id="add-content-btn">Add Content</button>
+
+
+    <script>
+        const dragElement = document.getElementById("movable-div");
+        const addButton = document.getElementById("add-content-btn");
+        const contentSpan = document.getElementById("content");
+
+        let offsetX = 0, offsetY = 0, isDragging = false;
+
+        // Dragging Functionality
+        dragElement.addEventListener("mousedown", (e) => {
+            isDragging = true;
+            offsetX = e.clientX - dragElement.getBoundingClientRect().left;
+            offsetY = e.clientY - dragElement.getBoundingClientRect().top;
+            dragElement.style.cursor = "grabbing";
+        });
+
+        document.addEventListener("mousemove", (e) => {
+            if (isDragging) {
+                dragElement.style.left = e.clientX - offsetX + "px";
+                dragElement.style.top = e.clientY - offsetY + "px";
+            }
+        });
+
+        document.addEventListener("mouseup", () => {
+            isDragging = false;
+            dragElement.style.cursor = "grab";
+        });
+
+        // Add Content on Button Click
+        addButton.addEventListener("click", () => {
+            const newParagraph = document.createElement("p");
+            newParagraph.textContent = "New Content Added!";
+            newParagraph.style.marginTop = "5px";
+            newParagraph.style.fontSize = "12px";
+            newParagraph.style.color = "#333";
+
+            dragElement.appendChild(newParagraph);
+        });
+    </script>
+
+</body>
+</html>
