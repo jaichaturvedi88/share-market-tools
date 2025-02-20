@@ -21,6 +21,7 @@ table {
 
 td {
   border: 1px solid black;
+  word-wrap: break-word;
   width: 70px;
   overflow: hidden;
 }
@@ -63,6 +64,9 @@ tr:nth-child(10n) {
     scrollbar-width: 50px;  
 }
 
+<<<<<<< HEAD:zPOC/Lonterm _ Swing Screener_temp_files/style.css
 .active-btn, .active-btn:hover{
   background-color: rgb(130, 127, 127);
 }
+=======
+>>>>>>> parent of 5e5b85e (position changed of dark mode button):01-chartink/daily-candle-screener/style.css
