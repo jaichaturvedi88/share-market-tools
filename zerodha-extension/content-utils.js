@@ -80,20 +80,27 @@ function refreshPositionsPnl() {
     COUNT_CE: 0,
     COUNT_PE: 0
   }
+  let PRODUCT_TYPE = {
+    NRML: 'NRML'
+  }
 
   currentPositions.forEach(tr => {
+    let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
     let symbol = tr.querySelector('td[data-label="Instrument"] > a > span.tradingsymbol').textContent;
-    let quantity = readNumberFromTableCell('td[data-label="Qty."] > span');
-    let avgPrice = readNumberFromTableCell('td[data-label="Avg."] > span');
-    let pnl = readNumberFromTableCell('td[data-label="P&L"] > span')
+    let quantity = readNumberFromTableCell(tr, 'td[data-label="Qty."] > span');
+    let avgPrice = readNumberFromTableCell(tr, 'td[data-label="Avg."] > span');
+    let pnl = readNumberFromTableCell(tr, 'td[data-label="P&L"] > span')
 
-    if (quantity >= 0) {
-      POSITIONS.CURRENT_INVESTED += quantity * avgPrice;
-      POSITIONS.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
-      symbol.includes(" CE") ? POSITIONS.COUNT_CE += 1 : POSITIONS.COUNT_PE += 1;
-    } else {
-      POSITIONS.BOOKED_PNL += Number.isNaN(pnl) ? 0 : pnl;
+    if (productType === PRODUCT_TYPE.NRML) {
+      if (quantity >= 0) {
+        POSITIONS.CURRENT_INVESTED += quantity * avgPrice;
+        POSITIONS.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
+        symbol.includes(" CE") ? POSITIONS.COUNT_CE += 1 : POSITIONS.COUNT_PE += 1;
+      } else {
+        POSITIONS.BOOKED_PNL += Number.isNaN(pnl) ? 0 : pnl;
+      }
     }
+
     // console.log(POSITIONS.SYMBOL);
   });
 
@@ -102,8 +109,8 @@ function refreshPositionsPnl() {
   updatePositionsPanel(POSITIONS);
 }
 
-function readNumberFromTableCell(selector) {
-  return parseFloat(tr.querySelector(selector).textContent.replaceAll(',', ''));
+function readNumberFromTableCell(row, selector) {
+  return parseFloat(row.querySelector(selector).textContent.replaceAll(',', ''));
 }
 
 function updatePositionsPanel(POSITIONS) {
