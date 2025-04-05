@@ -32,42 +32,66 @@ function addButtonToPage(url) {
 
   function createDashboardButton() {
     let wrapper = document.createElement('div');
-    wrapper.innerHTML = `<a id="downloadWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
+    // <input type="text" name="" id="watchlistName"></input>
+    wrapper.innerHTML = `
+                        <select id="screeners"> </select>
+                        <a id="downloadWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
                             <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Fyers WL</span>
                         </a>
                         <a id="createTvWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-1 md:px-2 rounded mr-2">
                             <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Copy TV Watchlist</span>
                         </a>
                       `;
-    // let anchor = wrapper.firstChild;
+
+    let screeners = wrapper.querySelector('#screeners');
     let downloadWL = wrapper.querySelector('#downloadWL');
+    let copyTvWL = wrapper.querySelector('#createTvWL');
+
+    let refreshButton = document.querySelector('div[title="Toggle Auto Refresh"');
+    refreshButton.insertAdjacentElement("afterend", downloadWL)
+    refreshButton.insertAdjacentElement("afterend", copyTvWL)
+    refreshButton.insertAdjacentElement("afterend", screeners)
+    
+    let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
+
+    createWatchlistDropdown(screeners, screenerList)
+
+    let screenerName = '';
+    screeners.addEventListener("change", () => {
+      screenerName = screeners.value;
+    });
+
+    let stockListAsTxt = "";
+
     downloadWL.onclick = function () {
       console.log('creating watchlist...');
-      var screenerName = prompt("Screener Name?");
-      let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
-      let stockListAsTxt = "";
+      // var screenerName = document.querySelector('#watchlistName').value;
   
       stockListAsTxt = getWatchlist(screenerList, screenerName, true);
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     };
 
-    let copyTvWL = wrapper.querySelector('#createTvWL');
+    
     copyTvWL.onclick = function() {
-      var screenerName = prompt("Screener Name?");
-      let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
-      let stockListAsTxt = "";
+      // var screenerName = document.querySelector('#watchlistName').value;
   
       stockListAsTxt = getWatchlist(screenerList, screenerName, false);
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     }
   
-    let refreshButton = document.querySelector('div[title="Toggle Auto Refresh"');
-    refreshButton.insertAdjacentElement("afterend", downloadWL)
-    refreshButton.insertAdjacentElement("afterend", copyTvWL)
-  
     console.log(refreshButton);
+  }
+
+  function createWatchlistDropdown(screeners, screenerList){
+    screenerList.forEach(screener => {
+      let screenerName = screener.innerText;;
+      const option = document.createElement("option");
+      option.value = screenerName;
+      option.textContent = screenerName;
+      screeners.appendChild(option);
+    });
   }
 
   function getWatchlist(screenerList, screenerName, isDownloadWatchList = true) {
