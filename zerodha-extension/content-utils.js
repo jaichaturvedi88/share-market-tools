@@ -92,7 +92,7 @@ function refreshPositionsPnl() {
     let pnl = readNumberFromTableCell(tr, 'td[data-label="P&L"] > span')
 
     if (productType === PRODUCT_TYPE.NRML) {
-      if (quantity >= 0) {
+      if (quantity > 0) {
         POSITIONS.CURRENT_INVESTED += quantity * avgPrice;
         POSITIONS.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
         symbol.includes(" CE") ? POSITIONS.COUNT_CE += 1 : POSITIONS.COUNT_PE += 1;
