@@ -1,4 +1,15 @@
 console.log("Hi! from content-utils.js");
+let POSITIONS = {
+  SYMBOL: '',
+  BOOKED_PNL: 0,
+  CURRENT_INVESTED: 0,
+  CURRENT_PNL: 0,
+  COUNT_CE: 0,
+  COUNT_PE: 0
+}
+let PRODUCT_TYPE = {
+  NRML: 'NRML'
+}
 
 function createPositionsPanel() {
   let wrapper = document.createElement('div');
@@ -9,9 +20,24 @@ function createPositionsPanel() {
     <div><span>Cur PnL: </span><span id="current-pnl"></span></div>
     <div><span>CE: </span><span id="count-ce"></span></div>
     <div><span>PE: </span><span id="count-pe"></span></div>
+    
+    <div class="border border-success">
+      <span class="">
+        <label class="form-check-label" for="hide-completed-trades">Hide 0</label>      
+        <input class="form-check-input" type="checkbox" role="switch" id="hide-completed-trades" >
+      </span>
+      <span class="">
+        <label class="form-check-label" for="display-in-table-form">Table</label>      
+        <input class="form-check-input" type="checkbox" role="switch" id="display-in-table-form" >
+      </span>
+    </div>
+
     <input id="refreshPnl" class="refresh-button" type="button" value="&#x21bb;">
 </div>
 `;
+
+  //        
+  //  style="width:50%"
 
   let refreshPnl = wrapper.querySelector('#refreshPnl');
   refreshPnl.onclick = function () {
@@ -24,6 +50,47 @@ function createPositionsPanel() {
   makeDivDraggable();
   refreshPositionsPnl();  // Refresh pnl on every click
   startAutoRefresOfPnl(2); // This will auto refresh the Pnl panel after n number of minutes
+  showDataInTableFormat();
+  hideCompletedTrades();
+}
+
+function hideCompletedTrades() {
+  const checkbox = document.getElementById('hide-completed-trades');
+  let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
+  let currentPositions = positionsTable.querySelectorAll('tr')
+
+  checkbox.addEventListener('change', () => {
+
+    currentPositions.forEach(tr => {
+      let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
+      let quantity = readNumberFromTableCell(tr, 'td[data-label="Qty."] > span');
+
+      if (productType === PRODUCT_TYPE.NRML) {
+        if (quantity === 0 & checkbox.checked) {
+          tr.style.display = 'none';
+        } else {
+          tr.style.display = "table-row";
+        }
+      }
+
+      // console.log(POSITIONS.SYMBOL);
+    });
+  });
+}
+
+function showDataInTableFormat() {
+  const checkbox = document.getElementById('display-in-table-form');
+  const reportDiv = document.getElementById('open-position-report');
+
+  checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+      reportDiv.classList.remove('open-position-report-horizontal');
+      reportDiv.classList.add('open-position-report-in-tabular-form');
+    } else {
+      reportDiv.classList.add('open-position-report-horizontal');
+      reportDiv.classList.remove('open-position-report-in-tabular-form');
+    }
+  });
 }
 
 function makeDivDraggable() {
@@ -72,17 +139,7 @@ function refreshPositionsPnl() {
 
   let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
   let currentPositions = positionsTable.querySelectorAll('tr')
-  let POSITIONS = {
-    SYMBOL: '',
-    BOOKED_PNL: 0,
-    CURRENT_INVESTED: 0,
-    CURRENT_PNL: 0,
-    COUNT_CE: 0,
-    COUNT_PE: 0
-  }
-  let PRODUCT_TYPE = {
-    NRML: 'NRML'
-  }
+
 
   currentPositions.forEach(tr => {
     let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();

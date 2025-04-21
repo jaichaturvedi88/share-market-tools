@@ -22,28 +22,30 @@
 }
 
 .open-position-report-horizontal {
+  border: 1px solid darkgreen;
   z-index: 1000;
-  width: 575px;
+  width: 600px;
   display:flex; 
   justify-content:space-between;
   position: fixed;
-  top: 67px;
-  left: 41%;
+  top: 38px;
+  left: 36%;
   cursor: grab;
   font-family: Arial, sans-serif;
   font-weight: bold;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.open-position-report-sideways {
+.open-position-report-in-tabular-form {
+  border: 1px solid darkgreen;
   z-index: 1000;
   position: fixed;
-  top: 50px;
-  left: 10px;
+  top: 400px;
+  left: 75px;
   display: grid;
   grid-template-columns: auto 1fr; /* Left column auto-width, right column takes remaining space */
   gap: 2px 2px; 
-  max-width: 200px; 
+  width: 200px; 
   margin: auto;
   padding: 5px;
   border-radius: 5px;
