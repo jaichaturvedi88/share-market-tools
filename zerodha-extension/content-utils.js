@@ -1,5 +1,5 @@
 console.log("Hi! from content-utils.js");
-let POSITIONS = {
+const POSITIONS = {
   SYMBOL: '',
   BOOKED_PNL: 0,
   CURRENT_INVESTED: 0,
@@ -136,12 +136,13 @@ function startAutoRefresOfPnl(minutes) {
 
 function refreshPositionsPnl() {
   // console.log('Refreshing Pnl...')
-
+  let positions = { ...POSITIONS };
   let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
   let currentPositions = positionsTable.querySelectorAll('tr')
 
 
   currentPositions.forEach(tr => {
+
     let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
     let symbol = tr.querySelector('td[data-label="Instrument"] > a > span.tradingsymbol').textContent;
     let quantity = readNumberFromTableCell(tr, 'td[data-label="Qty."] > span');
@@ -150,20 +151,20 @@ function refreshPositionsPnl() {
 
     if (productType === PRODUCT_TYPE.NRML) {
       if (quantity > 0) {
-        POSITIONS.CURRENT_INVESTED += quantity * avgPrice;
-        POSITIONS.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
-        symbol.includes(" CE") ? POSITIONS.COUNT_CE += 1 : POSITIONS.COUNT_PE += 1;
+        positions.CURRENT_INVESTED += quantity * avgPrice;
+        positions.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
+        symbol.includes(" CE") ? positions.COUNT_CE += 1 : positions.COUNT_PE += 1;
       } else {
-        POSITIONS.BOOKED_PNL += Number.isNaN(pnl) ? 0 : pnl;
+        positions.BOOKED_PNL += Number.isNaN(pnl) ? 0 : pnl;
       }
     }
 
-    // console.log(POSITIONS.SYMBOL);
+    // console.log(positions.SYMBOL);
   });
 
-  console.log(POSITIONS)
+  console.log(positions)
 
-  updatePositionsPanel(POSITIONS);
+  updatePositionsPanel(positions);
 }
 
 function readNumberFromTableCell(row, selector) {
