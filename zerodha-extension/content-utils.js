@@ -14,7 +14,7 @@ let PRODUCT_TYPE = {
 function createPositionsPanel() {
   let wrapper = document.createElement('div');
   wrapper.innerHTML = `    
-<div id="open-position-report" class="open-position-report-horizontal">
+<div id="open-position-report" class="open-position-report-in-tabular-form">
     <div><span>Book: </span><span id="amount-booked">0</span></div>
     <div><span>Invest: </span><span id="amount-invested">0</span></div>
     <div><span>Cur PnL: </span><span id="current-pnl"></span></div>
@@ -28,7 +28,7 @@ function createPositionsPanel() {
       </span>
       <span class="">
         <label class="form-check-label" for="display-in-table-form">Table</label>      
-        <input class="form-check-input" type="checkbox" role="switch" id="display-in-table-form" >
+        <input class="form-check-input" type="checkbox" role="switch" id="display-in-table-form" checked>
       </span>
     </div>
 
@@ -56,10 +56,10 @@ function createPositionsPanel() {
 
 function hideCompletedTrades() {
   const checkbox = document.getElementById('hide-completed-trades');
-  let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
-  let currentPositions = positionsTable.querySelectorAll('tr')
 
   checkbox.addEventListener('change', () => {
+    let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
+    let currentPositions = positionsTable.querySelectorAll('tr')
 
     currentPositions.forEach(tr => {
       let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
