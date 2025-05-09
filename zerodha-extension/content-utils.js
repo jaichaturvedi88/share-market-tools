@@ -1,17 +1,43 @@
 console.log("Hi! from content-utils.js");
+const POSITIONS = {
+  SYMBOL: '',
+  BOOKED_PNL: 0,
+  CURRENT_INVESTED: 0,
+  CURRENT_PNL: 0,
+  COUNT_CE: 0,
+  COUNT_PE: 0
+}
+let PRODUCT_TYPE = {
+  NRML: 'NRML'
+}
 
 function createPositionsPanel() {
   let wrapper = document.createElement('div');
   wrapper.innerHTML = `    
-<div id="open-position-report" class="open-position-report-horizontal">
+<div id="open-position-report" class="open-position-report-in-tabular-form">
     <div><span>Book: </span><span id="amount-booked">0</span></div>
     <div><span>Invest: </span><span id="amount-invested">0</span></div>
     <div><span>Cur PnL: </span><span id="current-pnl"></span></div>
     <div><span>CE: </span><span id="count-ce"></span></div>
     <div><span>PE: </span><span id="count-pe"></span></div>
+    
+    <div class="border border-success">
+      <span class="">
+        <label class="form-check-label" for="hide-completed-trades">Hide 0</label>      
+        <input class="form-check-input" type="checkbox" role="switch" id="hide-completed-trades" >
+      </span>
+      <span class="">
+        <label class="form-check-label" for="display-in-table-form">Table</label>      
+        <input class="form-check-input" type="checkbox" role="switch" id="display-in-table-form" checked>
+      </span>
+    </div>
+
     <input id="refreshPnl" class="refresh-button" type="button" value="&#x21bb;">
 </div>
 `;
+
+  //        
+  //  style="width:50%"
 
   let refreshPnl = wrapper.querySelector('#refreshPnl');
   refreshPnl.onclick = function () {
@@ -24,6 +50,47 @@ function createPositionsPanel() {
   makeDivDraggable();
   refreshPositionsPnl();  // Refresh pnl on every click
   startAutoRefresOfPnl(2); // This will auto refresh the Pnl panel after n number of minutes
+  showDataInTableFormat();
+  hideCompletedTrades();
+}
+
+function hideCompletedTrades() {
+  const checkbox = document.getElementById('hide-completed-trades');
+
+  checkbox.addEventListener('change', () => {
+    let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
+    let currentPositions = positionsTable.querySelectorAll('tr')
+
+    currentPositions.forEach(tr => {
+      let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
+      let quantity = readNumberFromTableCell(tr, 'td[data-label="Qty."] > span');
+
+      if (productType === PRODUCT_TYPE.NRML) {
+        if (quantity === 0 & checkbox.checked) {
+          tr.style.display = 'none';
+        } else {
+          tr.style.display = "table-row";
+        }
+      }
+
+      // console.log(POSITIONS.SYMBOL);
+    });
+  });
+}
+
+function showDataInTableFormat() {
+  const checkbox = document.getElementById('display-in-table-form');
+  const reportDiv = document.getElementById('open-position-report');
+
+  checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+      reportDiv.classList.remove('open-position-report-horizontal');
+      reportDiv.classList.add('open-position-report-in-tabular-form');
+    } else {
+      reportDiv.classList.add('open-position-report-horizontal');
+      reportDiv.classList.remove('open-position-report-in-tabular-form');
+    }
+  });
 }
 
 function makeDivDraggable() {
@@ -69,22 +136,13 @@ function startAutoRefresOfPnl(minutes) {
 
 function refreshPositionsPnl() {
   // console.log('Refreshing Pnl...')
-
+  let positions = { ...POSITIONS };
   let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
   let currentPositions = positionsTable.querySelectorAll('tr')
-  let POSITIONS = {
-    SYMBOL: '',
-    BOOKED_PNL: 0,
-    CURRENT_INVESTED: 0,
-    CURRENT_PNL: 0,
-    COUNT_CE: 0,
-    COUNT_PE: 0
-  }
-  let PRODUCT_TYPE = {
-    NRML: 'NRML'
-  }
+
 
   currentPositions.forEach(tr => {
+
     let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
     let symbol = tr.querySelector('td[data-label="Instrument"] > a > span.tradingsymbol').textContent;
     let quantity = readNumberFromTableCell(tr, 'td[data-label="Qty."] > span');
@@ -93,20 +151,20 @@ function refreshPositionsPnl() {
 
     if (productType === PRODUCT_TYPE.NRML) {
       if (quantity > 0) {
-        POSITIONS.CURRENT_INVESTED += quantity * avgPrice;
-        POSITIONS.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
-        symbol.includes(" CE") ? POSITIONS.COUNT_CE += 1 : POSITIONS.COUNT_PE += 1;
+        positions.CURRENT_INVESTED += quantity * avgPrice;
+        positions.CURRENT_PNL += Number.isNaN(pnl) ? 0 : pnl;
+        symbol.includes(" CE") ? positions.COUNT_CE += 1 : positions.COUNT_PE += 1;
       } else {
-        POSITIONS.BOOKED_PNL += Number.isNaN(pnl) ? 0 : pnl;
+        positions.BOOKED_PNL += Number.isNaN(pnl) ? 0 : pnl;
       }
     }
 
-    // console.log(POSITIONS.SYMBOL);
+    // console.log(positions.SYMBOL);
   });
 
-  console.log(POSITIONS)
+  console.log(positions)
 
-  updatePositionsPanel(POSITIONS);
+  updatePositionsPanel(positions);
 }
 
 function readNumberFromTableCell(row, selector) {

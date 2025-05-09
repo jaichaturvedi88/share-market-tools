@@ -26,7 +26,11 @@
         {
             "matches": ["https://kite.zerodha.com/*"],
             "js": ["content-utils.js", "content.js"],
-            "css": ["content.css"]
+            "css": ["content.css", "libs/bootstrap.min.css"]
         }
-    ]
+    ],
+    "web_accessible_resources": [{
+        "resources": ["libs/*"],
+        "matches": ["<all_urls>"]
+  }]
 }
