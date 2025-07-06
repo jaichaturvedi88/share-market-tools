@@ -1,13 +1,17 @@
 console.log('Its from content.js file')
 
-function addPositionsReport() {
-  let url = 'https://kite.zerodha.com/positions';
+function createUi() {
+  // let url = 'https://kite.zerodha.com/positions';
+  let url = location.href;
+
   if (url.includes("/positions")) {
     createPositionsPanel();
+  } else if (url.includes("/holdings")){
+    createHoldingsUi()
   }
 }
 
 setTimeout(() => {
-  addPositionsReport(); // writing this in settimeout because sometimes window.onload won't work(in very few cases)
+  createUi(); // writing this in settimeout because sometimes window.onload won't work(in very few cases)
   
 }, 1000);
