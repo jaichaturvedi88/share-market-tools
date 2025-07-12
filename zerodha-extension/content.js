@@ -14,4 +14,4 @@ function createUi() {
 setTimeout(() => {
   createUi(); // writing this in settimeout because sometimes window.onload won't work(in very few cases)
   
-}, 1000);
+}, 3000);
