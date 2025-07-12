@@ -42,8 +42,6 @@
   position: fixed;
   top: 400px;
   left: 75px;
-  /* right: 5px;
-  bottom: 5px; */
   display: grid;
   grid-template-columns: auto 1fr; /* Left column auto-width, right column takes remaining space */
   gap: 2px 2px; 

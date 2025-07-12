@@ -1,0 +1,28 @@
+ .calculator {
+  border: 1px solid darkgreen;
+   z-index: 1000;
+   position: fixed;
+   top: 500px;
+   left: 110px;
+   border-radius: 8px;
+   padding: 10px;
+   max-width: 160px;
+   margin: auto;
+   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+ }
+
+ .calculator label {
+   margin-top: 15px;
+   margin-bottom: 5px;
+ }
+
+ .calculator input {
+   margin-top: 5px;
+   width: 60%;
+   box-sizing: border-box;
+ }
+
+ #result {
+   margin-top: 10px;
+   font-size: 1.1em;
+ }
