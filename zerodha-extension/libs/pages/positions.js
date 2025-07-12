@@ -47,13 +47,15 @@ const positions = (function () {
     };
 
     let openPositionsHeader = document.querySelector('section.open-positions.table-wrapper');
-    openPositionsHeader.insertAdjacentElement("afterend", wrapper)
+    if (openPositionsHeader) {
+      openPositionsHeader.insertAdjacentElement("afterend", wrapper)
 
-    makeDivDraggable();
-    refreshPositionsPnl();  // Refresh pnl on every click
-    startAutoRefresOfPnl(2); // This will auto refresh the Pnl panel after n number of minutes
-    showDataInTableFormat();
-    hideCompletedTrades();
+      makeDivDraggable();
+      refreshPositionsPnl();  // Refresh pnl on every click
+      startAutoRefresOfPnl(2); // This will auto refresh the Pnl panel after n number of minutes
+      showDataInTableFormat();
+      hideCompletedTrades();
+    }
   }
 
   function hideCompletedTrades() {
@@ -196,6 +198,6 @@ const positions = (function () {
     }
   }
 
-  return {createPositionsPanel}
+  return { createPositionsPanel }
 })();
 
