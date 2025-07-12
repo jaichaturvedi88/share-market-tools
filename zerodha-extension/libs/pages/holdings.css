@@ -11,12 +11,12 @@
    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
  }
 
- label {
+ .calculator label {
    margin-top: 15px;
    margin-bottom: 5px;
  }
 
- input {
+ .calculator input {
    margin-top: 5px;
    width: 60%;
    box-sizing: border-box;

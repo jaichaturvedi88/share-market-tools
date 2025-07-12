@@ -5,9 +5,9 @@ function createUi() {
   let url = location.href;
 
   if (url.includes("/positions")) {
-    createPositionsPanel();
+    positions.createPositionsPanel();
   } else if (url.includes("/holdings")){
-    createHoldingsUi()
+    holdings.createHoldingsUi()
   }
 }
 
