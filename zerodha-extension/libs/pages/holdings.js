@@ -3,7 +3,36 @@ console.log("Hi! It's from positions.js")
 const holdings = (function () {
   function createHoldingsUi() {
     createQuantityCalculator();
+    createCopyButtonForTradingView();
 
+  }
+
+  function createCopyButtonForTradingView() {
+    let wrapper = document.createElement('span');
+    wrapper.innerHTML = `<button id="copyTvWatchlist">Copy TV WL</button>`
+
+    let openPositionsHeader = document.querySelector('span.download');
+    openPositionsHeader.insertAdjacentElement("afterend", wrapper)
+
+    const button = document.querySelector('#copyTvWatchlist');
+    const stocksContainer = document.querySelector('div.table-wrapper')
+
+    button.addEventListener('click', () => {
+      copyWatchlist(stocksContainer);
+    })
+
+  }
+
+  function copyWatchlist(stocksContainer) {
+    let watchList = "";
+    const stocks = stocksContainer.querySelectorAll('tr')
+    stocks.forEach((row, idx) => {
+      if (idx > 0 && idx < stocks.length - 1) {
+        watchList += "NSE:" + row.querySelector('td > a > span').textContent + ",";
+      }
+    });
+    navigator.clipboard.writeText(watchList);
+    console.log('Watchlist copied to clipboard');
   }
 
   function createQuantityCalculator() {
@@ -99,7 +128,7 @@ const holdings = (function () {
     priceInput.addEventListener("input", calculateShares);
   }
 
-  return {createHoldingsUi}
+  return { createHoldingsUi }
 
 })();
 
