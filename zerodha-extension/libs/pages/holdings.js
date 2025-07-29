@@ -8,6 +8,9 @@ const holdings = (function () {
   }
 
   function createCopyButtonForTradingView() {
+    const isButtonPresent = document.querySelector('#copyTvWatchlist');
+    if (isButtonPresent) return;
+
     let wrapper = document.createElement('span');
     wrapper.innerHTML = `<button id="copyTvWatchlist">Copy TV WL</button>`
 

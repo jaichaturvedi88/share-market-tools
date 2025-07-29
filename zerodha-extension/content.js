@@ -2,9 +2,9 @@ console.log('Its from content.js file')
 
 function createUi(url) {
   const holdingsUI = document.querySelector('div.calculator');
+  holdingsUI?.remove();
   if (url.includes("/positions")) {
     positions.createPositionsPanel();
-    holdingsUI.remove();
   } else if (url.includes("/holdings")){
     holdings.createHoldingsUi()
   }
