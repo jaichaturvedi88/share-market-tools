@@ -1,13 +1,35 @@
 console.log('Its from content.js file')
 
-function addPositionsReport() {
-  let url = 'https://kite.zerodha.com/positions';
+function createUi(url) {
+  const holdingsUI = document.querySelector('div.calculator');
+  holdingsUI?.remove();
   if (url.includes("/positions")) {
-    createPositionsPanel();
+    positions.createPositionsPanel();
+  } else if (url.includes("/holdings")){
+    holdings.createHoldingsUi()
   }
 }
 
 setTimeout(() => {
-  addPositionsReport(); // writing this in settimeout because sometimes window.onload won't work(in very few cases)
+  createUi(location.href); // writing this in settimeout because sometimes window.onload won't work(in very few cases)
   
-}, 1000);
+}, 3000);
+
+let currentUrl = location.href;
+
+const observer = new MutationObserver(() => {
+  if (location.href !== currentUrl) {
+    console.log("URL changed:", location.href);
+    currentUrl = location.href;
+
+    // Run your logic here
+    onUrlChange(location.href);
+  }
+});
+
+observer.observe(document, { subtree: true, childList: true });
+
+function onUrlChange(newUrl) {
+  console.log("Reacting to new URL:", newUrl);
+  createUi(newUrl);
+}
