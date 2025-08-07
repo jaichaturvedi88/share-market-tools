@@ -163,7 +163,9 @@ function addButtonToPage(url) {
         if(platform === platform.FYERS){
           stockListAsTxt += "NSE:" + stockSymbol + "-EQ\n";
         }else{
-          stockListAsTxt += "NSE:" + stockSymbol + "-EQ,";
+          // This -EQ will give Composite Symbols. The result is quite different than actual NSE symbol's data
+          // stockListAsTxt += "NSE:" + stockSymbol + "-EQ,"; 
+          stockListAsTxt += "NSE:" + stockSymbol + ",";
         }
       }
     });
