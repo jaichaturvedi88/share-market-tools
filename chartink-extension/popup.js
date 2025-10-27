@@ -103,7 +103,8 @@ function addButtonToPage(url) {
 
         tableRows.forEach((row, idx) => {
           if (idx > 0) {
-            let stock = row.querySelector('td > span > div > a').innerText;
+            // let stock = row.querySelector('td > span > div > a').innerText;
+            let stock = row.querySelector('td a').innerText;
             if (isDownloadWatchList) 
               stockListAsTxt += "NSE:" + stock + "-EQ\n";
             else
