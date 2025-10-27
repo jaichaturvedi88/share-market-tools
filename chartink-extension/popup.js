@@ -103,7 +103,8 @@ function addButtonToPage(url) {
 
         tableRows.forEach((row, idx) => {
           if (idx > 0) {
-            let stock = row.querySelector('td > span > div > a').innerText;
+            // let stock = row.querySelector('td > span > div > a').innerText;
+            let stock = row.querySelector('td a').innerText;
             if (isDownloadWatchList) 
               stockListAsTxt += "NSE:" + stock + "-EQ\n";
             else
@@ -163,7 +164,9 @@ function addButtonToPage(url) {
         if(platform === platform.FYERS){
           stockListAsTxt += "NSE:" + stockSymbol + "-EQ\n";
         }else{
-          stockListAsTxt += "NSE:" + stockSymbol + "-EQ,";
+          // This -EQ will give Composite Symbols. The result is quite different than actual NSE symbol's data
+          // stockListAsTxt += "NSE:" + stockSymbol + "-EQ,"; 
+          stockListAsTxt += "NSE:" + stockSymbol + ",";
         }
       }
     });
