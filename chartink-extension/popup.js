@@ -35,20 +35,20 @@ function addButtonToPage(url) {
     // <input type="text" name="" id="watchlistName"></input>
     wrapper.innerHTML = `
                         <select id="screeners"> </select>
-                        <a id="downloadWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
+                        <a id="createFyersWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
                             <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Fyers WL</span>
                         </a>
                         <a id="createTvWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-1 md:px-2 rounded mr-2">
-                            <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Copy TV Watchlist</span>
+                            <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">TV Watchlist</span>
                         </a>
                       `;
 
     let screeners = wrapper.querySelector('#screeners');
-    let downloadWL = wrapper.querySelector('#downloadWL');
+    let createFyersWL = wrapper.querySelector('#createFyersWL');
     let copyTvWL = wrapper.querySelector('#createTvWL');
 
     let refreshButton = document.querySelector('div[title="Toggle Auto Refresh"');
-    refreshButton.insertAdjacentElement("afterend", downloadWL)
+    refreshButton.insertAdjacentElement("afterend", createFyersWL)
     refreshButton.insertAdjacentElement("afterend", copyTvWL)
     refreshButton.insertAdjacentElement("afterend", screeners)
 
@@ -63,11 +63,11 @@ function addButtonToPage(url) {
 
     let stockListAsTxt = "";
 
-    downloadWL.onclick = function () {
+    createFyersWL.onclick = function () {
       console.log('creating watchlist...');
       // var screenerName = document.querySelector('#watchlistName').value;
 
-      stockListAsTxt = getWatchlist(screenerList, screenerName, true);
+      stockListAsTxt = getWatchlist(screenerList, screenerName, "Fyers");
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     };
@@ -76,7 +76,7 @@ function addButtonToPage(url) {
     copyTvWL.onclick = function () {
       // var screenerName = document.querySelector('#watchlistName').value;
 
-      stockListAsTxt = getWatchlist(screenerList, screenerName, false);
+      stockListAsTxt = getWatchlist(screenerList, screenerName, "TradingView");
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     }
@@ -94,7 +94,7 @@ function addButtonToPage(url) {
     });
   }
 
-  function getWatchlist(screenerList, screenerName, isDownloadWatchList = true) {
+  function getWatchlist(screenerList, screenerName, watchlistType = "Fyers") {
     stockListAsTxt = '';
     screenerList.forEach(node => {
       if (node.innerText.trim() === screenerName.trim()) {
@@ -107,10 +107,10 @@ function addButtonToPage(url) {
             if (row.querySelector('td[data-field="symbol"] a')) {
               let stock = row.querySelector('td[data-field="symbol"] a').innerText;
               console.log(stock)
-              if (isDownloadWatchList)
-                stockListAsTxt += "NSE:" + stock + "-EQ\n";
+              if (watchlistType === "Fyers")
+                stockListAsTxt += "NSE:" + stock + "-EQ, ";
               else
-                stockListAsTxt += "NSE:" + stock + ",";
+                stockListAsTxt += "NSE:" + stock + ", ";
             }
           }
         });
