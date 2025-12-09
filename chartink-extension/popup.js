@@ -51,7 +51,7 @@ function addButtonToPage(url) {
     refreshButton.insertAdjacentElement("afterend", downloadWL)
     refreshButton.insertAdjacentElement("afterend", copyTvWL)
     refreshButton.insertAdjacentElement("afterend", screeners)
-    
+
     let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
 
     createWatchlistDropdown(screeners, screenerList)
@@ -66,25 +66,25 @@ function addButtonToPage(url) {
     downloadWL.onclick = function () {
       console.log('creating watchlist...');
       // var screenerName = document.querySelector('#watchlistName').value;
-  
+
       stockListAsTxt = getWatchlist(screenerList, screenerName, true);
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     };
 
-    
-    copyTvWL.onclick = function() {
+
+    copyTvWL.onclick = function () {
       // var screenerName = document.querySelector('#watchlistName').value;
-  
+
       stockListAsTxt = getWatchlist(screenerList, screenerName, false);
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     }
-  
+
     console.log(refreshButton);
   }
 
-  function createWatchlistDropdown(screeners, screenerList){
+  function createWatchlistDropdown(screeners, screenerList) {
     screenerList.forEach(screener => {
       let screenerName = screener.innerText;;
       const option = document.createElement("option");
@@ -104,18 +104,21 @@ function addButtonToPage(url) {
         tableRows.forEach((row, idx) => {
           if (idx > 0) {
             // let stock = row.querySelector('td > span > div > a').innerText;
-            let stock = row.querySelector('td a').innerText;
-            if (isDownloadWatchList) 
-              stockListAsTxt += "NSE:" + stock + "-EQ\n";
-            else
-              stockListAsTxt += "NSE:" + stock + ",";
+            if (row.querySelector('td[data-field="symbol"] a')) {
+              let stock = row.querySelector('td[data-field="symbol"] a').innerText;
+              console.log(stock)
+              if (isDownloadWatchList)
+                stockListAsTxt += "NSE:" + stock + "-EQ\n";
+              else
+                stockListAsTxt += "NSE:" + stock + ",";
+            }
           }
         });
       }
     });
     return stockListAsTxt;
   }
-  
+
   function createScreenerButton() {
     const Platform = Object.freeze({
       FYERS: "fyers",
@@ -130,13 +133,13 @@ function addButtonToPage(url) {
                           <i aria-hidden="true" ></i>Copy TV Wl
                         </button>
                       `;
-  
+
     let btnScanAsFyersWl = wrapper.querySelector('#copy-scan-as-fyers-wl');
     let btnScanAsTvWl = wrapper.querySelector('#copy-scan-as-tv-wl');
     btnScanAsFyersWl.onclick = function () {
       console.log('creating watchlist...');
       let stockListAsTxt = copyScanWatchlist(Platform.FYERS)
-      
+
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
       // createTextFile(stockListAsTxt);
@@ -144,26 +147,26 @@ function addButtonToPage(url) {
 
     btnScanAsTvWl.onclick = function () {
       let stockListAsTxt = copyScanWatchlist(Platform.FYERS)
-      
+
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     }
     let refreshButton = document.querySelector('button#view_backtest');
     refreshButton.insertAdjacentElement("afterend", btnScanAsFyersWl)
     refreshButton.insertAdjacentElement("afterend", btnScanAsTvWl)
-  
+
     console.log(refreshButton);
   }
 
-  function copyScanWatchlist(platform){
+  function copyScanWatchlist(platform) {
     let stockListAsTxt = "";
     let tableRows = document.querySelectorAll('table.scan_results_table tr')
     tableRows.forEach((row, idx) => {
       if (idx > 0) {  //Exclude header row
         let stockSymbol = row.querySelectorAll("td")[2].innerText; //Symbol is the 3rd column
-        if(platform === platform.FYERS){
+        if (platform === platform.FYERS) {
           stockListAsTxt += "NSE:" + stockSymbol + "-EQ\n";
-        }else{
+        } else {
           // This -EQ will give Composite Symbols. The result is quite different than actual NSE symbol's data
           // stockListAsTxt += "NSE:" + stockSymbol + "-EQ,"; 
           stockListAsTxt += "NSE:" + stockSymbol + ",";
