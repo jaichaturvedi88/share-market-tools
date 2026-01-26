@@ -20,12 +20,13 @@ BRAVE_PATHS = [
 LOG_PATH = "" ## Empty log path to disable logging
 
 FROM_DATE = "2026-01-01"
-TO_DATE = datetime.date.today().strftime("%Y-%m-%d")
+TO_DATE = "2026-01-05" # for testing
+# TO_DATE = datetime.date.today().strftime("%Y-%m-%d")
 
 NIFTY_INDEX_SYMBOL = "NSE:NIFTY50-INDEX"
 STRIKE_STEP = 50
 
-OUTPUT_DIR = "straddle_monthly_csv"
+OUTPUT_DIR = "..\\files\\straddle_monthly_csv"
 
 SYMBOL_MASTER_URL = "https://public.fyers.in/sym_details/NSE_FO.csv"
 SYMBOL_MASTER_CACHE_FILE = "NSE_FO.csv"

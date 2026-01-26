@@ -36,7 +36,7 @@ This project is designed to analyze and generate insights for straddle trading s
 1. Check `config.py` for `app_id` and `secret_key` - ensure they are properly configured. Get them from https://myapi.fyers.in/dashboard
 2. Run `01_fyers_login.py` - this will create the `fyers_token.json` file for authentication.
 3. Run `02_straddle_matrix.py` - this will create the `straddle_matrix_2026_01.csv` file to load in webpage.
-4. Run `03_server.py` - this will start the web server.
+4. Run `ui_server.py` - this will start the web server.
 5. Open the URL displayed in the terminal output from step 3 in your web browser.
 
 ## License
