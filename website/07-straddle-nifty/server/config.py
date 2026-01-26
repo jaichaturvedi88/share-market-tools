@@ -20,8 +20,8 @@ BRAVE_PATHS = [
 LOG_PATH = "" ## Empty log path to disable logging
 
 FROM_DATE = "2026-01-01"
-TO_DATE = "2026-01-05" # for testing
-# TO_DATE = datetime.date.today().strftime("%Y-%m-%d")
+# TO_DATE = "2026-01-05" # for testing
+TO_DATE = datetime.date.today().strftime("%Y-%m-%d")
 
 NIFTY_INDEX_SYMBOL = "NSE:NIFTY50-INDEX"
 STRIKE_STEP = 50
