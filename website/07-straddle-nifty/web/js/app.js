@@ -10,6 +10,8 @@ import { captureTableAsImage } from "./screenshot.js";
 const els = getEls();
 const state = createState();
 
+console.log("✅ app.js loaded");
+
 function setStatus(text, isError = false) {
   if (isError) {
     els.status.innerHTML = `<span class="error">${text}</span>`;
@@ -18,8 +20,31 @@ function setStatus(text, isError = false) {
   }
 }
 
+function updateStrikeRangeUI(rows) {
+  const el = document.getElementById("strikeRangeBar");
+  if (!el) return;
+
+  // rows are arrays, Strike is at index 2
+  const strikes = rows
+    .map(r => Number(r?.[2]))
+    .filter(v => Number.isFinite(v));
+
+  if (!strikes.length) {
+    el.textContent = "Strike Range: --";
+    return;
+  }
+
+  const minStrike = Math.min(...strikes);
+  const maxStrike = Math.max(...strikes);
+
+  el.textContent = `Strike Range: ${minStrike} – ${maxStrike}`;
+}
+
+
+
 function loadCSVText(text) {
   const rows = parseCSV(text);
+  updateStrikeRangeUI(rows);
 
   if (!rows.length) {
     setStatus("CSV is empty.", true);
@@ -95,4 +120,21 @@ els.snapBtn = document.getElementById("snapBtn");
 
 els.snapBtn.addEventListener("click", async () => {
   await captureTableAsImage(els.tableWrap);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const themeBtn = document.getElementById("themeToggle");
+
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+    if (themeBtn) themeBtn.textContent = "☀️ Light";
+  }
+
+  themeBtn?.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    const isDark = document.body.classList.contains("dark");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+    themeBtn.textContent = isDark ? "☀️ Light" : "🌙 Dark";
+  });
 });

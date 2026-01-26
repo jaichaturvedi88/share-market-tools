@@ -16,9 +16,17 @@ export async function captureTableAsImage(tableEl) {
     });
   }
 
+  // ✅ Detect theme
+  const isDark = document.body.classList.contains("dark");
+
   const canvas = await window.html2canvas(tableEl, {
-    scale: 2,          // higher quality
-    backgroundColor: "#ffffff",
+    scale: 2, // higher quality
+    backgroundColor: isDark ? "#0b1220" : "#ffffff", // ✅ FIXED
+    onclone: (clonedDoc) => {
+      // ✅ Ensure cloned DOM has same theme
+      if (isDark) clonedDoc.body.classList.add("dark");
+      else clonedDoc.body.classList.remove("dark");
+    },
   });
 
   const link = document.createElement("a");

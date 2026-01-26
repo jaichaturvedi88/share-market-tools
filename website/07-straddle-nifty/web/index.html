@@ -30,21 +30,31 @@
           <label>Lot size</label>
           <input id="lotSize" type="number" value="65" min="0" step="1" />
         </div>
-      </div>
 
-      <div class="card">
-        <label>Export Table</label>
-        <button id="exportBtn" type="button" class="primaryBtn">
-          CSV
-        </button>
-        <button id="snapBtn" class="primaryBtn" type="button">Snapshot 📸</button>
+        <div class="card">
+          <label>Export Table</label>
+          <button id="exportBtn" type="button" class="primaryBtn"> CSV </button>
+          <button id="snapBtn" class="primaryBtn" type="button">Snapshot 📸</button>
+        </div>
+
+        <div class="card">
+          <label>Theme</label>
+          <button id="themeToggle" class="theme-btn">🌙 Dark</button>
+        </div>
       </div>
     </div>
+
 
     <div class="miniTop">
       <div class="leftInfo">
         <div class="footer" id="status">Load a CSV to view data.</div>
         <div class="monthTitle" id="monthLabel"></div>
+      </div>
+
+      <div class="niftyStrikeRange card">
+        <div id="strikeRangeBar" class="strike-range-bar">
+          Strike Range: --
+        </div>
       </div>
 
       <div class="rightSearch card">

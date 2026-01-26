@@ -160,6 +160,8 @@ tr:hover td { background: #fafafa; }
 
 .rightSearch { padding: 8px 10px; }
 
+.niftyStrikeRange { padding: 8px 10px; }
+
 .searchRow { display: flex; gap: 6px; align-items: center; }
 
 .miniBtn {
@@ -182,3 +184,193 @@ tr:hover td { background: #fafafa; }
 
 .searchHintTop { font-size: 11px; color: var(--muted); font-weight: 500; }
 
+/* ✅ Theme button */
+.theme-btn{
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+
+
+
+/* ✅ Dark Mode */
+body.dark {
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+body.dark .theme-btn{
+  background: #111827;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.strike-range-bar{
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f5f5f5;
+}
+
+body.dark .strike-range-bar{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+/* =========================
+   ✅ DARK THEME - CARDS FIX
+   ========================= */
+
+/* ✅ Cards / Panels (any white boxes) */
+body.dark .card,
+body.dark .panel,
+body.dark .box,
+body.dark .control-card,
+body.dark .top-card,
+body.dark .toolbar-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.35);
+  color: #e5e7eb;
+}
+
+/* ✅ Inputs */
+body.dark input,
+body.dark select,
+body.dark textarea {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e5e7eb;
+}
+
+/* Placeholder text */
+body.dark input::placeholder,
+body.dark textarea::placeholder {
+  color: rgba(229, 231, 235, 0.6);
+}
+
+/* ✅ Buttons */
+body.dark button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e5e7eb;
+}
+
+body.dark button:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* =========================
+   ✅ DARK THEME TABLE FIX
+   ========================= */
+
+/* Table wrapper */
+body.dark .table-wrap,
+body.dark .table-container {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 8px;
+}
+
+/* Base table */
+body.dark table {
+  background: transparent;
+  color: #e5e7eb;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Header row */
+body.dark th {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(229, 231, 235, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+/* Normal cells */
+body.dark td {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(229, 231, 235, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Left sticky columns / row headers (if any) */
+body.dark td:first-child,
+body.dark th:first-child {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Soft hover */
+body.dark td:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* “Buy Day / diagonal highlight” cell (your dark blue blocks) */
+body.dark .buy-cell,
+body.dark .buy-premium,
+body.dark .diag-cell {
+  background: rgba(37, 99, 235, 0.35) !important;
+  border: 1px solid rgba(37, 99, 235, 0.55) !important;
+  color: #fff !important;
+  font-weight: 800;
+}
+
+/* Profit/Loss shading improvements (if you already color cells green/red) */
+body.dark .profit {
+  background: rgba(34, 197, 94, 0.14) !important;
+  color: rgba(229, 231, 235, 0.95) !important;
+}
+
+body.dark .loss {
+  background: rgba(239, 68, 68, 0.14) !important;
+  color: rgba(229, 231, 235, 0.95) !important;
+}
+
+/* Right-side summary columns (Max Profit / PnL etc.) */
+body.dark .summary-col,
+body.dark td.summary-col {
+  background: rgba(255, 255, 255, 0.04) !important;
+  font-weight: 700;
+}
+
+/* Remove harsh bright borders in dark mode */
+body.dark td,
+body.dark th {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ✅ Dark theme buyday (diagonal) cells */
+body.dark td.buyday {
+  background: rgba(37, 99, 235, 0.35) !important;
+  border: 1px solid rgba(37, 99, 235, 0.55) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+/* =========================
+   ✅ DARK MODE: Strike Column + Match Fix
+   ========================= */
+
+/* Strike column text */
+body.dark td.strikecol {
+  color: rgba(229, 231, 235, 0.95) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* When strike matches search */
+body.dark td.strikecol.match {
+  background: rgba(250, 204, 21, 0.18) !important;  /* soft yellow */
+  color: #fef9c3 !important;                        /* readable yellow text */
+  font-weight: 800 !important;
+  border-left: 3px solid rgba(250, 204, 21, 0.85) !important;
+}
