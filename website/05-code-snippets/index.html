@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Snippets </title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body data-bs-theme="dark">
+  <!-- LEFT SIDE -->
+  <div class="left">
+    <input type="text" id="search" placeholder="Search snippets...">
+    <ul id="snippetList"></ul>
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="right">
+    <div class="header">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault"
+          onclick="toggleTheme()">
+      </div>
+    </div>
+    <br />
+    <div class="code-container">
+      <div class="code-header">
+        <span>Code Snippet</span>
+        <button id="copyBtn" class="copy-btn">📋</button>
+      </div>
+      <pre id="previewArea" class="code-block">
+    Select a snippet to view its content
+      </pre>
+    </div>
+  </div>
+
+  <!-- Hidden Snippet Storage -->
+  <div id="snippets">
+    <div class="hiddenSnippet" data-name="streak">
+      //This script extracts all stock symbols from the first column of the results table on the Streak scanner page,
+      // formats them either for Fyers (NSE:SYMBOL-EQ,) or TradingView (NSE:SYMBOL,),
+      // and then automatically copies the formatted output to clipboard and prints it in the console for easy use.
+      // It works on the below Streak scanner page:
+      //https://www.streak.tech/explore/scanner/possible-uptrend?tab=discover
+
+      function getSymbols(src, type) {
+      const result = [...document.querySelectorAll('tbody tr td:first-child p:first-child')]
+      .map(el => type === "Fyers"
+      ? `NSE:${el.textContent.trim()}-EQ,`
+      : `NSE:${el.textContent.trim()},`)
+      .join('\n');
+      copy(result);
+      console.log(result);
+      }
+
+      getSymbols("anything","Fyers");
+      getSymbols("anything","TV");
+    </div>
+
+    <div class="hiddenSnippet" data-name="JavaScript TimeStamp">
+      const now = new Date();
+      const formattedCustom = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2,
+      '0')}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2,
+      '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      console.log(formattedCustom)
+    </div>
+
+    <div class="hiddenSnippet" data-name="Message Alert">
+      function showAlert(){
+      alert("Hello World!");
+      }
+      showAlert();
+    </div>
+  </div>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+  <script src="../../global.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
