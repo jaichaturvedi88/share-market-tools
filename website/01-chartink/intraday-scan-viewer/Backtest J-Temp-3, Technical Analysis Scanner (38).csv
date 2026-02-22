@@ -1,0 +1,259 @@
+date,symbol,marketcapname,sector
+06-02-2026 1:30 pm,CIPLA,Largecap,Healthcare
+06-02-2026 2:00 pm,TORNTPOWER,Largecap,Power & Utilities
+06-02-2026 2:15 pm,TRENT,Largecap,Consumer Discretionary
+06-02-2026 2:15 pm,TATASTEEL,Largecap,Metals & Mining
+06-02-2026 2:30 pm,SAIL,Largecap,Metals & Mining
+06-02-2026 2:45 pm,ONGC,Largecap,Energy
+06-02-2026 3:00 pm,LICHSGFIN,Largecap,Financials
+09-02-2026 9:15 am,KOTAKBANK,Largecap,Bank
+09-02-2026 9:15 am,LICHSGFIN,Largecap,Financials
+09-02-2026 9:15 am,SWIGGY,Largecap,I.T
+09-02-2026 9:15 am,JUBLFOOD,Largecap,Consumer Discretionary
+09-02-2026 9:15 am,AMBER,Largecap,Consumer Discretionary
+09-02-2026 9:30 am,CROMPTON,Midcap,Consumer Discretionary
+09-02-2026 9:45 am,TRENT,Largecap,Consumer Discretionary
+09-02-2026 10:15 am,UNITDSPR,Largecap,FMCG
+09-02-2026 10:30 am,HINDUNILVR,Largecap,FMCG
+09-02-2026 10:30 am,HAVELLS,Largecap,Consumer Discretionary
+09-02-2026 10:45 am,JSWENERGY,Largecap,Power & Utilities
+09-02-2026 10:45 am,ICICIGI,Largecap,Financials
+09-02-2026 11:15 am,SAIL,Largecap,Metals & Mining
+09-02-2026 12:00 pm,PATANJALI,Largecap,FMCG
+09-02-2026 12:00 pm,AXISBANK,Largecap,Bank
+09-02-2026 12:15 pm,PIDILITIND,Largecap,Chemicals
+09-02-2026 12:30 pm,BAJFINANCE,Largecap,Financials
+09-02-2026 12:45 pm,TATACONSUM,Largecap,FMCG
+09-02-2026 1:00 pm,BAJAJHLDNG,Largecap,Financials
+09-02-2026 1:00 pm,HINDUNILVR,Largecap,FMCG
+09-02-2026 1:00 pm,APOLLOHOSP,Largecap,Healthcare
+09-02-2026 1:00 pm,PIIND,Largecap,Chemicals
+09-02-2026 1:15 pm,LICHSGFIN,Largecap,Financials
+09-02-2026 1:15 pm,MFSL,Largecap,Miscellaneous
+09-02-2026 1:15 pm,AUBANK,Largecap,Bank
+09-02-2026 1:45 pm,CUMMINSIND,Largecap,Industrials
+09-02-2026 2:15 pm,CIPLA,Largecap,Healthcare
+09-02-2026 2:15 pm,INDUSTOWER,Largecap,Telecom
+09-02-2026 2:15 pm,NYKAA,Largecap,I.T
+09-02-2026 2:45 pm,DRREDDY,Largecap,Healthcare
+09-02-2026 2:45 pm,TATACONSUM,Largecap,FMCG
+09-02-2026 3:00 pm,TORNTPOWER,Largecap,Power & Utilities
+09-02-2026 3:15 pm,TITAN,Largecap,Consumer Discretionary
+09-02-2026 3:15 pm,LICI,Largecap,Financials
+09-02-2026 3:15 pm,DIVISLAB,Largecap,Healthcare
+09-02-2026 3:15 pm,UNOMINDA,Largecap,Auto
+10-02-2026 9:15 am,BLUESTARCO,Largecap,Consumer Discretionary
+10-02-2026 9:15 am,EXIDEIND,Largecap,Auto
+10-02-2026 9:15 am,GRASIM,Largecap,Textiles
+10-02-2026 9:15 am,TATAPOWER,Largecap,Power & Utilities
+10-02-2026 9:15 am,M&M,Largecap,Auto
+10-02-2026 9:15 am,PPLPHARMA,Largecap,Healthcare
+10-02-2026 9:15 am,KFINTECH,Midcap,Financials
+10-02-2026 9:15 am,GAIL,Largecap,Energy
+10-02-2026 9:15 am,AXISBANK,Largecap,Bank
+10-02-2026 9:15 am,MARUTI,Largecap,Auto
+10-02-2026 9:15 am,JUBLFOOD,Largecap,Consumer Discretionary
+10-02-2026 9:15 am,PGEL,Midcap,Consumer Discretionary
+10-02-2026 9:15 am,CROMPTON,Midcap,Consumer Discretionary
+10-02-2026 9:15 am,BSE,Largecap,Financials
+10-02-2026 9:15 am,HUDCO,Largecap,Financials
+10-02-2026 9:15 am,CDSL,Largecap,Financials
+10-02-2026 9:15 am,AMBER,Largecap,Consumer Discretionary
+10-02-2026 9:15 am,IRCTC,Largecap,Transportation
+10-02-2026 9:15 am,ANGELONE,Largecap,Financials
+10-02-2026 9:30 am,LT,Largecap,Realty
+10-02-2026 9:30 am,INDHOTEL,Largecap,Services
+10-02-2026 9:30 am,PHOENIXLTD,Largecap,Realty
+10-02-2026 9:30 am,IREDA,Largecap,Financials
+10-02-2026 9:30 am,OBEROIRLTY,Largecap,Realty
+10-02-2026 9:30 am,APLAPOLLO,Largecap,Industrials
+10-02-2026 9:30 am,INOXWIND,Midcap,Industrials
+10-02-2026 9:30 am,DMART,Largecap,Consumer Discretionary
+10-02-2026 9:30 am,CAMS,Midcap,Financials
+10-02-2026 9:45 am,MFSL,Largecap,Miscellaneous
+10-02-2026 9:45 am,TATASTEEL,Largecap,Metals & Mining
+10-02-2026 9:45 am,ASHOKLEY,Largecap,Auto
+10-02-2026 9:45 am,TMPV,Largecap,Auto
+10-02-2026 9:45 am,BHARTIARTL,Largecap,Telecom-Service
+10-02-2026 9:45 am,BANDHANBNK,Largecap,Bank
+10-02-2026 10:00 am,JSWSTEEL,Largecap,Metals & Mining
+10-02-2026 10:00 am,HINDUNILVR,Largecap,FMCG
+10-02-2026 10:00 am,MARICO,Largecap,FMCG
+10-02-2026 10:00 am,JINDALSTEL,Largecap,Metals & Mining
+10-02-2026 10:15 am,LICHSGFIN,Largecap,Financials
+10-02-2026 10:15 am,HAVELLS,Largecap,Consumer Discretionary
+10-02-2026 10:15 am,CROMPTON,Midcap,Consumer Discretionary
+10-02-2026 10:30 am,ICICIGI,Largecap,Financials
+10-02-2026 10:45 am,KOTAKBANK,Largecap,Bank
+10-02-2026 10:45 am,360ONE,Largecap,Financials
+10-02-2026 11:00 am,PPLPHARMA,Largecap,Healthcare
+10-02-2026 11:00 am,IREDA,Largecap,Financials
+10-02-2026 11:00 am,INDIANB,Largecap,Bank
+10-02-2026 11:15 am,PETRONET,Largecap,Energy
+10-02-2026 11:15 am,PGEL,Midcap,Consumer Discretionary
+10-02-2026 11:15 am,CAMS,Midcap,Financials
+10-02-2026 11:30 am,NUVAMA,Largecap,Financials
+10-02-2026 11:45 am,IREDA,Largecap,Financials
+10-02-2026 11:45 am,TVSMOTOR,Largecap,Auto
+10-02-2026 12:00 pm,SONACOMS,Largecap,Auto
+10-02-2026 12:00 pm,NYKAA,Largecap,I.T
+10-02-2026 12:15 pm,MANAPPURAM,Largecap,Financials
+10-02-2026 12:15 pm,ABCAPITAL,Largecap,Financials
+10-02-2026 12:30 pm,ITC,Largecap,FMCG
+10-02-2026 12:30 pm,KAYNES,Largecap,Consumer Discretionary
+10-02-2026 12:30 pm,DALBHARAT,Largecap,Building Materials
+10-02-2026 12:45 pm,BANKINDIA,Largecap,Bank
+10-02-2026 12:45 pm,INDIANB,Largecap,Bank
+10-02-2026 12:45 pm,RBLBANK,Midcap,Bank
+10-02-2026 12:45 pm,360ONE,Largecap,Financials
+10-02-2026 1:00 pm,DABUR,Largecap,FMCG
+10-02-2026 1:00 pm,COLPAL,Largecap,FMCG
+10-02-2026 1:00 pm,GODREJCP,Largecap,FMCG
+10-02-2026 1:00 pm,ICICIGI,Largecap,Financials
+10-02-2026 1:15 pm,AUBANK,Largecap,Bank
+10-02-2026 1:30 pm,BHEL,Largecap,Industrials
+10-02-2026 1:30 pm,ALKEM,Largecap,Healthcare
+10-02-2026 1:30 pm,BSE,Largecap,Financials
+10-02-2026 2:00 pm,MOTHERSON,Largecap,Auto
+10-02-2026 2:00 pm,MARICO,Largecap,FMCG
+10-02-2026 2:00 pm,JSWENERGY,Largecap,Power & Utilities
+10-02-2026 2:00 pm,OBEROIRLTY,Largecap,Realty
+10-02-2026 2:00 pm,AUBANK,Largecap,Bank
+10-02-2026 2:15 pm,BAJAJHLDNG,Largecap,Financials
+10-02-2026 2:45 pm,ONGC,Largecap,Energy
+10-02-2026 2:45 pm,ASHOKLEY,Largecap,Auto
+10-02-2026 2:45 pm,HINDUNILVR,Largecap,FMCG
+10-02-2026 2:45 pm,MOTHERSON,Largecap,Auto
+10-02-2026 3:00 pm,PREMIERENE,Largecap,Services
+10-02-2026 3:00 pm,BIOCON,Smallcap,Healthcare
+10-02-2026 3:15 pm,GRASIM,Largecap,Textiles
+11-02-2026 9:15 am,SAIL,Largecap,Metals & Mining
+11-02-2026 9:15 am,TITAN,Largecap,Consumer Discretionary
+11-02-2026 9:15 am,TATAPOWER,Largecap,Power & Utilities
+11-02-2026 9:15 am,M&M,Largecap,Auto
+11-02-2026 9:15 am,TMPV,Largecap,Auto
+11-02-2026 9:15 am,BRITANNIA,Largecap,FMCG
+11-02-2026 9:15 am,EICHERMOT,Largecap,Auto
+11-02-2026 9:15 am,MOTHERSON,Largecap,Auto
+11-02-2026 9:15 am,PIIND,Largecap,Chemicals
+11-02-2026 9:15 am,GLENMARK,Largecap,Healthcare
+11-02-2026 9:15 am,TVSMOTOR,Largecap,Auto
+11-02-2026 9:15 am,UNITDSPR,Largecap,FMCG
+11-02-2026 9:15 am,ASTRAL,Largecap,Plastic products
+11-02-2026 9:15 am,FORTIS,Largecap,Healthcare
+11-02-2026 9:15 am,MUTHOOTFIN,Largecap,Financials
+11-02-2026 9:15 am,ALKEM,Largecap,Healthcare
+11-02-2026 9:15 am,DMART,Largecap,Consumer Discretionary
+11-02-2026 9:45 am,MARUTI,Largecap,Auto
+11-02-2026 9:45 am,INDUSTOWER,Largecap,Telecom
+11-02-2026 9:45 am,CROMPTON,Midcap,Consumer Discretionary
+11-02-2026 10:00 am,LAURUSLABS,Largecap,Healthcare
+11-02-2026 10:15 am,SBIN,Largecap,Bank
+11-02-2026 10:15 am,PHOENIXLTD,Largecap,Realty
+11-02-2026 10:15 am,KAYNES,Largecap,Consumer Discretionary
+11-02-2026 10:15 am,DIVISLAB,Largecap,Healthcare
+11-02-2026 10:15 am,UNOMINDA,Largecap,Auto
+11-02-2026 10:15 am,PGEL,Midcap,Consumer Discretionary
+11-02-2026 10:30 am,BLUESTARCO,Largecap,Consumer Discretionary
+11-02-2026 10:30 am,BAJAJHLDNG,Largecap,Financials
+11-02-2026 10:30 am,SHRIRAMFIN,Largecap,Financials
+11-02-2026 10:30 am,UNITDSPR,Largecap,FMCG
+11-02-2026 10:30 am,ALKEM,Largecap,Healthcare
+11-02-2026 10:30 am,TIINDIA,Largecap,Industrials
+11-02-2026 10:45 am,LUPIN,Largecap,Healthcare
+11-02-2026 10:45 am,BANDHANBNK,Largecap,Bank
+11-02-2026 10:45 am,CAMS,Midcap,Financials
+11-02-2026 10:45 am,SONACOMS,Largecap,Auto
+11-02-2026 11:00 am,CIPLA,Largecap,Healthcare
+11-02-2026 11:15 am,ICICIGI,Largecap,Financials
+11-02-2026 11:15 am,SBICARD,Largecap,Financials
+11-02-2026 11:30 am,PPLPHARMA,Largecap,Healthcare
+11-02-2026 11:45 am,SOLARINDS,Largecap,Aerospace & Defence
+11-02-2026 12:00 pm,GRASIM,Largecap,Textiles
+11-02-2026 12:00 pm,PIIND,Largecap,Chemicals
+11-02-2026 12:15 pm,INDHOTEL,Largecap,Services
+11-02-2026 12:15 pm,IEX,Midcap,Financials
+11-02-2026 12:30 pm,BHARATFORG,Largecap,Industrials
+11-02-2026 12:45 pm,IEX,Midcap,Financials
+11-02-2026 1:15 pm,DIVISLAB,Largecap,Healthcare
+11-02-2026 1:15 pm,PETRONET,Largecap,Energy
+11-02-2026 1:15 pm,CAMS,Midcap,Financials
+11-02-2026 1:30 pm,GRASIM,Largecap,Textiles
+11-02-2026 1:30 pm,TATASTEEL,Largecap,Metals & Mining
+11-02-2026 1:30 pm,BAJAJ-AUTO,Largecap,Auto
+11-02-2026 1:30 pm,CDSL,Largecap,Financials
+11-02-2026 2:00 pm,INDHOTEL,Largecap,Services
+11-02-2026 2:00 pm,KFINTECH,Midcap,Financials
+11-02-2026 2:00 pm,GODREJCP,Largecap,FMCG
+11-02-2026 2:15 pm,ONGC,Largecap,Energy
+11-02-2026 2:15 pm,BSE,Largecap,Financials
+11-02-2026 2:45 pm,SHRIRAMFIN,Largecap,Financials
+11-02-2026 2:45 pm,PPLPHARMA,Largecap,Healthcare
+11-02-2026 3:00 pm,SOLARINDS,Largecap,Aerospace & Defence
+11-02-2026 3:00 pm,AMBER,Largecap,Consumer Discretionary
+11-02-2026 3:00 pm,360ONE,Largecap,Financials
+12-02-2026 9:30 am,SBIN,Largecap,Bank
+12-02-2026 9:30 am,TATASTEEL,Largecap,Metals & Mining
+12-02-2026 9:45 am,INDUSTOWER,Largecap,Telecom
+12-02-2026 9:45 am,LAURUSLABS,Largecap,Healthcare
+12-02-2026 10:00 am,FORTIS,Largecap,Healthcare
+12-02-2026 10:15 am,MUTHOOTFIN,Largecap,Financials
+12-02-2026 10:15 am,RBLBANK,Midcap,Bank
+12-02-2026 10:15 am,SBICARD,Largecap,Financials
+12-02-2026 10:30 am,INDHOTEL,Largecap,Services
+12-02-2026 10:45 am,BRITANNIA,Largecap,FMCG
+12-02-2026 10:45 am,PHOENIXLTD,Largecap,Realty
+12-02-2026 10:45 am,MOTHERSON,Largecap,Auto
+12-02-2026 10:45 am,ASTRAL,Largecap,Plastic products
+12-02-2026 10:45 am,TIINDIA,Largecap,Industrials
+12-02-2026 11:00 am,TORNTPHARM,Largecap,Healthcare
+12-02-2026 11:30 am,GODREJCP,Largecap,FMCG
+12-02-2026 11:30 am,UNOMINDA,Largecap,Auto
+12-02-2026 11:45 am,MANKIND,Largecap,Healthcare
+12-02-2026 11:45 am,APLAPOLLO,Largecap,Industrials
+12-02-2026 12:15 pm,BOSCHLTD,Largecap,Auto
+12-02-2026 12:15 pm,MANKIND,Largecap,Healthcare
+12-02-2026 12:15 pm,POLICYBZR,Largecap,I.T
+12-02-2026 12:30 pm,APOLLOHOSP,Largecap,Healthcare
+12-02-2026 12:30 pm,GLENMARK,Largecap,Healthcare
+12-02-2026 12:30 pm,PGEL,Midcap,Consumer Discretionary
+12-02-2026 12:45 pm,HUDCO,Largecap,Financials
+12-02-2026 1:15 pm,DABUR,Largecap,FMCG
+12-02-2026 1:15 pm,ZYDUSLIFE,Largecap,Healthcare
+12-02-2026 1:15 pm,IEX,Midcap,Financials
+12-02-2026 1:30 pm,TATAPOWER,Largecap,Power & Utilities
+12-02-2026 1:30 pm,BHARATFORG,Largecap,Industrials
+12-02-2026 2:00 pm,SIEMENS,Largecap,Industrials
+12-02-2026 2:15 pm,BEL,Largecap,Aerospace & Defence
+12-02-2026 2:30 pm,MUTHOOTFIN,Largecap,Financials
+12-02-2026 3:00 pm,MANKIND,Largecap,Healthcare
+13-02-2026 9:15 am,BAJFINANCE,Largecap,Financials
+13-02-2026 9:15 am,BIOCON,Smallcap,Healthcare
+13-02-2026 10:30 am,APOLLOHOSP,Largecap,Healthcare
+13-02-2026 11:30 am,EICHERMOT,Largecap,Auto
+13-02-2026 11:45 am,POLICYBZR,Largecap,I.T
+13-02-2026 12:00 pm,TIINDIA,Largecap,Industrials
+13-02-2026 12:15 pm,ZYDUSLIFE,Largecap,Healthcare
+13-02-2026 12:15 pm,LAURUSLABS,Largecap,Healthcare
+13-02-2026 12:30 pm,BIOCON,Smallcap,Healthcare
+13-02-2026 1:00 pm,RBLBANK,Midcap,Bank
+13-02-2026 1:45 pm,BAJFINANCE,Largecap,Financials
+13-02-2026 2:00 pm,SBILIFE,Largecap,Financials
+13-02-2026 3:15 pm,BAJFINANCE,Largecap,Financials
+13-02-2026 3:15 pm,TORNTPOWER,Largecap,Power & Utilities
+16-02-2026 9:15 am,TORNTPHARM,Largecap,Healthcare
+16-02-2026 9:15 am,PPLPHARMA,Largecap,Healthcare
+16-02-2026 9:30 am,BIOCON,Smallcap,Healthcare
+16-02-2026 9:45 am,MANKIND,Largecap,Healthcare
+16-02-2026 9:45 am,TIINDIA,Largecap,Industrials
+16-02-2026 10:15 am,TORNTPOWER,Largecap,Power & Utilities
+16-02-2026 11:00 am,SIEMENS,Largecap,Industrials
+16-02-2026 12:15 pm,HAVELLS,Largecap,Consumer Discretionary
+16-02-2026 2:00 pm,GMRAIRPORT,Largecap,Miscellaneous
+16-02-2026 2:30 pm,NTPC,Largecap,Power & Utilities
+16-02-2026 2:45 pm,CIPLA,Largecap,Healthcare
+16-02-2026 2:45 pm,JSWENERGY,Largecap,Power & Utilities
+16-02-2026 3:00 pm,LTF,Largecap,Financials
+16-02-2026 3:15 pm,MFSL,Largecap,Miscellaneous
+16-02-2026 3:15 pm,ASTRAL,Largecap,Plastic products
+16-02-2026 3:15 pm,BAJAJFINSV,Largecap,Financials
