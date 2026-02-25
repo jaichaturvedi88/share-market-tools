@@ -47,6 +47,16 @@ function addButtonToPage(url) {
     let createFyersWL = wrapper.querySelector('#createFyersWL');
     let copyTvWL = wrapper.querySelector('#createTvWL');
 
+    Object.assign(screeners.style, {
+      backgroundColor: '#111827',
+      color: '#e5e7eb',
+      border: '1px solid #626a75',
+      borderRadius: '6px',
+      padding: '6px 10px',
+      marginRight: '8px',
+      minWidth: '220px'
+    });
+
     let refreshButton = document.querySelector('div[title="Toggle Auto Refresh"');
     refreshButton.insertAdjacentElement("afterend", createFyersWL)
     refreshButton.insertAdjacentElement("afterend", copyTvWL)
@@ -90,6 +100,8 @@ function addButtonToPage(url) {
       const option = document.createElement("option");
       option.value = screenerName;
       option.textContent = screenerName;
+      option.style.backgroundColor = '#111827';
+      option.style.color = '#e5e7eb';
       screeners.appendChild(option);
     });
   }
