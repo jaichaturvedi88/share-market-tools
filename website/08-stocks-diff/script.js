@@ -62,6 +62,20 @@ function processTables() {
 }
 
 /**
+ * Swap watchlists between textarea A and B, then refresh tables
+ */
+function swapWatchlists() {
+  const textarea1 = document.getElementById('textarea1');
+  const textarea2 = document.getElementById('textarea2');
+
+  const temp = textarea1.value;
+  textarea1.value = textarea2.value;
+  textarea2.value = temp;
+
+  processTables();
+}
+
+/**
  * Populate table with stocks
  */
 function populateTable(tableId, stocks) {
@@ -208,4 +222,5 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('textarea1').addEventListener('blur', processTables);
   document.getElementById('textarea2').addEventListener('change', processTables);
   document.getElementById('textarea2').addEventListener('blur', processTables);
+  document.getElementById('swapBtn').addEventListener('click', swapWatchlists);
 });
