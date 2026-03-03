@@ -796,6 +796,8 @@
             }
             return toMinutes(a.timeRaw) - toMinutes(b.timeRaw);
           });
+        } else {
+          rows.sort((a, b) => toMinutes(a.timeRaw) - toMinutes(b.timeRaw));
         }
 
         selectedDateEl.textContent = `Date: ${activeDate}`;
@@ -1100,6 +1102,7 @@
       });
       timeViewBtn.addEventListener("click", () => {
         tableViewMode = "time";
+        timeViewSortState = { key: null, dir: null };
         renderTable();
       });
       chartViewBtn.addEventListener("click", () => {
