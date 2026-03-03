@@ -28,16 +28,32 @@
     <h1 class="mb-4">Stock Diff Tool</h1>
     
     <!-- Input Text Areas -->
-    <div class="row mb-4">
-      <div class="col-md-6">
-        <label for="textarea1" class="form-label">Watchlist A</label>
-        <textarea class="form-control" id="textarea1" rows="4" 
-          placeholder="Paste stocks in format: NSE:EICHERMOT-EQ, NSE:JUBLFOOD-EQ, NSE:BHEL-EQ"></textarea>
+    <div class="mb-4">
+      <div class="row g-2 mb-1">
+        <div class="col">
+          <label for="textarea1" class="form-label mb-0">Watchlist A</label>
+        </div>
+        <div class="col-auto d-flex justify-content-center px-1" aria-hidden="true">
+          <button type="button" class="btn btn-outline-primary btn-sm swap-btn invisible" tabindex="-1">⇄</button>
+        </div>
+        <div class="col">
+          <label for="textarea2" class="form-label mb-0">Watchlist B</label>
+        </div>
       </div>
-      <div class="col-md-6">
-        <label for="textarea2" class="form-label">Watchlist B</label>
-        <textarea class="form-control" id="textarea2" rows="4" 
-          placeholder="Paste stocks in format: NSE:EICHERMOT-EQ, NSE:JUBLFOOD-EQ, NSE:BHEL-EQ"></textarea>
+      <div class="row align-items-center g-2">
+        <div class="col">
+          <textarea class="form-control" id="textarea1" rows="4" 
+            placeholder="Paste stocks in format: NSE:EICHERMOT-EQ, NSE:JUBLFOOD-EQ, NSE:BHEL-EQ"></textarea>
+        </div>
+        <div class="col-auto d-flex justify-content-center px-1">
+          <button type="button" id="swapBtn" class="btn btn-outline-primary btn-sm swap-btn" aria-label="Swap watchlists" title="Swap watchlists">
+            ⇄
+          </button>
+        </div>
+        <div class="col">
+          <textarea class="form-control" id="textarea2" rows="4" 
+            placeholder="Paste stocks in format: NSE:EICHERMOT-EQ, NSE:JUBLFOOD-EQ, NSE:BHEL-EQ"></textarea>
+        </div>
       </div>
     </div>
 
