@@ -31,16 +31,38 @@ function addButtonToPage(url) {
   }
 
   function createDashboardButton() {
+    const targetContainer = document.querySelector('#root > div > section:nth-child(2) > div.mt-4 > div.mx-5 > div');
+    if (!targetContainer) {
+      console.error('ChartInk extension: target container not found for dashboard controls.');
+      return;
+    }
+
+    const existingWrapper = targetContainer.querySelector('#ci-dashboard-tools');
+    if (existingWrapper) {
+      existingWrapper.remove();
+    }
+
     let wrapper = document.createElement('div');
+    wrapper.id = 'ci-dashboard-tools';
+    Object.assign(wrapper.style, {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      marginTop: '8px',
+      marginLeft: '16px',
+      flexWrap: 'wrap',
+      order: '999'
+    });
+
     // <input type="text" name="" id="watchlistName"></input>
     wrapper.innerHTML = `
                         <select id="screeners"> </select>
-                        <a id="createFyersWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
-                            <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Fyers WL</span>
-                        </a>
                         <a id="createTvWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-1 md:px-2 rounded mr-2">
                             <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">TV Watchlist</span>
                         </a>
+              <a id="createFyersWL" class="bg-blue-500 cursor-pointer hover:bg-blue-700 text-white font-bold py-1 px-2 md:py-2 md:px-4 rounded mr-2">
+                <i class="fas fa-arrows-alt"></i><span class="hidden md:inline">Fyers WL</span>
+              </a>
                       `;
 
     let screeners = wrapper.querySelector('#screeners');
@@ -57,16 +79,13 @@ function addButtonToPage(url) {
       minWidth: '220px'
     });
 
-    let refreshButton = document.querySelector('div[title="Toggle Auto Refresh"');
-    refreshButton.insertAdjacentElement("afterend", createFyersWL)
-    refreshButton.insertAdjacentElement("afterend", copyTvWL)
-    refreshButton.insertAdjacentElement("afterend", screeners)
+    targetContainer.appendChild(wrapper);
 
     let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
 
     createWatchlistDropdown(screeners, screenerList)
 
-    let screenerName = '';
+    let screenerName = screeners.value || '';
     screeners.addEventListener("change", () => {
       screenerName = screeners.value;
     });
@@ -90,8 +109,7 @@ function addButtonToPage(url) {
       navigator.clipboard.writeText(stockListAsTxt);
       console.log(stockListAsTxt)
     }
-
-    console.log(refreshButton);
+    console.log('ChartInk extension: dashboard controls appended.', targetContainer);
   }
 
   function createWatchlistDropdown(screeners, screenerList) {
