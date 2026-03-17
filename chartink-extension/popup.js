@@ -81,40 +81,95 @@ function addButtonToPage(url) {
 
     targetContainer.appendChild(wrapper);
 
-    let screenerList = document.querySelectorAll("div.truncate:not(.text-gray-600)");
+    function getScreenerListNodes() {
+      const invalidLabels = new Set(["symbol", "ltp", "% ch", "volume"]);
+      const isValidScreenerTitle = (node) => {
+        if (!node) return false;
+        const text = (node.innerText || '').trim();
+        if (!text) return false;
+        if (invalidLabels.has(text.toLowerCase())) return false;
+        if (node.closest('table, thead, tbody, tr, th, td')) return false;
+        return true;
+      };
 
-    createWatchlistDropdown(screeners, screenerList)
+      const widgetTitles = [];
+      const widgets = document.querySelectorAll('.vue-grid-item');
+      widgets.forEach((widget) => {
+        const candidates = widget.querySelectorAll('.truncate.font-semibold.leading-4, .truncate.font-semibold, .truncate');
+        for (const node of candidates) {
+          if (isValidScreenerTitle(node)) {
+            widgetTitles.push(node);
+            break;
+          }
+        }
+      });
 
-    let screenerName = screeners.value || '';
-    screeners.addEventListener("change", () => {
-      screenerName = screeners.value;
-    });
+      if (widgetTitles.length > 0) {
+        return widgetTitles;
+      }
 
-    let stockListAsTxt = "";
+      const fallback = document.querySelectorAll('.truncate.font-semibold.leading-4');
+      return Array.from(fallback).filter(isValidScreenerTitle);
+    }
 
-    createFyersWL.onclick = function () {
-      console.log('creating watchlist...');
-      // var screenerName = document.querySelector('#watchlistName').value;
+    const maxRetries = 25;
+    const retryDelayMs = 250;
 
-      stockListAsTxt = getWatchlist(screenerList, screenerName, "Fyers");
-      navigator.clipboard.writeText(stockListAsTxt);
-      console.log(stockListAsTxt)
+    const initializeWatchlistControls = (retryCount = 0) => {
+      const screenerList = getScreenerListNodes();
+
+      if (!screenerList || screenerList.length === 0) {
+        if (retryCount < maxRetries) {
+          setTimeout(() => initializeWatchlistControls(retryCount + 1), retryDelayMs);
+        } else {
+          console.warn('ChartInk extension: screener list is empty after retries.');
+        }
+        return;
+      }
+
+      console.log(screenerList);
+
+      createWatchlistDropdown(screeners, screenerList)
+
+      let screenerName = screeners.value || '';
+      screeners.addEventListener("change", () => {
+        screenerName = screeners.value;
+      });
+
+      let stockListAsTxt = "";
+
+      createFyersWL.onclick = function () {
+        console.log('creating watchlist...');
+        // var screenerName = document.querySelector('#watchlistName').value;
+
+        stockListAsTxt = getWatchlist(screenerList, screenerName, "Fyers");
+        navigator.clipboard.writeText(stockListAsTxt);
+        console.log(stockListAsTxt)
+      };
+
+
+      copyTvWL.onclick = function () {
+        // var screenerName = document.querySelector('#watchlistName').value;
+
+        stockListAsTxt = getWatchlist(screenerList, screenerName, "TradingView");
+        navigator.clipboard.writeText(stockListAsTxt);
+        console.log(stockListAsTxt)
+      }
+      console.log('ChartInk extension: dashboard controls appended.', targetContainer);
     };
 
-
-    copyTvWL.onclick = function () {
-      // var screenerName = document.querySelector('#watchlistName').value;
-
-      stockListAsTxt = getWatchlist(screenerList, screenerName, "TradingView");
-      navigator.clipboard.writeText(stockListAsTxt);
-      console.log(stockListAsTxt)
-    }
-    console.log('ChartInk extension: dashboard controls appended.', targetContainer);
+    initializeWatchlistControls();
   }
 
   function createWatchlistDropdown(screeners, screenerList) {
+    screeners.innerHTML = '';
+    const seen = new Set();
     screenerList.forEach(screener => {
-      let screenerName = screener.innerText;;
+      let screenerName = screener.innerText.trim();
+      if (!screenerName || seen.has(screenerName)) {
+        return;
+      }
+      seen.add(screenerName);
       const option = document.createElement("option");
       option.value = screenerName;
       option.textContent = screenerName;
