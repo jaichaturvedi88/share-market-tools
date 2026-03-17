@@ -3,6 +3,7 @@ let noOfDays = 5;
 let rowsData = [];
 let dataInTable = [];
 let stocksModalPoupArray = [];
+let stocksSortedArray = [];
 
 let fileNameDiv = document.querySelector(".fileName");
 
@@ -111,10 +112,10 @@ function renderTable(dataInTable) {
       ) {
         stocksModalPoupArray.push(newCell.innerHTML);
       }
-      if (rowWrapSwitchBtn.checked === true){
+      if (rowWrapSwitchBtn.checked === true) {
         newCell.classList.add('row-wrap');
-      } 
-      
+      }
+
     }
   }
 }
@@ -137,37 +138,37 @@ let daysButtonGroup = document.querySelector('#daysBtnGroup');
 let daysButtons = daysButtonGroup.querySelectorAll(".days-btn");
 
 daysButtonGroup.addEventListener('click', highLightActiveDaysButtons);
-function highLightActiveDaysButtons (event) {
+function highLightActiveDaysButtons(event) {
   for (let index = 0; index < daysButtons.length; index++) {
-     daysButtons[index].classList.remove('active-btn');
-   }
-   let currentBtn = event.target;
-   currentBtn.classList.add('active-btn');
-   noOfDays = currentBtn.innerText;
-   stocksModalPoupArray.length = 0;
-   createTable(rowsData);
+    daysButtons[index].classList.remove('active-btn');
+  }
+  let currentBtn = event.target;
+  currentBtn.classList.add('active-btn');
+  noOfDays = currentBtn.innerText;
+  stocksModalPoupArray.length = 0;
+  createTable(rowsData);
 }
 
 let filterButtonGroup = document.querySelector('#filterBtnGroup');
 let filterButtons = filterButtonGroup.querySelectorAll('.filter-btn');
 
 filterButtonGroup.addEventListener('click', highLightActiveFilterButtons);
-function highLightActiveFilterButtons (event) {
+function highLightActiveFilterButtons(event) {
   stocksModalPoupArray.length = 0;
   for (let index = 0; index < filterButtons.length; index++) {
     filterButtons[index].classList.remove('active-btn');
-   }
-   let currentFilterBtn = event.target;
-   let filter_btn = currentFilterBtn.innerText;
-   currentFilterBtn.classList.add('active-btn');
-    let minAscii = filter_btn.charCodeAt(0);
-    let maxAscii = filter_btn.charCodeAt(2);
-    if (filter_btn !== "All") {
-      filterStocks(minAscii, maxAscii);
-    }
-    else {
-      createTable(rowsData);
-    }
+  }
+  let currentFilterBtn = event.target;
+  let filter_btn = currentFilterBtn.innerText;
+  currentFilterBtn.classList.add('active-btn');
+  let minAscii = filter_btn.charCodeAt(0);
+  let maxAscii = filter_btn.charCodeAt(2);
+  if (filter_btn !== "All") {
+    filterStocks(minAscii, maxAscii);
+  }
+  else {
+    createTable(rowsData);
+  }
 }
 
 function filterStocks(minAscii, maxAscii) {
@@ -199,13 +200,13 @@ function toggleRowWrap() {
 }
 
 
-function stocksCounter() {
-  console.log(stocksModalPoupArray);  
+function createStocksModal() {
+  // console.log(stocksModalPoupArray);
+  stocksSortedArray = [];
   let stocksCount = stocksModalPoupArray.reduce(function (acc, currentValue) {
     return (acc[currentValue] ? ++acc[currentValue] : (acc[currentValue] = 1), acc);
   }, {});
 
-  let stocksSortedArray = [];
   for (var key in stocksCount) {
     stocksSortedArray.push([key, stocksCount[key]]);
   }
@@ -224,7 +225,13 @@ function createStocksCounterTable(stocksSortedArray) {
   // stocksModalPopup.innerHTML = "";
   let stocksCounterTable = document.createElement("table");
   stocksCounterTable.setAttribute('onclick', 'highlightShare(event)');
+  let stocksCount = 0;
   for (let index = 0; index < stocksSortedArray.length; index++) {
+    // add row only if count > 1 in order to reduce size of table
+    if (stocksSortedArray[index][1] < 2) {
+      continue;
+    }
+    stocksCount++;
     // Create row.
     var tr = document.createElement("tr");
     stocksCounterTable.appendChild(tr);
@@ -242,6 +249,9 @@ function createStocksCounterTable(stocksSortedArray) {
   // console.log(stocksCounterTable);
   stocksCounterContainer.appendChild(stocksCounterTable);
   stocksModalPopup.appendChild(stocksCounterContainer);
+
+  document.querySelector('#totalStocksCount').innerText = stocksCount;
+
 }
 function generateWatchlist() {
   let stocksRows = [...dataInTable];
@@ -272,3 +282,23 @@ stocksModalContainer.addEventListener('show.bs.modal', function (e) {
 stocksModalContainer.addEventListener('hide.bs.modal', function (e) {
   tableContainer.style.width = '99vw';
 });
+
+function createWatchlist(platform) {
+  let minStockOccurence = +document.querySelector('#minimumStockOccurence').value || 1;
+  let stocksRows = [...stocksSortedArray];
+  let watchList = '';
+  let count = 0;
+  stocksRows.forEach(stockRow => {
+    if (stockRow[1] >= minStockOccurence) {
+      count++;
+      let stockSymbol = stockRow[0];
+      if (platform === 'Fyers') {
+        watchList += `NSE:${stockSymbol}-EQ, `;
+      } else if (platform === 'TradingView') {
+        watchList += `NSE:${stockSymbol},`;
+      }
+    }
+  });
+  console.log(`Total Stocks in Watchlist: ${count}`);
+  navigator.clipboard.writeText(watchList);
+}

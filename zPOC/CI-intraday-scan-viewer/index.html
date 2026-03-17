@@ -1,0 +1,1025 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chartink Scan Analyzer</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0d0f14;
+        --bg-elev: #141823;
+        --panel: #1b2030;
+        --ink: #e8ecf2;
+        --muted: #9aa4b2;
+        --accent: #3dd5a7;
+        --accent-2: #f5b942;
+        --stroke: rgba(255, 255, 255, 0.08);
+        --shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        --table-row-height: 40px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        background: radial-gradient(circle at top left, #1a1f2b, #0b0d12 55%);
+        color: var(--ink);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      header {
+        padding: 24px clamp(16px, 4vw, 48px) 12px;
+      }
+
+      .header-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header-left {
+        min-width: 240px;
+      }
+
+      .header-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+      }
+
+      .header-actions .dates {
+        margin-top: 0;
+        justify-content: flex-end;
+      }
+
+      .title {
+        font-size: clamp(28px, 4vw, 40px);
+        margin: 0 0 8px;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      main {
+        padding: 0 clamp(16px, 4vw, 48px) 32px;
+        display: grid;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      .panel {
+        background: linear-gradient(140deg, rgba(27, 32, 48, 0.9), rgba(20, 24, 35, 0.8));
+        border: 1px solid var(--stroke);
+        border-radius: 18px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+        animation: rise 500ms ease-out both;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .spacer {
+        flex: 1;
+      }
+
+      .watchlist-btn {
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(61, 213, 167, 0.5);
+        background: rgba(61, 213, 167, 0.18);
+        color: var(--ink);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 150ms ease;
+      }
+
+      .watchlist-btn:hover {
+        border-color: var(--accent);
+        background: rgba(61, 213, 167, 0.28);
+      }
+
+      .file-input {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: rgba(61, 213, 167, 0.1);
+        border: 1px solid rgba(61, 213, 167, 0.35);
+      }
+
+      .file-input label {
+        font-weight: 500;
+      }
+
+      .file-input input[type="file"] {
+        color: var(--muted);
+      }
+
+      .dates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 6px;
+      }
+
+      .watchlist-output {
+        margin-top: 14px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--stroke);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.9rem;
+        word-break: break-word;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .watchlist-text {
+        flex: 1;
+      }
+
+      .watchlist-copy {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid var(--stroke);
+        background: rgba(61, 213, 167, 0.12);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--ink);
+      }
+
+      .watchlist-copy svg {
+        width: 18px;
+        height: 18px;
+        fill: currentColor;
+      }
+
+      .toast {
+        position: fixed;
+        right: 24px;
+        top: 24px;
+        background: rgba(61, 213, 167, 0.95);
+        color: #0a0f14;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 600;
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 200ms ease, transform 200ms ease;
+        pointer-events: none;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .date-btn {
+        border: 1px solid var(--stroke);
+        background: transparent;
+        color: var(--ink);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 150ms ease;
+      }
+
+      .date-btn.active {
+        background: linear-gradient(120deg, var(--accent), #2eb6f7);
+        color: #0a0f14;
+        border-color: transparent;
+        font-weight: 600;
+      }
+
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .table-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin: 10px 0 6px;
+      }
+
+      .control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 12px;
+        border: 1px solid var(--stroke);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--ink);
+        font-size: 0.9rem;
+      }
+
+      .stats .control {
+        min-width: 220px;
+      }
+
+      .control input,
+      .control select {
+        background: transparent;
+        border: none;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.9rem;
+        outline: none;
+      }
+
+      .control select option {
+        color: #0a0f14;
+      }
+
+      th.sortable {
+        cursor: pointer;
+      }
+
+      .sort-indicator {
+        margin-left: 6px;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      th.sortable.active .sort-indicator {
+        color: var(--accent);
+      }
+
+      tr:hover td {
+        background: rgba(61, 213, 167, 0.08);
+      }
+
+      .stat {
+        background: rgba(245, 185, 66, 0.1);
+        border: 1px solid rgba(245, 185, 66, 0.35);
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-weight: 500;
+      }
+
+      .toggle-view-btn {
+        padding: 8px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--stroke);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--ink);
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .toggle-view-btn.active {
+        border-color: rgba(61, 213, 167, 0.55);
+        background: rgba(61, 213, 167, 0.14);
+      }
+
+      .chart-view {
+        width: 100%;
+        min-height: 420px;
+        padding: 8px 4px 4px;
+        position: relative;
+      }
+
+      .chart-view svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .chart-tooltip {
+        position: absolute;
+        background: rgba(13, 15, 20, 0.95);
+        border: 1px solid rgba(61, 213, 167, 0.5);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: var(--ink);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 0.85rem;
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, -120%);
+        white-space: nowrap;
+        z-index: 100;
+        transition: opacity 100ms ease;
+      }
+
+      .chart-tooltip.show {
+        opacity: 1;
+      }
+
+      .table-wrap.chart-mode {
+        max-height: none;
+        overflow: hidden;
+      }
+
+      .table-wrap {
+        width: 100%;
+        max-width: 100%;
+        max-height: calc(var(--table-row-height) * 16);
+        overflow-x: auto;
+        overflow-y: auto;
+      }
+
+      table {
+        width: max-content;
+        min-width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        text-align: left;
+        height: var(--table-row-height);
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--stroke);
+        font-size: 0.9rem;
+        white-space: nowrap;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      td.count {
+        font-weight: 600;
+        color: var(--accent);
+      }
+
+      .empty {
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 720px) {
+        .header-actions {
+          align-items: stretch;
+          width: 100%;
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .file-input {
+          justify-content: space-between;
+        }
+
+        .stats .control {
+          min-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-row">
+        <div class="header-left">
+          <h1 class="title">Chartink Scan Analyzer</h1>
+        </div>
+        <div class="header-actions">
+          <div class="controls">
+            <div class="file-input">
+              <label for="csvInput">Load CSV</label>
+              <input id="csvInput" type="file" accept=".csv" />
+            </div>
+            <button class="watchlist-btn" id="watchlistBtn" type="button">Copy Watchlist</button>
+          </div>
+          <div class="dates" id="dates"></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <div class="stats">
+          <div class="stat" id="selectedDate">Date: --</div>
+          <div class="stat" id="distinctCount">Distinct stocks: 0</div>
+          <button class="toggle-view-btn active" id="stockViewBtn" type="button">Stock view</button>
+          <button class="toggle-view-btn" id="timeViewBtn" type="button">Time view</button>
+          <button class="toggle-view-btn" id="chartViewBtn" type="button">Chart view</button>
+          <div class="spacer" aria-hidden="true"></div>
+          <div class="control">
+            <span>Search</span>
+            <input id="tableSearch" type="search" placeholder="Search stocks" />
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="resultTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+          <div class="chart-view" id="chartView" hidden></div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const csvInput = document.getElementById("csvInput");
+      const watchlistBtn = document.getElementById("watchlistBtn");
+      const datesEl = document.getElementById("dates");
+      const selectedDateEl = document.getElementById("selectedDate");
+      const distinctCountEl = document.getElementById("distinctCount");
+      const stockViewBtn = document.getElementById("stockViewBtn");
+      const timeViewBtn = document.getElementById("timeViewBtn");
+      const chartViewBtn = document.getElementById("chartViewBtn");
+      const table = document.getElementById("resultTable");
+      const thead = table.querySelector("thead");
+      const tbody = table.querySelector("tbody");
+      const tableWrap = document.querySelector(".table-wrap");
+      const chartView = document.getElementById("chartView");
+      const tableSearch = document.getElementById("tableSearch");
+      let toastTimer = null;
+      let sortState = { key: null, dir: null };
+      let timeViewSortState = { key: null, dir: null };
+      let tableViewMode = "stocks";
+
+      let groupedByDate = {};
+      let activeDate = null;
+
+      function updateViewButtons() {
+        stockViewBtn.classList.toggle("active", tableViewMode === "stocks");
+        timeViewBtn.classList.toggle("active", tableViewMode === "time");
+        chartViewBtn.classList.toggle("active", tableViewMode === "chart");
+      }
+
+      function parseCsv(text) {
+        const lines = text.trim().split(/\r?\n/);
+        if (lines.length <= 1) {
+          return [];
+        }
+
+        return lines.slice(1).map((line) => {
+          const [rawDate, symbol] = line.split(",");
+          if (!rawDate || !symbol) {
+            return null;
+          }
+          const parts = rawDate.trim().split(" ");
+          const date = parts[0];
+          const time = parts.slice(1).join(" ");
+          return { date, time, symbol: symbol.trim() };
+        }).filter(Boolean);
+      }
+
+      function groupByDate(records) {
+        const byDate = {};
+        for (const item of records) {
+          if (!byDate[item.date]) {
+            byDate[item.date] = {};
+          }
+          if (!byDate[item.date][item.symbol]) {
+            byDate[item.date][item.symbol] = [];
+          }
+          byDate[item.date][item.symbol].push(item.time);
+        }
+        return byDate;
+      }
+
+      function renderDates() {
+        datesEl.innerHTML = "";
+        const dates = Object.keys(groupedByDate).sort((a, b) => {
+          const [da, ma, ya] = a.split("-").map(Number);
+          const [db, mb, yb] = b.split("-").map(Number);
+          return new Date(ya, ma - 1, da) - new Date(yb, mb - 1, db);
+        });
+        const visibleDates = dates.slice(-10);
+
+        if (visibleDates.length === 0) {
+          datesEl.innerHTML = "<span class=\"empty\">No data loaded yet.</span>";
+          return;
+        }
+
+        visibleDates.forEach((date) => {
+          const button = document.createElement("button");
+          button.className = "date-btn";
+          button.textContent = date;
+          button.addEventListener("click", () => setActiveDate(date));
+          datesEl.appendChild(button);
+        });
+
+        if (!activeDate || !visibleDates.includes(activeDate)) {
+          setActiveDate(visibleDates[visibleDates.length - 1]);
+        } else {
+          setActiveDate(activeDate);
+        }
+      }
+
+      function setActiveDate(date) {
+        activeDate = date;
+        [...datesEl.querySelectorAll(".date-btn")].forEach((btn) => {
+          btn.classList.toggle("active", btn.textContent === date);
+        });
+        renderTable();
+      }
+
+      function renderTable() {
+        const data = groupedByDate[activeDate];
+        if (!data) {
+          selectedDateEl.textContent = "Date: --";
+          distinctCountEl.textContent = "Distinct stocks: 0";
+          thead.innerHTML = "";
+          tbody.innerHTML = "";
+          chartView.innerHTML = "";
+          table.hidden = false;
+          chartView.hidden = true;
+          tableWrap.classList.remove("chart-mode");
+          updateViewButtons();
+          return;
+        }
+
+        if (tableViewMode === "chart") {
+          renderChartView(data);
+          updateViewButtons();
+          return;
+        }
+
+        table.hidden = false;
+        chartView.hidden = true;
+        tableWrap.classList.remove("chart-mode");
+
+        if (tableViewMode === "time") {
+          renderTimeView(data);
+          updateViewButtons();
+          return;
+        }
+
+        const filterValue = tableSearch.value.trim().toLowerCase();
+        let entries = Object.entries(data);
+        if (filterValue) {
+          entries = entries.filter(([symbol]) => symbol.toLowerCase().includes(filterValue));
+        }
+
+        if (sortState.key) {
+          entries.sort((a, b) => {
+            const [symbolA, timesA] = a;
+            const [symbolB, timesB] = b;
+            const direction = sortState.dir === "asc" ? 1 : -1;
+            if (sortState.key === "stock") {
+              return direction * symbolA.localeCompare(symbolB);
+            }
+            if (sortState.key === "count") {
+              return direction * (timesA.length - timesB.length);
+            }
+            if (sortState.key.startsWith("time-")) {
+              const index = Number(sortState.key.split("-")[1]);
+              const timeA = toMinutes(timesA[index] || "");
+              const timeB = toMinutes(timesB[index] || "");
+              return direction * (timeA - timeB);
+            }
+            return 0;
+          });
+        }
+        const maxTimes = entries.reduce((max, [, times]) => Math.max(max, times.length), 1);
+
+        selectedDateEl.textContent = `Date: ${activeDate}`;
+        distinctCountEl.textContent = `Distinct stocks: ${entries.length}`;
+
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = `<th class=\"sortable\" data-sort=\"stock\">Stock<span class=\"sort-indicator\"></span></th><th class=\"sortable\" data-sort=\"count\">Count<span class=\"sort-indicator\"></span></th>${Array.from({ length: maxTimes })
+          .map((_, idx) => `<th class=\"sortable\" data-sort=\"time-${idx}\">t${idx + 1}<span class=\"sort-indicator\"></span></th>`)
+          .join("")}`;
+        thead.appendChild(headerRow);
+
+        [...thead.querySelectorAll("th.sortable")].forEach((th) => {
+          th.addEventListener("click", () => {
+            const key = th.dataset.sort;
+            if (sortState.key === key) {
+              sortState.dir = sortState.dir === "asc" ? "desc" : "asc";
+            } else {
+              sortState.key = key;
+              sortState.dir = "asc";
+              if (key === "count") {
+                sortState.dir = "desc";
+              }
+            }
+            renderTable();
+          });
+        });
+
+        const activeHeader = thead.querySelector(`th[data-sort="${sortState.key}"]`);
+        if (activeHeader) {
+          activeHeader.classList.add("active");
+          const indicator = activeHeader.querySelector(".sort-indicator");
+          if (indicator) {
+            indicator.textContent = sortState.dir === "asc" ? "▲" : "▼";
+          }
+        }
+
+        for (const [symbol, times] of entries) {
+          const row = document.createElement("tr");
+          const timeCells = Array.from({ length: maxTimes }).map((_, idx) => {
+            return `<td>${formatTableTime(times[idx])}</td>`;
+          });
+          row.innerHTML = `<td>${symbol}</td><td class=\"count\">${times.length}</td>${timeCells.join("")}`;
+          tbody.appendChild(row);
+        }
+
+        updateViewButtons();
+      }
+
+      function buildTimeRows(stockData, filterValue) {
+        const timeMap = new Map();
+
+        for (const [symbol, times] of Object.entries(stockData)) {
+          for (const timeText of times) {
+            if (!timeMap.has(timeText)) {
+              timeMap.set(timeText, new Set());
+            }
+            timeMap.get(timeText).add(symbol);
+          }
+        }
+
+        let rows = [...timeMap.entries()].map(([timeText, symbolSet]) => {
+          const symbols = [...symbolSet].sort((a, b) => a.localeCompare(b));
+          return {
+            timeRaw: timeText,
+            time: formatTableTime(timeText),
+            count: symbols.length,
+            symbols,
+          };
+        });
+
+        if (filterValue) {
+          rows = rows.filter((row) => {
+            if (row.time.toLowerCase().includes(filterValue)) {
+              return true;
+            }
+            return row.symbols.some((symbol) => symbol.toLowerCase().includes(filterValue));
+          });
+        }
+
+        return rows;
+      }
+
+      function renderTimeView(stockData) {
+        const filterValue = tableSearch.value.trim().toLowerCase();
+        let rows = buildTimeRows(stockData, filterValue);
+
+        if (timeViewSortState.key === "count") {
+          rows.sort((a, b) => {
+            const direction = timeViewSortState.dir === "asc" ? 1 : -1;
+            const countDiff = a.count - b.count;
+            if (countDiff !== 0) {
+              return direction * countDiff;
+            }
+            return toMinutes(a.timeRaw) - toMinutes(b.timeRaw);
+          });
+        }
+
+        selectedDateEl.textContent = `Date: ${activeDate}`;
+        distinctCountEl.textContent = `Distinct stocks: ${Object.keys(stockData).length}`;
+
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = "<th>Time</th><th class=\"sortable\" data-sort=\"count\">Stocks<span class=\"sort-indicator\"></span></th><th>Names</th>";
+        thead.appendChild(headerRow);
+
+        const countHeader = thead.querySelector('th[data-sort="count"]');
+        if (countHeader) {
+          const indicator = countHeader.querySelector(".sort-indicator");
+          if (timeViewSortState.key === "count") {
+            countHeader.classList.add("active");
+            if (indicator) {
+              indicator.textContent = timeViewSortState.dir === "asc" ? "▲" : "▼";
+            }
+          } else if (indicator) {
+            indicator.textContent = "";
+          }
+          countHeader.addEventListener("click", () => {
+            if (timeViewSortState.key === "count") {
+              timeViewSortState.dir = timeViewSortState.dir === "asc" ? "desc" : "asc";
+            } else {
+              timeViewSortState.key = "count";
+              timeViewSortState.dir = "desc";
+            }
+            renderTable();
+          });
+        }
+
+        for (const rowData of rows) {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td>${rowData.time}</td><td class=\"count\">${rowData.count}</td><td>${rowData.symbols.join(", ") || "-"}</td>`;
+          tbody.appendChild(row);
+        }
+
+        updateViewButtons();
+        tableSearch.placeholder = "Search time or stocks";
+      }
+
+      function renderChartView(stockData) {
+        const filterValue = tableSearch.value.trim().toLowerCase();
+        const startMinute = 9 * 60 + 15;
+        const endMinute = 15 * 60 + 30;
+        const allRows = buildTimeRows(stockData, filterValue)
+          .map((row) => ({ ...row, minute: toMinutes(row.timeRaw) }))
+          .filter((row) => Number.isFinite(row.minute));
+        const rows = allRows
+          .filter((row) => row.minute >= startMinute && row.minute <= endMinute)
+          .sort((a, b) => a.minute - b.minute);
+
+        selectedDateEl.textContent = `Date: ${activeDate}`;
+        distinctCountEl.textContent = `Distinct stocks: ${Object.keys(stockData).length}`;
+
+        table.hidden = true;
+        chartView.hidden = false;
+        tableWrap.classList.add("chart-mode");
+        thead.innerHTML = "";
+        tbody.innerHTML = "";
+
+        if (rows.length === 0) {
+          chartView.innerHTML = "<div class=\"empty\">No chart points available for 09:15 to 15:30.</div>";
+          updateViewButtons();
+          tableSearch.placeholder = "Search time or stocks";
+          return;
+        }
+
+        const chartWidth = 1200;
+        const chartHeight = 440;
+        const margin = { top: 20, right: 20, bottom: 44, left: 44 };
+        const plotWidth = chartWidth - margin.left - margin.right;
+        const plotHeight = chartHeight - margin.top - margin.bottom;
+        const yMax = Math.max(1, ...rows.map((row) => row.count));
+
+        const xScale = (minute) => {
+          return margin.left + ((minute - startMinute) / (endMinute - startMinute)) * plotWidth;
+        };
+        const yScale = (count) => {
+          return margin.top + plotHeight - (count / yMax) * plotHeight;
+        };
+
+        const xTicks = [9 * 60 + 15, 10 * 60, 11 * 60, 12 * 60, 13 * 60, 14 * 60, 15 * 60, 15 * 60 + 30];
+        const yTickStep = Math.max(1, Math.ceil(yMax / 5));
+        const yTicks = [];
+        for (let value = 0; value <= yMax; value += yTickStep) {
+          yTicks.push(value);
+        }
+        if (yTicks[yTicks.length - 1] !== yMax) {
+          yTicks.push(yMax);
+        }
+
+        const xGrids = [];
+        for (let minute = startMinute; minute <= endMinute; minute += 15) {
+          xGrids.push(minute);
+        }
+
+        const linePoints = rows.map((row) => `${xScale(row.minute)},${yScale(row.count)}`).join(" ");
+        const xTickMarkup = xTicks
+          .map((minute) => {
+            const x = xScale(minute);
+            return `<line x1=\"${x}\" y1=\"${margin.top + plotHeight}\" x2=\"${x}\" y2=\"${margin.top + plotHeight + 6}\" stroke=\"rgba(255,255,255,0.2)\" /><text x=\"${x}\" y=\"${margin.top + plotHeight + 22}\" fill=\"#9aa4b2\" font-size=\"11\" text-anchor=\"middle\" font-family=\"IBM Plex Mono, monospace\">${formatAxisTime(minute)}</text>`;
+          })
+          .join("");
+
+        const yTickMarkup = yTicks
+          .map((value) => {
+            const y = yScale(value);
+            return `<line x1=\"${margin.left}\" y1=\"${y}\" x2=\"${margin.left + plotWidth}\" y2=\"${y}\" stroke=\"rgba(255,255,255,0.06)\" /><text x=\"${margin.left - 8}\" y=\"${y + 4}\" fill=\"#9aa4b2\" font-size=\"11\" text-anchor=\"end\" font-family=\"IBM Plex Mono, monospace\">${value}</text>`;
+          })
+          .join("");
+
+        const xGridMarkup = xGrids
+          .map((minute) => {
+            const x = xScale(minute);
+            return `<line x1=\"${x}\" y1=\"${margin.top}\" x2=\"${x}\" y2=\"${margin.top + plotHeight}\" stroke=\"rgba(255,255,255,0.06)\" />`;
+          })
+          .join("");
+
+        const pointsMarkup = rows
+          .map((row) => {
+            const x = xScale(row.minute);
+            const y = yScale(row.count);
+            return `<circle cx=\"${x}\" cy=\"${y}\" r=\"3\" fill=\"#3dd5a7\"><title>${row.time}: ${row.count}</title></circle>`;
+          })
+          .join("");
+
+        chartView.innerHTML = `<div class="chart-tooltip" id="chartTooltip"></div><svg viewBox=\"0 0 ${chartWidth} ${chartHeight}\" role=\"img\" aria-label=\"Time vs stock count\"><line x1=\"${margin.left}\" y1=\"${margin.top + plotHeight}\" x2=\"${margin.left + plotWidth}\" y2=\"${margin.top + plotHeight}\" stroke=\"rgba(255,255,255,0.3)\" /><line x1=\"${margin.left}\" y1=\"${margin.top}\" x2=\"${margin.left}\" y2=\"${margin.top + plotHeight}\" stroke=\"rgba(255,255,255,0.3)\" />${yTickMarkup}${xGridMarkup}${xTickMarkup}<polyline fill=\"none\" stroke=\"#3dd5a7\" stroke-width=\"2\" points=\"${linePoints}\" />${pointsMarkup}</svg>`;
+
+        const svg = chartView.querySelector("svg");
+        const tooltip = chartView.querySelector(".chart-tooltip");
+        const chartRect = svg.getBoundingClientRect();
+
+        svg.addEventListener("mousemove", (e) => {
+          const svgX = (e.clientX - chartRect.left) * (1200 / chartRect.width);
+
+          let closestRow = null;
+          let closestXDist = Infinity;
+
+          for (const row of rows) {
+            const x = xScale(row.minute);
+            const xDist = Math.abs(svgX - x);
+            if (xDist < closestXDist) {
+              closestXDist = xDist;
+              closestRow = row;
+            }
+          }
+
+          if (closestRow && closestXDist < 50) {
+            tooltip.textContent = `${closestRow.time} • ${closestRow.count} stock${closestRow.count !== 1 ? "s" : ""}`;
+            tooltip.classList.add("show");
+            tooltip.style.left = `${(e.clientX - chartRect.left) / chartRect.width * 100}%`;
+            tooltip.style.top = `${(e.clientY - chartRect.top) / chartRect.height * 100}%`;
+          } else {
+            tooltip.classList.remove("show");
+          }
+        });
+
+        svg.addEventListener("mouseleave", () => {
+          tooltip.classList.remove("show");
+        });
+
+        updateViewButtons();
+        tableSearch.placeholder = "Search time or stocks";
+      }
+
+      function formatAxisTime(minute) {
+        const hours = Math.floor(minute / 60);
+        const minutes = minute % 60;
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+      }
+
+      function formatTableTime(timeText) {
+        if (!timeText) {
+          return "-";
+        }
+        return timeText.replace(/\s*(am|pm)$/i, "").trim() || "-";
+      }
+
+      function buildWatchlist() {
+        const data = groupedByDate[activeDate];
+        if (!data) {
+          showToast("Load data and select a date.");
+          return;
+        }
+        const symbols = Object.keys(data).sort();
+        const watchlist = symbols.map((symbol) => `NSE:${symbol}-EQ`).join(", ");
+        if (!watchlist) {
+          showToast("No symbols for this date.");
+          return;
+        }
+        copyToClipboard(watchlist);
+        showToast("Watchlist copied.");
+      }
+
+      function copyToClipboard(text) {
+        if (!text) {
+          return;
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).catch(() => {
+            // Ignore clipboard errors in unsupported contexts.
+          });
+        }
+      }
+
+      function toMinutes(timeText) {
+        if (!timeText) {
+          return Number.POSITIVE_INFINITY;
+        }
+        const match = timeText.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
+        if (!match) {
+          return Number.POSITIVE_INFINITY;
+        }
+        let hours = Number(match[1]);
+        const minutes = Number(match[2] || 0);
+        const period = match[3].toLowerCase();
+        if (period === "pm" && hours !== 12) {
+          hours += 12;
+        }
+        if (period === "am" && hours === 12) {
+          hours = 0;
+        }
+        return hours * 60 + minutes;
+      }
+
+      function showToast(message) {
+        let toast = document.getElementById("toast");
+        if (!toast) {
+          toast = document.createElement("div");
+          toast.className = "toast";
+          toast.id = "toast";
+          document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+        toast.classList.add("show");
+        if (toastTimer) {
+          window.clearTimeout(toastTimer);
+        }
+        toastTimer = window.setTimeout(() => {
+          toast.classList.remove("show");
+        }, 1400);
+      }
+
+      async function autoLoadCsv() {
+        const defaultFiles = [
+          "Backtest J-Temp-3, Technical Analysis Scanner (41).csv",
+          "Backtest J-Temp-3, Technical Analysis Scanner (38).csv",
+        ];
+        try {
+          for (const fileName of defaultFiles) {
+            const response = await fetch(fileName);
+            if (!response.ok) {
+              continue;
+            }
+            const text = await response.text();
+            loadCsvText(text);
+            return;
+          }
+        } catch (error) {
+          // Silent fail when running without a server.
+        }
+      }
+
+      function loadCsvText(text) {
+        const records = parseCsv(text);
+        groupedByDate = groupByDate(records);
+        activeDate = null;
+        renderDates();
+        renderTable();
+      }
+
+      csvInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => loadCsvText(e.target.result);
+        reader.readAsText(file);
+      });
+
+      watchlistBtn.addEventListener("click", buildWatchlist);
+      tableSearch.addEventListener("input", renderTable);
+      stockViewBtn.addEventListener("click", () => {
+        tableViewMode = "stocks";
+        renderTable();
+      });
+      timeViewBtn.addEventListener("click", () => {
+        tableViewMode = "time";
+        renderTable();
+      });
+      chartViewBtn.addEventListener("click", () => {
+        tableViewMode = "chart";
+        renderTable();
+      });
+
+      autoLoadCsv();
+    </script>
+  </body>
+</html>

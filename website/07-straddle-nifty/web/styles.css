@@ -1,0 +1,376 @@
+:root {
+  --border: #e5e7eb;
+  --bg: #ffffff;
+  --muted: #6b7280;
+  --text: #111827;
+  --card: #f9fafb;
+  --green: #dcfce7;
+  --red: #fee2e2;
+  --yellow: #fff9c4;
+  --blue: #2563eb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.wrap { max-width: 1500px; margin: 0 auto; padding: 18px; }
+
+.topbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title { font-size: 18px; font-weight: 800; }
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+label {
+  font-size: 12px;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+input[type="number"],
+input[type="text"] {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 150px;
+  outline: none;
+  background: #fff;
+}
+
+input[type="file"] { display: block; }
+
+.hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+.primaryBtn {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  background: #fff;
+  font-weight: 700;
+}
+
+.tableWrap {
+  margin-top: 0px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+th, td {
+  border-bottom: 1px solid var(--border);
+  padding: 6px 4px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 2;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+th.strikecol, td.strikecol { text-align: right; width: 64px; }
+th.buycol, td.buycol { text-align: left; width: 42px; }
+th.sumcol, td.sumcol { width: 72px; font-weight: 700; }
+
+th:not(.strikecol):not(.buycol):not(.sumcol),
+td:not(.strikecol):not(.buycol):not(.sumcol) {
+  width: 46px;
+  padding: 4px 3px;
+  font-size: 10px;
+}
+
+td.profit { background: var(--green); }
+td.loss { background: var(--red); }
+
+th.match, td.match {
+  background: var(--yellow) !important;
+  font-weight: 800;
+}
+
+td.buyday {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+  font-weight: 900;
+}
+
+tr:hover td { background: #fafafa; }
+
+.footer { margin-top: 0px; color: var(--muted); font-size: 12px; }
+
+.monthTitle {
+  font-weight: 900;
+  margin-top: 0px;
+  margin-bottom: 2px;
+  font-size: 14px;
+  color: #111827;
+}
+
+.error { color: #b91c1c; font-weight: 700; }
+
+.miniTop {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.leftInfo { min-width: 320px; align-self: flex-end; }
+
+.rightSearch { padding: 8px 10px; }
+
+.niftyStrikeRange { padding: 8px 10px; }
+
+.searchRow { display: flex; gap: 6px; align-items: center; }
+
+.miniBtn {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  /* cursor: pointer; */
+  background: #fff;
+  font-weight: 700;
+}
+
+.rightSearch input[type="number"] { min-width: 120px; padding: 6px 10px; }
+
+.searchHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.searchHintTop { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+/* ✅ Theme button */
+.theme-btn{
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+
+
+
+/* ✅ Dark Mode */
+body.dark {
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+body.dark .theme-btn{
+  background: #111827;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.strike-range-bar{
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f5f5f5;
+}
+
+body.dark .strike-range-bar{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+/* =========================
+   ✅ DARK THEME - CARDS FIX
+   ========================= */
+
+/* ✅ Cards / Panels (any white boxes) */
+body.dark .card,
+body.dark .panel,
+body.dark .box,
+body.dark .control-card,
+body.dark .top-card,
+body.dark .toolbar-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0px 10px 25px rgba(0, 0, 0, 0.35);
+  color: #e5e7eb;
+}
+
+/* ✅ Inputs */
+body.dark input,
+body.dark select,
+body.dark textarea {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e5e7eb;
+}
+
+/* Placeholder text */
+body.dark input::placeholder,
+body.dark textarea::placeholder {
+  color: rgba(229, 231, 235, 0.6);
+}
+
+/* ✅ Buttons */
+body.dark button {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e5e7eb;
+}
+
+body.dark button:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* =========================
+   ✅ DARK THEME TABLE FIX
+   ========================= */
+
+/* Table wrapper */
+body.dark .table-wrap,
+body.dark .table-container {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 8px;
+}
+
+/* Base table */
+body.dark table {
+  background: transparent;
+  color: #e5e7eb;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Header row */
+body.dark th {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(229, 231, 235, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 700;
+}
+
+/* Normal cells */
+body.dark td {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(229, 231, 235, 0.88);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Left sticky columns / row headers (if any) */
+body.dark td:first-child,
+body.dark th:first-child {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Soft hover */
+body.dark td:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* “Buy Day / diagonal highlight” cell (your dark blue blocks) */
+body.dark .buy-cell,
+body.dark .buy-premium,
+body.dark .diag-cell {
+  background: rgba(37, 99, 235, 0.35) !important;
+  border: 1px solid rgba(37, 99, 235, 0.55) !important;
+  color: #fff !important;
+  font-weight: 800;
+}
+
+/* Profit/Loss shading improvements (if you already color cells green/red) */
+body.dark .profit {
+  background: rgba(34, 197, 94, 0.14) !important;
+  color: rgba(229, 231, 235, 0.95) !important;
+}
+
+body.dark .loss {
+  background: rgba(239, 68, 68, 0.14) !important;
+  color: rgba(229, 231, 235, 0.95) !important;
+}
+
+/* Right-side summary columns (Max Profit / PnL etc.) */
+body.dark .summary-col,
+body.dark td.summary-col {
+  background: rgba(255, 255, 255, 0.04) !important;
+  font-weight: 700;
+}
+
+/* Remove harsh bright borders in dark mode */
+body.dark td,
+body.dark th {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ✅ Dark theme buyday (diagonal) cells */
+body.dark td.buyday {
+  background: rgba(37, 99, 235, 0.35) !important;
+  border: 1px solid rgba(37, 99, 235, 0.55) !important;
+  color: #ffffff !important;
+  font-weight: 800;
+}
+
+/* =========================
+   ✅ DARK MODE: Strike Column + Match Fix
+   ========================= */
+
+/* Strike column text */
+body.dark td.strikecol {
+  color: rgba(229, 231, 235, 0.95) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* When strike matches search */
+body.dark td.strikecol.match {
+  background: rgba(250, 204, 21, 0.18) !important;  /* soft yellow */
+  color: #fef9c3 !important;                        /* readable yellow text */
+  font-weight: 800 !important;
+  border-left: 3px solid rgba(250, 204, 21, 0.85) !important;
+}
