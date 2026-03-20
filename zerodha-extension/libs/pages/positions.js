@@ -147,11 +147,11 @@ const positions = (function () {
 
     currentPositions.forEach(tr => {
 
-      let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
-      let symbol = tr.querySelector('td[data-label="Instrument"] > a > span.tradingsymbol').textContent;
-      let quantity = readNumberFromTableCell(tr, 'td[data-label="Qty."] > span');
-      let avgPrice = readNumberFromTableCell(tr, 'td[data-label="Avg."] > span');
-      let pnl = readNumberFromTableCell(tr, 'td[data-label="P&L"] > span')
+      let productType = tr.querySelector('td.product > span').textContent?.toUpperCase()?.trim();
+      let symbol = tr.querySelector('td.instrument > a > span.tradingsymbol').textContent;
+      let quantity = readNumberFromTableCell(tr, 'td.quantity > span');
+      let avgPrice = readNumberFromTableCell(tr, 'td.average-price > span');
+      let pnl = readNumberFromTableCell(tr, 'td.pnl > span')
 
       if (productType === PRODUCT_TYPE.NRML) {
         if (quantity > 0) {
