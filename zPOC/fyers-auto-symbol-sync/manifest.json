@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Fyers Auto Symbol Sync",
+  "description": "Sync selected symbol between two Brave windows/tabs for FYERS web app.",
+  "version": "0.1.0",
+  "permissions": ["tabs", "storage", "scripting"],
+  "host_permissions": [
+    "https://*.fyers.in/*",
+    "https://fyers.in/*"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Fyers Auto Symbol Sync",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.fyers.in/*",
+        "https://fyers.in/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
