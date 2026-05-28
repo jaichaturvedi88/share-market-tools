@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Fyers Auto Symbol Sync</title>
+    <link rel="icon" type="image/png" href="icons/favicon-source.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Fyers Auto Symbol Sync</h1>
+      <p class="muted">Set this tab as Leader or Follower.</p>
+
+      <div class="row">
+        <button id="setLeader" class="primary">Set Leader</button>
+        <button id="setFollower">Set Follower</button>
+        <button id="setNone">Disable</button>
+      </div>
+
+      <div class="status">
+        <div><span class="k">Role:</span> <span id="roleValue">-</span></div>
+        <div><span class="k">Last Symbol:</span> <span id="lastSymbol">-</span></div>
+        <div><span class="k">Apply Status:</span> <span id="applyStatus">-</span></div>
+      </div>
+
+      <div class="test-box">
+        <input id="testSymbol" placeholder="NSE:SBIN-EQ" />
+        <button id="sendTest">Send Test</button>
+      </div>
+
+      <div class="test-box" style="margin-top:8px;">
+        <input id="directSymbol" placeholder="NSE:ITC-EQ" value="NSE:ITC-EQ" />
+        <button id="applyHere">Apply Here</button>
+      </div>
+
+      <p id="msg" class="msg"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>
