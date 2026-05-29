@@ -1,0 +1,232 @@
+#dhan-fast-trade-root {
+  all: initial;
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  position: fixed;
+  z-index: 2147483647;
+}
+
+#dhan-fast-trade-root *,
+#dhan-fast-trade-root *::before,
+#dhan-fast-trade-root *::after {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.dft-fab {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  min-width: 74px;
+  height: 30px;
+  border: 1px solid rgba(94, 234, 212, 0.45);
+  border-radius: 999px;
+  background: #0f172a;
+  color: #e2e8f0;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+}
+
+.dft-fab:hover {
+  border-color: rgba(94, 234, 212, 0.9);
+  background: #122033;
+}
+
+.dft-panel {
+  position: fixed;
+  right: 8px;
+  bottom: 48px;
+  width: min(298px, calc(100vw - 16px));
+  max-height: min(620px, calc(100vh - 16px));
+  padding: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #10151d;
+  color: #e5edf6;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.38);
+  display: none;
+  overflow-y: auto;
+  user-select: none;
+}
+
+.dft-panel.is-open {
+  display: block;
+}
+
+.dft-panel.is-dragging {
+  opacity: 0.96;
+}
+
+.dft-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -2px -2px 8px;
+  padding: 2px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.dft-panel.is-dragging .dft-header {
+  cursor: grabbing;
+}
+
+.dft-title {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.dft-close {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  background: #151d28;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.dft-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.dft-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.dft-label {
+  display: grid;
+  gap: 4px;
+  color: #94a3b8;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.dft-input {
+  width: 100%;
+  height: 30px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #0b1119;
+  color: #f8fafc;
+  outline: none;
+  padding: 0 8px;
+  font-size: 12px;
+  user-select: text;
+}
+
+.dft-input:focus {
+  border-color: rgba(45, 212, 191, 0.85);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+}
+
+.dft-output-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.dft-output {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 31px;
+  padding: 6px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  background: #0c121a;
+}
+
+.dft-output span:first-child {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.dft-output span:last-child {
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.dft-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.dft-btn {
+  height: 31px;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dft-primary {
+  background: #14b8a6;
+  color: #042f2e;
+}
+
+.dft-primary:hover {
+  background: #2dd4bf;
+}
+
+.dft-secondary {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: #151d28;
+  color: #cbd5e1;
+}
+
+.dft-status {
+  min-height: 15px;
+  margin-top: 7px;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.dft-status.is-error {
+  color: #fca5a5;
+}
+
+.dft-status.is-success {
+  color: #86efac;
+}
+
+.dft-active-symbol {
+  min-height: 34px;
+}
+
+.dft-active-symbol span:last-child {
+  color: #5eead4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 440px) {
+  .dft-panel {
+    width: calc(100vw - 16px);
+  }
+}
