@@ -74,13 +74,34 @@
   }
 
   function checkboxField(id, label) {
-    const wrapper = createElement("label", "dft-check-label");
+    const wrapper = createElement("label", "dft-label dft-check-field");
     const input = createElement("input", "dft-check");
+    const inputWrap = createElement("div", "dft-check-box");
     const text = createElement("span", "", label);
     input.id = id;
     input.type = "checkbox";
-    wrapper.append(input, text);
+    inputWrap.append(input);
+    wrapper.append(text, inputWrap);
     return { wrapper, input };
+  }
+
+  function readOnlyField(label) {
+    const wrapper = createElement("div", "dft-label");
+    const text = createElement("span", "", label);
+    const valueElement = createElement("div", "dft-readonly-field", "-");
+    wrapper.append(text, valueElement);
+    return { wrapper, valueElement };
+  }
+
+
+  function splitResultItem(label) {
+    const wrapper = createElement("label", "dft-split-result-item");
+    const input = createElement("input", "dft-split-result-check");
+    const text = createElement("span", "dft-split-result-value", label);
+    input.type = "checkbox";
+    input.disabled = true;
+    wrapper.append(input, text);
+    return { wrapper, input, text };
   }
 
   function formatNumber(value, decimals) {
@@ -129,11 +150,16 @@
     const calculation = state.calculation;
     const quantity = calculation?.quantity || 0;
     const splitQuantities = getSplitQuantities(quantity);
+    const hasStopLoss = refs.stopLoss.value.trim() !== "";
+    const showSplitResult = splitEnabled && hasStopLoss && calculation?.isValid && quantity > 0;
 
-    refs.splitOutputs.classList.toggle("is-hidden", !splitEnabled);
+    refs.splitResult.classList.toggle("is-hidden", !showSplitResult);
     refs.actions.classList.toggle("is-split", splitEnabled);
-    refs.order1Qty.textContent = splitEnabled && splitQuantities.order1Qty > 0 ? String(splitQuantities.order1Qty) : "-";
-    refs.order2Qty.textContent = splitEnabled && splitQuantities.order2Qty > 0 ? String(splitQuantities.order2Qty) : "-";
+    refs.splitTotalQty.textContent = splitEnabled && quantity > 0 ? `Total Qty: ${quantity}` : "Total Qty: -";
+    refs.order1ResultText.textContent = splitEnabled && splitQuantities.order1Qty > 0 ? String(splitQuantities.order1Qty) : "-";
+    refs.order2ResultText.textContent = splitEnabled && splitQuantities.order2Qty > 0 ? String(splitQuantities.order2Qty) : "-";
+    refs.order1ResultCheck.checked = state.orderPrepared.order1;
+    refs.order2ResultCheck.checked = state.orderPrepared.order2;
     refs.order2.classList.toggle("is-hidden", !splitEnabled);
 
     if (splitEnabled) {
@@ -222,8 +248,12 @@
     refs.quantity.textContent = "-";
     refs.target.textContent = "-";
     refs.amount.textContent = "-";
-    refs.order1Qty.textContent = "-";
-    refs.order2Qty.textContent = "-";
+    refs.splitTotalQty.textContent = "Total Qty: -";
+    refs.order1ResultText.textContent = "-";
+    refs.order2ResultText.textContent = "-";
+    refs.order1ResultCheck.checked = false;
+    refs.order2ResultCheck.checked = false;
+    refs.splitResult.classList.add("is-hidden");
     setStatus("", "");
     state.calculation = null;
     resetOrderState();
@@ -236,15 +266,22 @@
     refs.quantity.textContent = "-";
     refs.target.textContent = "-";
     refs.amount.textContent = "-";
-    refs.order1Qty.textContent = "-";
-    refs.order2Qty.textContent = "-";
+    refs.splitTotalQty.textContent = "Total Qty: -";
+    refs.order1ResultText.textContent = "-";
+    refs.order2ResultText.textContent = "-";
+    refs.order1ResultCheck.checked = false;
+    refs.order2ResultCheck.checked = false;
+    refs.splitResult.classList.add("is-hidden");
     state.calculation = null;
     resetOrderState();
     chrome.storage.local.remove([STORAGE_KEYS.stopLoss]);
   }
 
   function openPanel() {
-    anchorPanelAboveButton();
+    if (!state.hasSavedPanelPosition) {
+      anchorPanelAboveButton();
+    }
+
     refs.panel.classList.add("is-open");
     window.setTimeout(keepPanelInViewport, 0);
     window.setTimeout(() => refs.stopLoss.focus(), 80);
@@ -280,6 +317,7 @@
     refs.panel.style.left = `${nextLeft}px`;
     refs.panel.style.top = `${nextTop}px`;
     refs.panel.style.right = "auto";
+    refs.panel.style.bottom = "auto";
   }
 
   function anchorPanelAboveButton() {
@@ -398,7 +436,7 @@
       : calculation.quantity;
 
     if (!state.activeSymbol) {
-      setStatus("Click Fetch LTP before filling data.", "error");
+      setStatus("Click Get LTP before filling data.", "error");
       return;
     }
 
@@ -430,12 +468,10 @@
           button.disabled = true;
           button.textContent = `\u2713 Order ${orderNumber} Ready`;
           button.classList.add("is-ready");
+          refs.order1ResultCheck.checked = state.orderPrepared.order1;
+          refs.order2ResultCheck.checked = state.orderPrepared.order2;
 
-          if (state.orderPrepared.order1 && state.orderPrepared.order2) {
-            setStatus(`\u2705 Full Position Prepared\nTotal Qty: ${calculation.quantity}\nOrder 1: ${splitQuantities.order1Qty}\nOrder 2: ${splitQuantities.order2Qty}`, "success");
-          } else {
-            setStatus(`Order ${orderNumber} prepared\nQty: ${orderQuantity}`, "success");
-          }
+          setStatus("", "success");
         } else {
           setStatus(`Trade prepared with qty ${orderQuantity}. Review before BUY.`, "success");
         }
@@ -482,24 +518,20 @@
     activeOutput.wrapper.classList.add("dft-active-symbol");
     activeSection.append(activeOutput.wrapper);
 
-    const tradeSection = createElement("div", "dft-section dft-grid");
+    const tradeSection = createElement("div", "dft-section dft-trade-grid");
     const buyPrice = field("dft-buy-price", "Buy Price", "number", "0.00");
-    const stopLoss = field("dft-stop-loss", "Stop Loss", "number", "0.00");
-    tradeSection.append(buyPrice.wrapper, stopLoss.wrapper);
+    const stopLoss = field("dft-stop-loss", "Stop Price", "number", "0.00");
+    const risk = readOnlyField("Risk / Share");
+    tradeSection.append(buyPrice.wrapper, stopLoss.wrapper, risk.wrapper);
 
-    const outputSection = createElement("div", "dft-section dft-output-grid");
-    const risk = output("Risk / Share");
-    const quantity = output("Quantity");
-    const target = output("Target Price");
-    const amount = output("Total Amount");
-    outputSection.append(quantity.wrapper, risk.wrapper, target.wrapper, amount.wrapper);
-    const splitOutputs = createElement("div", "dft-section dft-output-grid is-hidden");
-    const order1Qty = output("Order 1 Qty");
-    const order2Qty = output("Order 2 Qty");
-    splitOutputs.append(order1Qty.wrapper, order2Qty.wrapper);
+    const outputSection = createElement("div", "dft-section dft-metric-grid");
+    const quantity = readOnlyField("Qty");
+    const target = readOnlyField("Target");
+    const amount = readOnlyField("Amount");
+    outputSection.append(quantity.wrapper, target.wrapper, amount.wrapper);
 
     const actions = createElement("div", "dft-actions");
-    const fetch = createElement("button", "dft-btn dft-secondary", "Fetch LTP");
+    const fetch = createElement("button", "dft-btn dft-secondary", "Get LTP");
     const order1 = createElement("button", "dft-btn dft-primary", "Fill Data");
     const order2 = createElement("button", "dft-btn dft-primary is-hidden", "Order 2");
     fetch.type = "button";
@@ -507,8 +539,14 @@
     order2.type = "button";
     actions.append(fetch, order1, order2);
 
+    const splitResult = createElement("div", "dft-split-result is-hidden");
+    const splitTotalQty = createElement("span", "dft-split-total", "Total Qty: -");
+    const order1Result = splitResultItem("-");
+    const order2Result = splitResultItem("-");
+    splitResult.append(splitTotalQty, order1Result.wrapper, order2Result.wrapper);
+
     const status = createElement("div", "dft-status");
-    panel.append(header, topGrid, activeSection, tradeSection, outputSection, splitOutputs, actions, status);
+    panel.append(header, topGrid, activeSection, tradeSection, outputSection, actions, splitResult, status);
     root.append(button, panel);
     document.documentElement.appendChild(root);
 
@@ -527,9 +565,12 @@
       quantity: quantity.valueElement,
       target: target.valueElement,
       amount: amount.valueElement,
-      splitOutputs,
-      order1Qty: order1Qty.valueElement,
-      order2Qty: order2Qty.valueElement,
+      splitResult,
+      splitTotalQty,
+      order1ResultCheck: order1Result.input,
+      order2ResultCheck: order2Result.input,
+      order1ResultText: order1Result.text,
+      order2ResultText: order2Result.text,
       actions,
       fetch,
       order1,
@@ -584,5 +625,5 @@
   });
 
   loadSettings();
-  anchorPanelAboveButton();
+  loadPanelPosition();
 })();

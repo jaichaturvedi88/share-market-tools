@@ -104,8 +104,14 @@
 }
 
 .dft-top-grid {
-  grid-template-columns: 0.8fr 1fr auto;
+  grid-template-columns: 0.8fr 1fr 0.78fr;
   align-items: end;
+}
+
+.dft-trade-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px;
 }
 
 .dft-section {
@@ -137,6 +143,21 @@
   user-select: text;
 }
 
+.dft-readonly-field {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  background: #0b1119;
+  color: #f8fafc;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .dft-input:focus {
   border-color: rgba(45, 212, 191, 0.85);
   box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
@@ -145,6 +166,12 @@
 .dft-output-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.dft-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -161,7 +188,7 @@
 
 .dft-output span:first-child {
   color: #94a3b8;
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
 }
 
@@ -249,23 +276,67 @@
 }
 
 .dft-check-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 28px;
-  margin-top: 0;
-  color: #cbd5e1;
+  display: grid;
+  gap: 3px;
   cursor: pointer;
-  font-size: 10px;
-  font-weight: 700;
   user-select: none;
 }
 
-.dft-check {
-  width: 12px;
-  height: 12px;
+.dft-check-box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 0;
+}
+
+#dhan-fast-trade-root input.dft-check[type="checkbox"] {
+  width: 15px;
+  height: 15px;
   margin: 0;
   accent-color: #14b8a6;
+}
+
+.dft-split-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 18px;
+  margin-top: 7px;
+  color: #86efac;
+  font-size: 10.5px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.dft-split-total {
+  color: #bbf7d0;
+  margin-right: 6px;
+}
+
+.dft-split-result-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: #bbf7d0;
+}
+
+.dft-split-result-check {
+  width: 11px;
+  height: 11px;
+  margin: 0;
+  accent-color: #22c55e;
+  opacity: 1;
+}
+
+.dft-split-result-value {
+  color: #bbf7d0;
+  font-size: 10.5px;
+  font-weight: 900;
 }
 
 .is-hidden {
