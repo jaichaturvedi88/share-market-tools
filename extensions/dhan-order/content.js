@@ -21,6 +21,10 @@
     calculation: null,
     activeSymbol: "",
     hasSavedPanelPosition: false,
+    orderPrepared: {
+      order1: false,
+      order2: false
+    },
     values: {
       rr: DEFAULTS.rr,
       maxLoss: DEFAULTS.maxLoss,
@@ -69,6 +73,16 @@
     return { wrapper, valueElement };
   }
 
+  function checkboxField(id, label) {
+    const wrapper = createElement("label", "dft-check-label");
+    const input = createElement("input", "dft-check");
+    const text = createElement("span", "", label);
+    input.id = id;
+    input.type = "checkbox";
+    wrapper.append(input, text);
+    return { wrapper, input };
+  }
+
   function formatNumber(value, decimals) {
     if (!Number.isFinite(value) || value <= 0) {
       return "-";
@@ -89,6 +103,59 @@
     refs.status.textContent = message || "";
     refs.status.classList.toggle("is-error", type === "error");
     refs.status.classList.toggle("is-success", type === "success");
+  }
+
+  function getSplitQuantities(totalQuantity) {
+    const order1Qty = Math.ceil(totalQuantity / 2);
+    return {
+      order1Qty,
+      order2Qty: totalQuantity - order1Qty
+    };
+  }
+
+  function resetOrderButtons() {
+    state.orderPrepared.order1 = false;
+    state.orderPrepared.order2 = false;
+    refs.order1.disabled = false;
+    refs.order2.disabled = false;
+    refs.order1.textContent = "Order 1";
+    refs.order2.textContent = "Order 2";
+    refs.order1.classList.remove("is-ready");
+    refs.order2.classList.remove("is-ready");
+  }
+
+  function refreshSplitModeUi() {
+    const splitEnabled = refs.split.checked;
+    const calculation = state.calculation;
+    const quantity = calculation?.quantity || 0;
+    const splitQuantities = getSplitQuantities(quantity);
+
+    refs.splitOutputs.classList.toggle("is-hidden", !splitEnabled);
+    refs.actions.classList.toggle("is-split", splitEnabled);
+    refs.order1Qty.textContent = splitEnabled && splitQuantities.order1Qty > 0 ? String(splitQuantities.order1Qty) : "-";
+    refs.order2Qty.textContent = splitEnabled && splitQuantities.order2Qty > 0 ? String(splitQuantities.order2Qty) : "-";
+    refs.order2.classList.toggle("is-hidden", !splitEnabled);
+
+    if (splitEnabled) {
+      refs.order1.textContent = state.orderPrepared.order1 ? "\u2713 Order 1 Ready" : "Order 1";
+      refs.order2.textContent = state.orderPrepared.order2 ? "\u2713 Order 2 Ready" : "Order 2";
+      refs.order1.disabled = state.orderPrepared.order1;
+      refs.order2.disabled = state.orderPrepared.order2;
+      refs.order1.classList.toggle("is-ready", state.orderPrepared.order1);
+      refs.order2.classList.toggle("is-ready", state.orderPrepared.order2);
+    } else {
+      refs.order1.textContent = "Fill Data";
+      refs.order2.textContent = "Order 2";
+      refs.order1.disabled = false;
+      refs.order2.disabled = false;
+      refs.order1.classList.remove("is-ready");
+      refs.order2.classList.remove("is-ready");
+    }
+  }
+
+  function resetOrderState() {
+    resetOrderButtons();
+    refreshSplitModeUi();
   }
 
   function persistSettings() {
@@ -124,6 +191,7 @@
     refs.quantity.textContent = calculation.quantity > 0 ? String(calculation.quantity) : "-";
     refs.target.textContent = formatNumber(calculation.targetPrice, 2);
     refs.amount.textContent = formatNumber(calculation.totalAmount, 2);
+    refreshSplitModeUi();
 
     if (values.buyPrice || values.stopLoss) {
       setStatus(calculation.errors[0] || "", calculation.errors.length ? "error" : "");
@@ -154,8 +222,11 @@
     refs.quantity.textContent = "-";
     refs.target.textContent = "-";
     refs.amount.textContent = "-";
+    refs.order1Qty.textContent = "-";
+    refs.order2Qty.textContent = "-";
     setStatus("", "");
     state.calculation = null;
+    resetOrderState();
     chrome.storage.local.remove([STORAGE_KEYS.buyPrice, STORAGE_KEYS.stopLoss]);
   }
 
@@ -165,7 +236,10 @@
     refs.quantity.textContent = "-";
     refs.target.textContent = "-";
     refs.amount.textContent = "-";
+    refs.order1Qty.textContent = "-";
+    refs.order2Qty.textContent = "-";
     state.calculation = null;
+    resetOrderState();
     chrome.storage.local.remove([STORAGE_KEYS.stopLoss]);
   }
 
@@ -315,9 +389,13 @@
     setStatus(`Fetched ${result.symbol} LTP ${refs.buyPrice.value}.`, "success");
   }
 
-  async function fillData() {
+  async function prepareOrder(orderNumber) {
     const calculation = recalculate();
-    const orderQuantity = Math.floor(calculation.quantity * 0.5);
+    const splitEnabled = refs.split.checked;
+    const splitQuantities = getSplitQuantities(calculation.quantity);
+    const orderQuantity = splitEnabled
+      ? (orderNumber === 1 ? splitQuantities.order1Qty : splitQuantities.order2Qty)
+      : calculation.quantity;
 
     if (!state.activeSymbol) {
       setStatus("Click Fetch LTP before filling data.", "error");
@@ -330,7 +408,7 @@
     }
 
     if (orderQuantity <= 0) {
-      setStatus("50% quantity must be greater than 0.", "error");
+      setStatus("Order quantity must be greater than 0.", "error");
       return;
     }
 
@@ -345,7 +423,22 @@
       });
 
       if (result.ok) {
-        setStatus(`Trade prepared with 50% qty (${orderQuantity}). Review before BUY.`, "success");
+        if (splitEnabled) {
+          const key = orderNumber === 1 ? "order1" : "order2";
+          const button = orderNumber === 1 ? refs.order1 : refs.order2;
+          state.orderPrepared[key] = true;
+          button.disabled = true;
+          button.textContent = `\u2713 Order ${orderNumber} Ready`;
+          button.classList.add("is-ready");
+
+          if (state.orderPrepared.order1 && state.orderPrepared.order2) {
+            setStatus(`\u2705 Full Position Prepared\nTotal Qty: ${calculation.quantity}\nOrder 1: ${splitQuantities.order1Qty}\nOrder 2: ${splitQuantities.order2Qty}`, "success");
+          } else {
+            setStatus(`Order ${orderNumber} prepared\nQty: ${orderQuantity}`, "success");
+          }
+        } else {
+          setStatus(`Trade prepared with qty ${orderQuantity}. Review before BUY.`, "success");
+        }
       } else {
         setStatus(`Prepared partially. Check ${result.missing.join(", ")} manually.`, "error");
       }
@@ -379,7 +472,10 @@
     const topGrid = createElement("div", "dft-grid");
     const rr = field("dft-rr", "Risk Reward", "number", "2");
     const maxLoss = field("dft-max-loss", "Max Loss", "number", "1000");
-    topGrid.append(rr.wrapper, maxLoss.wrapper);
+    const split = checkboxField("dft-split", "Split 50%");
+    split.input.checked = true;
+    topGrid.classList.add("dft-top-grid");
+    topGrid.append(rr.wrapper, maxLoss.wrapper, split.wrapper);
 
     const activeSection = createElement("div", "dft-section");
     const activeOutput = output("Active Symbol");
@@ -397,16 +493,22 @@
     const target = output("Target Price");
     const amount = output("Total Amount");
     outputSection.append(quantity.wrapper, risk.wrapper, target.wrapper, amount.wrapper);
+    const splitOutputs = createElement("div", "dft-section dft-output-grid is-hidden");
+    const order1Qty = output("Order 1 Qty");
+    const order2Qty = output("Order 2 Qty");
+    splitOutputs.append(order1Qty.wrapper, order2Qty.wrapper);
 
     const actions = createElement("div", "dft-actions");
     const fetch = createElement("button", "dft-btn dft-secondary", "Fetch LTP");
-    const fill = createElement("button", "dft-btn dft-primary", "Fill Data");
+    const order1 = createElement("button", "dft-btn dft-primary", "Fill Data");
+    const order2 = createElement("button", "dft-btn dft-primary is-hidden", "Order 2");
     fetch.type = "button";
-    fill.type = "button";
-    actions.append(fetch, fill);
+    order1.type = "button";
+    order2.type = "button";
+    actions.append(fetch, order1, order2);
 
     const status = createElement("div", "dft-status");
-    panel.append(header, topGrid, activeSection, tradeSection, outputSection, actions, status);
+    panel.append(header, topGrid, activeSection, tradeSection, outputSection, splitOutputs, actions, status);
     root.append(button, panel);
     document.documentElement.appendChild(root);
 
@@ -417,6 +519,7 @@
       close,
       rr: rr.input,
       maxLoss: maxLoss.input,
+      split: split.input,
       activeSymbol: activeOutput.valueElement,
       buyPrice: buyPrice.input,
       stopLoss: stopLoss.input,
@@ -424,8 +527,13 @@
       quantity: quantity.valueElement,
       target: target.valueElement,
       amount: amount.valueElement,
+      splitOutputs,
+      order1Qty: order1Qty.valueElement,
+      order2Qty: order2Qty.valueElement,
+      actions,
       fetch,
-      fill,
+      order1,
+      order2,
       status
     };
   }
@@ -439,12 +547,19 @@
   refs.button.addEventListener("click", togglePanel);
   refs.close.addEventListener("click", closePanel);
   refs.fetch.addEventListener("click", fetchLtp);
-  refs.fill.addEventListener("click", fillData);
+  refs.order1.addEventListener("click", () => prepareOrder(1));
+  refs.order2.addEventListener("click", () => prepareOrder(2));
+  refs.split.addEventListener("change", () => {
+    resetOrderState();
+    recalculate();
+    setStatus("", "");
+  });
   enableDrag();
 
   [refs.rr, refs.maxLoss].forEach((input) => {
     input.addEventListener("input", () => {
       persistSettings();
+      resetOrderState();
       recalculate();
     });
   });
@@ -452,6 +567,7 @@
   [refs.buyPrice, refs.stopLoss].forEach((input) => {
     input.addEventListener("input", () => {
       persistDraft();
+      resetOrderState();
       recalculate();
     });
   });
