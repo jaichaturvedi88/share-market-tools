@@ -1,0 +1,48 @@
+#pcr-floating-window {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: 200px;
+    background: #fff;
+    border: 2px solid #3d2c77;
+    border-radius: 8px;
+    z-index: 9999;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    font-family: Arial, sans-serif;
+}
+
+#pcr-header {
+    background: #3d2c77;
+    color: white;
+    padding: 8px;
+    cursor: move;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px 5px 0 0;
+}
+
+#pcr-current {
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    color: #2c3e50;
+}
+
+#pcr-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+#pcr-history-table th, #pcr-history-table td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: center;
+}
+
+.pcr-controls {
+    padding: 5px;
+    border-top: 1px solid #ddd;
+    text-align: center;
+}

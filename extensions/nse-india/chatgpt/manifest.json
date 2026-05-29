@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "NSE PCR Tracker ChatGpt",
+  "version": "1.0",
+  "description": "Track PCR on NSE Option Chain",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.nseindia.com/option-chain*"],
+      "js": ["content.js"]
+    }
+  ]
+}

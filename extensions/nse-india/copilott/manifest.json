@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "NSE Option Chain PCR Tracker",
+  "version": "1.0",
+  "description": "Tracks PCR values from NSE option chain",
+  "permissions": ["storage", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.nseindia.com/option-chain*"],
+      "js": ["content.js"],
+      "css": ["floating.css"]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+#pcrWindow {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  width: 250px;
+  background: white;
+  border: 1px solid #333;
+  padding: 10px;
+  z-index: 9999;
+  cursor: move;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+}
