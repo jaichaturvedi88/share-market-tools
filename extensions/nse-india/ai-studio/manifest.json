@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "NSE India PCR Tracker Ai Studio",
+  "version": "1.0",
+  "description": "Tracks PCR ratio directly on the NSE Option Chain page.",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.nseindia.com/option-chain*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ]
+}

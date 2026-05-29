@@ -1,0 +1,260 @@
+#pcr-tracker-panel {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  width: 350px;
+  background: white;
+  border: 2px solid #333;
+  z-index: 999999;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  padding: 12px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pcr-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 12px;
+  cursor: move;
+  padding-bottom: 5px;
+}
+
+.pcr-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+#pcr-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.pcr-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.pcr-scale-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.pcr-scale-labels {
+  position: relative;
+  height: 16px;
+  margin-bottom: 2px;
+}
+
+.pcr-scale-labels span {
+  position: absolute;
+  font-size: 11px;
+  font-weight: bold;
+  color: #333;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.pcr-scale-bar {
+  display: flex;
+  height: 10px;
+  border: 1px solid #333;
+  position: relative;
+  border-radius: 1px;
+}
+
+.pcr-segment {
+  flex: 1;
+}
+
+.s-bull { background: #2e7d32; }
+.bull { background: #689f38; }
+.neut { background: #9e9e9e; }
+.bear { background: #ef6c00; }
+.s-bear { background: #c62828; }
+
+.pcr-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #000;
+  box-shadow: 0 0 2px rgba(255,255,255,0.8);
+  z-index: 5;
+  display: none;
+}
+
+.pcr-indicator::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -4px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 8px solid #000;
+}
+
+.pcr-indicator::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: -4px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid #000;
+}
+
+.pcr-scale-values {
+  position: relative;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.pcr-scale-values span {
+  position: absolute;
+  font-size: 13px;
+  color: #444;
+  transform: translateX(-50%);
+}
+
+.control-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+
+.pcr-controls-row label {
+  font-size: 13px;
+  font-weight: bold;
+  color: #666;
+  display: inline-flex;
+  align-items: center;
+  height: 26px; /* Match button height for better alignment */
+  line-height: 1;
+  margin: 0;   /* Remove default margin */
+  padding: 0;  /* Remove default padding */
+}
+
+.pcr-controls-row input, .pcr-controls-row select {
+  padding: 4px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  border-radius: 4px;
+  margin: 0;
+}
+
+.pcr-controls-row input {
+  width: 50px;
+}
+
+.pcr-controls-row button {
+  padding: 4px 8px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  height: 26px;
+  margin: 0;
+}
+
+#pcr-clear-db {
+  background-color: #6c757d;
+  padding: 4px 8px;
+  font-size: 13px;
+  margin-left: auto;
+}
+
+#pcr-clear-db:hover {
+  background-color: #5a6268;
+}
+
+.pcr-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.pcr-status, .pcr-sentiment {
+  font-size: 13px;
+  color: #444;
+}
+
+.pcr-sentiment {
+  font-size: 14px;
+}
+
+#pcr-sentiment-text {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.pcr-table-container {
+  overflow-x: auto;
+  margin-bottom: 12px;
+  min-height: 280px; /* Approximate height for 10 rows + header */
+}
+
+#pcr-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  table-layout: fixed;
+}
+
+#pcr-history-table th, #pcr-history-table td {
+  border: 1px solid #eee;
+  padding: 6px 4px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#pcr-history-table th {
+  background: #f8f9fa;
+  font-weight: bold;
+}
+
+#pcr-history-table tr {
+  height: 25px;
+}
+
+.pcr-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  padding-top: 5px;
+  border-top: 1px solid #eee;
+}
+
+.pcr-pagination button {
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: #f8f9fa;
+  border-radius: 3px;
+}
+
+.pcr-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

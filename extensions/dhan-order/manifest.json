@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Dhan Fast Trade Panel",
+  "description": "Floating utility panel for faster manual long investment order preparation on Dhan TradingView.",
+  "version": "0.1.0",
+  "permissions": ["storage"],
+  "host_permissions": ["https://tv.dhan.co/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://tv.dhan.co/*"],
+      "css": ["content.css"],
+      "js": [
+        "utils/calculator.js",
+        "utils/domHandler.js",
+        "content.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}
