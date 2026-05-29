@@ -39,13 +39,45 @@
     ].filter(Boolean).join(" "));
   }
 
-  function getClickableElements() {
-    return Array.from(document.querySelectorAll("button, [role='button'], a, label, [tabindex]"))
+  function clickElement(element) {
+    element.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 1, pointerType: "mouse" }));
+    element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+    element.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 1, pointerType: "mouse" }));
+    element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
+    element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  }
+
+  function getOrderRoot() {
+    return document.querySelector("#tradefromdhan-modal.show, #tradefromdhan-modal, .modal.show") || document;
+  }
+
+  function getQueryableRoot(root) {
+    return root && typeof root.querySelectorAll === "function" ? root : document;
+  }
+
+  function querySelectorAllDeep(root, selector) {
+    const queryRoot = getQueryableRoot(root);
+    const matches = Array.from(queryRoot.querySelectorAll(selector));
+    const elements = Array.from(queryRoot.querySelectorAll("*"));
+
+    elements.forEach((element) => {
+      if (!element.shadowRoot) {
+        return;
+      }
+
+      matches.push(...querySelectorAllDeep(element.shadowRoot, selector));
+    });
+
+    return matches;
+  }
+
+  function getClickableElements(root) {
+    return querySelectorAllDeep(root, "button, [role='button'], a, label, [tabindex]")
       .filter((element) => isVisible(element) && !isExtensionElement(element));
   }
 
-  function clickByText(words) {
-    const candidates = getClickableElements();
+  function clickByText(words, root) {
+    const candidates = getClickableElements(root);
     const exact = candidates.find((element) => words.includes(textOf(element)));
     const partial = candidates.find((element) => words.some((word) => textOf(element).includes(word)));
     const target = exact || partial;
@@ -54,13 +86,13 @@
       return false;
     }
 
-    target.click();
+    clickElement(target);
     return true;
   }
 
-  function clickFirstVisible(selectors) {
+  function clickFirstVisible(selectors, root) {
     for (const selector of selectors) {
-      const element = Array.from(document.querySelectorAll(selector))
+      const element = querySelectorAllDeep(root, selector)
         .find((candidate) => isVisible(candidate) && !isExtensionElement(candidate));
 
       if (element) {
@@ -68,12 +100,48 @@
           text: element.textContent || "",
           className: element.className || ""
         });
-        element.click();
+        clickElement(element);
         return true;
       }
     }
 
     return false;
+  }
+
+  function isActiveElement(element) {
+    return Boolean(element && (element.classList?.contains("active") || element.getAttribute("aria-selected") === "true"));
+  }
+
+  async function clickAndWaitActive(selectors, label, rootGetter) {
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const root = rootGetter ? rootGetter() : document;
+      const element = selectors
+        .flatMap((selector) => querySelectorAllDeep(root, selector))
+        .find((candidate) => isVisible(candidate) && !isExtensionElement(candidate));
+
+      if (!element) {
+        await wait(150);
+        continue;
+      }
+
+      if (!isActiveElement(element)) {
+        clickElement(element);
+      }
+
+      await wait(300);
+      debugLog(`${label} selection checked`, {
+        attempt,
+        active: isActiveElement(element),
+        text: element.textContent || "",
+        className: element.className || ""
+      });
+
+      if (isActiveElement(element)) {
+        return true;
+      }
+    }
+
+    return clickFirstVisible(selectors, rootGetter ? rootGetter() : document);
   }
 
   function dispatchInputEvents(element) {
@@ -153,7 +221,7 @@
   }
 
   function getOrderTicketInputs() {
-    const root = document.querySelector("#tradefromdhan-modal.show, #tradefromdhan-modal, .modal.show") || document;
+    const root = getOrderRoot();
     const inputs = Array.from(root.querySelectorAll("input"))
       .filter((input) => {
         const type = normalize(input.getAttribute("type"));
@@ -169,6 +237,19 @@
     })));
 
     return inputs;
+  }
+
+  async function waitForOrderInputCount(minCount) {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const inputs = getOrderTicketInputs();
+      if (inputs.length >= minCount) {
+        return true;
+      }
+
+      await wait(250);
+    }
+
+    return false;
   }
 
   function fillInputElement(input, value, fieldName) {
@@ -412,35 +493,48 @@
   }
 
   async function prepareTrade(trade) {
+    debugLog("Prepare trade started", trade);
     await openBuyOrderWindow();
-    const investingSelected = clickFirstVisible([
+    const orderRoot = getOrderRoot();
+    debugLog("Order root resolved", {
+      tagName: orderRoot.tagName || "document",
+      id: orderRoot.id || "",
+      customProducts: querySelectorAllDeep(orderRoot, "custom-tfd-orderproducts").map((element) => ({
+        id: element.id,
+        selectedItem: element.getAttribute("selected-item")
+      })),
+      investingButtons: querySelectorAllDeep(orderRoot, '[data-itemname="C"]').length,
+      superBetaButtons: querySelectorAllDeep(orderRoot, '[data-itemname="VTT"]').length
+    });
+
+    const investingSelected = await clickAndWaitActive([
       'button.tfdProductbutton[data-itemname="C"]',
       'button[data-itemname="C"]',
       '.tfdProductbutton[data-itemname="C"]'
-    ]) || clickByText(["investing"]);
-    await wait(250);
-    const superBetaSelected = clickByText(["super beta"]);
-    await wait(250);
+    ], "Investing", getOrderRoot) || clickByText(["investing"], orderRoot);
+    await wait(500);
+    const superBetaSelected = await clickAndWaitActive([
+      'button.orderButton[data-itemname="VTT"]',
+      'button[data-itemname="VTT"]',
+      '.orderButton[data-itemname="VTT"]'
+    ], "Super beta", getOrderRoot) || clickByText(["superbeta", "super beta"], getOrderRoot);
+    await wait(700);
     const limitChecked = checkCheckbox(["limit price"]);
-    await wait(150);
+    await wait(300);
+    const superBetaInputsReady = await waitForOrderInputCount(4);
 
     const filled = {
       investing: investingSelected,
       superBeta: superBetaSelected,
-      limitPrice: limitChecked
+      limitPrice: limitChecked,
+      superBetaInputs: superBetaInputsReady
     };
 
-    const positionalFields = await fillOrderTicketByPosition(trade);
-    if (positionalFields) {
-      Object.assign(filled, positionalFields);
-    } else {
-      filled.quantity = fillField(FIELD_HINTS.quantity, trade.quantity);
-      await wait(180);
-      filled.price = fillField(FIELD_HINTS.price, trade.buyPrice);
-      await wait(180);
-      filled.target = fillField(FIELD_HINTS.target, trade.targetPrice);
-      await wait(180);
-      filled.stopLoss = fillField(FIELD_HINTS.stopLoss, trade.stopLoss);
+    if (superBetaInputsReady) {
+      const positionalFields = await fillOrderTicketByPosition(trade);
+      if (positionalFields) {
+        Object.assign(filled, positionalFields);
+      }
     }
 
     const missing = Object.entries(filled)

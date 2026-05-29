@@ -15,6 +15,15 @@
     return Math.round(value * 100) / 100;
   }
 
+  function roundToDecimals(value, decimals) {
+    if (!Number.isFinite(value)) {
+      return 0;
+    }
+
+    const factor = 10 ** decimals;
+    return Math.round(value * factor) / factor;
+  }
+
   function calculateTrade(values) {
     const rr = toNumber(values.rr);
     const maxLoss = toNumber(values.maxLoss);
@@ -72,6 +81,7 @@
   window.DhanOrderCalculator = {
     calculateTrade,
     roundPrice,
+    roundToDecimals,
     toNumber
   };
 })();

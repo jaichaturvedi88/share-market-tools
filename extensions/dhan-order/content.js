@@ -340,8 +340,8 @@
       const result = await window.DhanOrderDomHandler.prepareTrade({
         quantity: orderQuantity,
         buyPrice: window.DhanOrderCalculator.roundPrice(calculation.buyPrice),
-        stopLoss: window.DhanOrderCalculator.roundPrice(calculation.stopLoss),
-        targetPrice: calculation.targetPrice
+        stopLoss: window.DhanOrderCalculator.roundToDecimals(calculation.stopLoss, 1).toFixed(1),
+        targetPrice: window.DhanOrderCalculator.roundToDecimals(calculation.targetPrice, 1).toFixed(1)
       });
 
       if (result.ok) {
@@ -396,7 +396,7 @@
     const quantity = output("Quantity");
     const target = output("Target Price");
     const amount = output("Total Amount");
-    outputSection.append(risk.wrapper, quantity.wrapper, target.wrapper, amount.wrapper);
+    outputSection.append(quantity.wrapper, risk.wrapper, target.wrapper, amount.wrapper);
 
     const actions = createElement("div", "dft-actions");
     const fetch = createElement("button", "dft-btn dft-secondary", "Fetch LTP");
