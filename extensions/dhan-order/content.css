@@ -28,11 +28,18 @@
   font-weight: 700;
   letter-spacing: 0;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 80ms ease;
 }
 
 .dft-fab:hover {
   border-color: rgba(94, 234, 212, 0.9);
   background: #122033;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.46);
+}
+
+.dft-fab:active {
+  transform: translateY(1px) scale(0.98);
+  background: #0b1119;
 }
 
 .dft-panel {
@@ -95,6 +102,17 @@
   cursor: pointer;
   font-size: 15px;
   line-height: 1;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 80ms ease;
+}
+
+.dft-close:hover {
+  border-color: rgba(248, 113, 113, 0.55);
+  background: #2a1720;
+  color: #fecaca;
+}
+
+.dft-close:active {
+  transform: scale(0.94);
 }
 
 .dft-grid {
@@ -220,6 +238,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease, transform 80ms ease;
 }
 
 .dft-primary {
@@ -229,6 +249,12 @@
 
 .dft-primary:hover {
   background: #2dd4bf;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.16);
+}
+
+.dft-primary:active {
+  transform: translateY(1px) scale(0.985);
+  background: #0f9488;
 }
 
 .dft-primary.is-ready {
@@ -245,6 +271,31 @@
   border: 1px solid rgba(148, 163, 184, 0.22);
   background: #151d28;
   color: #cbd5e1;
+}
+
+.dft-secondary:hover {
+  border-color: rgba(94, 234, 212, 0.5);
+  background: #1d2938;
+  color: #f8fafc;
+  box-shadow: 0 0 0 3px rgba(94, 234, 212, 0.1);
+}
+
+.dft-secondary:active {
+  transform: translateY(1px) scale(0.985);
+  background: #0f172a;
+}
+
+.dft-btn:focus-visible,
+.dft-fab:focus-visible,
+.dft-close:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.28);
+}
+
+.dft-btn:disabled:hover,
+.dft-btn:disabled:active {
+  box-shadow: none;
+  transform: none;
 }
 
 .dft-status {
