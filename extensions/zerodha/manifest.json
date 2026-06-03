@@ -16,7 +16,8 @@
     "permissions": [
         "tabs",
         "activeTab",
-        "scripting"
+        "scripting",
+        "storage"
     ],
     "host_permissions": [
         "http://*/*",
@@ -25,12 +26,12 @@
     "content_scripts": [
         {
             "matches": ["https://kite.zerodha.com/*"],
-            "js": ["content-utils.js", "content.js", "libs/pages/positions.js", "libs/pages/holdings.js"],
-            "css": ["libs/bootstrap.min.css", "content.css", "libs/pages/positions.css", "libs/pages/holdings.css" ]
+            "js": ["content-utils.js", "content.js", "libs/pages/positions.js", "libs/pages/holdings.js", "libs/pages/gtt.js"],
+            "css": ["libs/bootstrap.min.css", "content.css", "libs/pages/positions.css", "libs/pages/holdings.css", "libs/pages/gtt.css" ]
         }
     ],
     "web_accessible_resources": [{
-        "resources": ["libs/*"],
+        "resources": ["libs/*", "libs/pages/gtt-fetch-bridge.js"],
         "matches": ["<all_urls>"]
   }]
 }
