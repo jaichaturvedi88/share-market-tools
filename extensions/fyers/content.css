@@ -1,0 +1,368 @@
+#fyers-sl-manager-root {
+  all: initial;
+  color-scheme: dark;
+  font-family: Inter, Arial, sans-serif;
+  z-index: 100000;
+}
+
+#fyers-sl-manager-root *,
+#fyers-sl-manager-root *::before,
+#fyers-sl-manager-root *::after {
+  box-sizing: border-box;
+}
+
+/* Toggle FAB Button - Fixed position slightly up to avoid fyers buy button */
+#fsl-helper-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 60px; /* Moved up to 60px to avoid fyers buy button */
+  z-index: 100001;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 31px;
+  min-width: 76px;
+  padding: 0 12px;
+  border: 1px solid #286b80;
+  border-radius: 999px;
+  background: #111b2b;
+  color: #f7fbff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: all 0.15s ease;
+}
+
+#fsl-helper-toggle:hover {
+  border-color: #3fa0bb;
+  background: #162236;
+}
+
+.fsl-helper-icon {
+  color: #ffd447;
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* Draggable SL Details Panel - Fixed position above the toggle */
+#fsl-helper-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 100px; /* Positioned above the FAB toggle */
+  z-index: 100002;
+  width: min(690px, calc(100vw - 36px));
+  max-height: min(560px, calc(100vh - 150px));
+  border: 1px solid #263a59;
+  border-radius: 6px;
+  background: #0d1420;
+  color: #e7edf7;
+  overflow: hidden;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.44);
+  display: none;
+  flex-direction: column;
+}
+
+#fsl-helper-panel.is-open {
+  display: flex;
+}
+
+.fsl-helper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #22314b;
+  background: #121c2d;
+  color: #f7fbff;
+  cursor: grab;
+  user-select: none;
+}
+
+.fsl-helper-header.is-dragging {
+  cursor: grabbing;
+}
+
+.fsl-helper-header strong {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.fsl-helper-header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fsl-helper-toggle-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  color: #c7d5e8;
+  font-size: 11.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.fsl-helper-toggle-option input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.fsl-helper-header button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #314766;
+  border-radius: 4px;
+  background: #172235;
+  color: #d7e5f7;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.fsl-helper-header button:hover {
+  border-color: #4b6b95;
+  background: #1d2c44;
+}
+
+/* Status Bar */
+#fsl-helper-status {
+  padding: 8px 12px;
+  border-bottom: 1px solid #1f2d44;
+  font-size: 11.5px;
+  color: #9fb0c7;
+  background: rgba(18, 28, 45, 0.2);
+}
+
+#fsl-helper-status.is-error {
+  color: #ff7d88;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+#fsl-helper-status.is-success {
+  color: #5ee09b;
+  background: rgba(16, 185, 129, 0.08);
+}
+
+/* Config Section inside Panel */
+.fsl-helper-config-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #1f2d44;
+  background: #0f1826;
+}
+
+.fsl-helper-config-label {
+  font-size: 11px;
+  color: #8fb9ff;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fsl-helper-config-input {
+  width: 80px;
+  height: 24px;
+  background: #090e15;
+  border: 1px solid #314766;
+  border-radius: 4px;
+  color: #ffd447;
+  text-align: right;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+}
+
+.fsl-helper-config-input:focus {
+  border-color: #3fa0bb;
+}
+
+/* Table Wrapping and Structure */
+.fsl-helper-table-wrap {
+  max-height: 380px;
+  overflow-y: auto;
+  background: #0d1420;
+}
+
+#fsl-helper-panel table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  color: #e7edf7;
+}
+
+#fsl-helper-panel th,
+#fsl-helper-panel td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #1f2d44;
+  text-align: left;
+  vertical-align: middle;
+}
+
+#fsl-helper-panel th {
+  position: sticky;
+  top: 0;
+  background: #101929;
+  color: #8fb9ff;
+  font-weight: 700;
+  z-index: 10;
+}
+
+#fsl-helper-panel th button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+#fsl-helper-panel th button::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  opacity: 0.3;
+}
+
+#fsl-helper-panel th button[data-sort-direction="asc"]::after {
+  border-bottom: 5px solid #8fb9ff;
+  opacity: 1;
+}
+
+#fsl-helper-panel th button[data-sort-direction="desc"]::after {
+  border-top: 5px solid #8fb9ff;
+  opacity: 1;
+}
+
+#fsl-helper-panel tbody tr:nth-child(even) {
+  background: #111b2b;
+}
+
+#fsl-helper-panel tbody tr:hover {
+  background: #17243a;
+}
+
+/* Highlight row when target profit is met */
+#fsl-helper-panel tbody tr.is-target-met {
+  background: rgba(94, 224, 155, 0.05);
+}
+#fsl-helper-panel tbody tr.is-target-met:hover {
+  background: rgba(94, 224, 155, 0.09);
+}
+
+/* Column Specific Styles - Yellow text for numeric values */
+#fsl-helper-panel td.val-numeric {
+  text-align: right;
+  white-space: nowrap;
+  color: #f6d365;
+  font-weight: 600;
+}
+
+#fsl-helper-panel th.col-numeric button {
+  justify-content: flex-end;
+}
+
+/* Align headers/cells for centered columns (Result, SL) */
+#fsl-helper-panel th.col-center button,
+#fsl-helper-panel td.val-center {
+  justify-content: center;
+  text-align: center;
+}
+
+/* Status styles for profit/loss */
+.fsl-status-text {
+  font-weight: 700;
+  font-size: 11.5px;
+  text-transform: capitalize;
+}
+
+.fsl-status-profit {
+  color: #5ee09b;
+}
+
+.fsl-status-loss {
+  color: #ff7d88;
+}
+
+.fsl-trigger-percent {
+  display: inline-block;
+  color: #9fb0c7;
+  font-weight: 700;
+}
+
+.fsl-trigger-percent-met {
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: #b8f5cf;
+  color: #123d24;
+  text-shadow: none;
+}
+
+/* Action button for SL modification */
+.fsl-helper-move-sl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #5fbf83;
+  border-radius: 4px;
+  background: #b8f5cf;
+  color: #123d24;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fsl-helper-move-sl:hover {
+  background: #a3ebbe;
+  transform: scale(1.05);
+}
+
+.fsl-helper-move-sl:disabled {
+  border-color: #314766;
+  background: #172235;
+  color: #6f7f96;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Custom scrollbars */
+.fsl-helper-table-wrap::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.fsl-helper-table-wrap::-webkit-scrollbar-track {
+  background: #0d1420;
+}
+.fsl-helper-table-wrap::-webkit-scrollbar-thumb {
+  background: #263a59;
+  border-radius: 4px;
+}
+.fsl-helper-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: #3fa0bb;
+}
