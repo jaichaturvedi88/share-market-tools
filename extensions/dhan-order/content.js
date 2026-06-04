@@ -139,8 +139,10 @@
     state.orderPrepared.order2 = false;
     refs.order1.disabled = false;
     refs.order2.disabled = false;
+    refs.fillLp.disabled = false;
     refs.order1.textContent = "Order 1";
     refs.order2.textContent = "Order 2";
+    refs.fillLp.textContent = "Fill LP";
     refs.order1.classList.remove("is-ready");
     refs.order2.classList.remove("is-ready");
   }
@@ -167,6 +169,7 @@
       refs.order2.textContent = state.orderPrepared.order2 ? "\u2713 Order 2 Ready" : "Order 2";
       refs.order1.disabled = state.orderPrepared.order1;
       refs.order2.disabled = state.orderPrepared.order2;
+      refs.fillLp.disabled = false;
       refs.order1.classList.toggle("is-ready", state.orderPrepared.order1);
       refs.order2.classList.toggle("is-ready", state.orderPrepared.order2);
     } else {
@@ -174,6 +177,7 @@
       refs.order2.textContent = "Order 2";
       refs.order1.disabled = false;
       refs.order2.disabled = false;
+      refs.fillLp.disabled = false;
       refs.order1.classList.remove("is-ready");
       refs.order2.classList.remove("is-ready");
     }
@@ -483,6 +487,36 @@
     }
   }
 
+  async function fillLongPositionLevels() {
+    const calculation = recalculate();
+
+    if (!calculation.isValid) {
+      setStatus(calculation.errors[0], "error");
+      return;
+    }
+
+    setStatus("Filling long position levels...", "");
+    refs.fillLp.disabled = true;
+
+    try {
+      const result = await window.DhanOrderDomHandler.prepareLongPositionLevels({
+        buyPrice: window.DhanOrderCalculator.roundPrice(calculation.buyPrice).toFixed(2),
+        targetPrice: window.DhanOrderCalculator.roundToDecimals(calculation.targetPrice, 1).toFixed(1),
+        stopLoss: window.DhanOrderCalculator.roundToDecimals(calculation.stopLoss, 1).toFixed(1)
+      });
+
+      if (result.ok) {
+        setStatus("Long position levels filled.", "success");
+      } else {
+        setStatus(`Long position partially filled. Check ${result.missing.join(", ")} manually.`, "error");
+      }
+    } catch (error) {
+      setStatus(`Could not fill long position: ${error.message}`, "error");
+    } finally {
+      refs.fillLp.disabled = false;
+    }
+  }
+
   function buildPanel() {
     if (document.getElementById("dhan-fast-trade-root")) {
       return null;
@@ -533,11 +567,13 @@
     const actions = createElement("div", "dft-actions");
     const fetch = createElement("button", "dft-btn dft-secondary", "Get LTP");
     const order1 = createElement("button", "dft-btn dft-primary", "Fill Data");
+    const fillLp = createElement("button", "dft-btn dft-secondary", "Fill LP");
     const order2 = createElement("button", "dft-btn dft-primary is-hidden", "Order 2");
     fetch.type = "button";
     order1.type = "button";
+    fillLp.type = "button";
     order2.type = "button";
-    actions.append(fetch, order1, order2);
+    actions.append(fetch, order1, fillLp, order2);
 
     const splitResult = createElement("div", "dft-split-result is-hidden");
     const splitTotalQty = createElement("span", "dft-split-total", "Total Qty: -");
@@ -574,6 +610,7 @@
       actions,
       fetch,
       order1,
+      fillLp,
       order2,
       status
     };
@@ -589,6 +626,7 @@
   refs.close.addEventListener("click", closePanel);
   refs.fetch.addEventListener("click", fetchLtp);
   refs.order1.addEventListener("click", () => prepareOrder(1));
+  refs.fillLp.addEventListener("click", fillLongPositionLevels);
   refs.order2.addEventListener("click", () => prepareOrder(2));
   refs.split.addEventListener("change", () => {
     resetOrderState();

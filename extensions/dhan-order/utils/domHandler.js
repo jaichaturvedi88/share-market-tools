@@ -11,6 +11,12 @@
     target: ["target", "profit"]
   };
 
+  const LONG_POSITION_FIELDS = {
+    buyPrice: "Risk/RewardlongEntryPrice",
+    targetPrice: "Risk/RewardlongProfitLevelPrice",
+    stopLoss: "Risk/RewardlongStopLevelPrice"
+  };
+
   function normalize(value) {
     return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   }
@@ -69,6 +75,11 @@
     });
 
     return matches;
+  }
+
+  function querySelectorAllDocuments(selector) {
+    return getSearchDocuments()
+      .flatMap((item) => querySelectorAllDeep(item.doc, selector));
   }
 
   function getClickableElements(root) {
@@ -145,20 +156,31 @@
   }
 
   function dispatchInputEvents(element) {
+    element.dispatchEvent(new Event("focus", { bubbles: true }));
     element.dispatchEvent(new InputEvent("input", {
       bubbles: true,
       inputType: "insertText",
       data: element.value || element.textContent || ""
     }));
+    element.dispatchEvent(new Event("change", { bubbles: true }));
+    element.dispatchEvent(new Event("blur", { bubbles: true }));
   }
 
   function setNativeValue(element, value) {
-    const descriptor = Object.getOwnPropertyDescriptor(element.constructor.prototype, "value");
-    if (descriptor && descriptor.set) {
-      descriptor.set.call(element, value);
+    const valueText = String(value);
+    const prototype = Object.getPrototypeOf(element);
+    const prototypeDescriptor = Object.getOwnPropertyDescriptor(prototype, "value");
+    const elementDescriptor = Object.getOwnPropertyDescriptor(element, "value");
+
+    if (prototypeDescriptor?.set && elementDescriptor?.set !== prototypeDescriptor.set) {
+      prototypeDescriptor.set.call(element, valueText);
+    } else if (prototypeDescriptor?.set) {
+      prototypeDescriptor.set.call(element, valueText);
     } else {
-      element.value = value;
+      element.value = valueText;
     }
+
+    element.setAttribute("value", valueText);
   }
 
   function labelTextFor(input) {
@@ -258,8 +280,9 @@
       return false;
     }
 
-    input.focus();
     const valueText = String(value);
+    clickElement(input);
+    input.focus();
 
     if (input.isContentEditable) {
       input.textContent = valueText;
@@ -293,6 +316,31 @@
     await wait(160);
     filled.stopLoss = fillInputElement(inputs[3], trade.stopLoss, "stop loss");
     return filled;
+  }
+
+  function findLongPositionInput(propertyId) {
+    return querySelectorAllDocuments(`input[data-property-id="${propertyId}"]`)
+      .find((input) => isVisible(input) && !isExtensionElement(input));
+  }
+
+  async function waitForLongPositionInputs() {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const buyPriceInput = findLongPositionInput(LONG_POSITION_FIELDS.buyPrice);
+      const targetInput = findLongPositionInput(LONG_POSITION_FIELDS.targetPrice);
+      const stopLossInput = findLongPositionInput(LONG_POSITION_FIELDS.stopLoss);
+
+      if (buyPriceInput && targetInput && stopLossInput) {
+        return { buyPriceInput, targetInput, stopLossInput };
+      }
+
+      await wait(250);
+    }
+
+    return {
+      buyPriceInput: findLongPositionInput(LONG_POSITION_FIELDS.buyPrice),
+      targetInput: findLongPositionInput(LONG_POSITION_FIELDS.targetPrice),
+      stopLossInput: findLongPositionInput(LONG_POSITION_FIELDS.stopLoss)
+    };
   }
 
   function findCheckboxByHints(hints) {
@@ -547,8 +595,29 @@
     };
   }
 
+  async function prepareLongPositionLevels(trade) {
+    debugLog("Prepare long position levels started", trade);
+    const { buyPriceInput, targetInput, stopLossInput } = await waitForLongPositionInputs();
+
+    const filled = {
+      buyPrice: fillInputElement(buyPriceInput, trade.buyPrice, "long position entry price"),
+      targetPrice: fillInputElement(targetInput, trade.targetPrice, "long position profit price"),
+      stopLoss: fillInputElement(stopLossInput, trade.stopLoss, "long position stop price")
+    };
+
+    const missing = Object.entries(filled)
+      .filter(([, wasFilled]) => !wasFilled)
+      .map(([name]) => name);
+
+    return {
+      ok: missing.length === 0,
+      missing
+    };
+  }
+
   window.DhanOrderDomHandler = {
     getActiveWatchlistScrip,
+    prepareLongPositionLevels,
     prepareTrade
   };
 })();
