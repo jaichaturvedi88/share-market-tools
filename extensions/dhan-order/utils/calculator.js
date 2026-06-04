@@ -57,7 +57,7 @@
     }
 
     const quantity = riskPerShare > 0 && maxLoss > 0 ? Math.floor(maxLoss / riskPerShare) : 0;
-    const targetPrice = roundPrice(buyPrice + riskPerShare * rr);
+    const targetPrice = roundToDecimals(buyPrice + riskPerShare * rr, 1);
     const totalAmount = roundPrice(quantity * buyPrice);
 
     if (errors.length === 0 && quantity <= 0) {
