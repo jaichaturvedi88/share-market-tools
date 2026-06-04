@@ -1,0 +1,172 @@
+(function () {
+  const BRIDGE_LOG_PREFIX = "[Fyers Bridge PageContext]";
+  const PAGE_ORDERS_EVENT = "fyers-orders-updated";
+  const PAGE_POSITIONS_EVENT = "fyers-positions-updated";
+  const MOVE_SL_REQUEST_EVENT = "fyers-move-sl-request";
+  const MOVE_SL_RESPONSE_EVENT = "fyers-move-sl-response";
+  const REFRESH_REQUEST_EVENT = "fyers-refresh-request";
+
+  if (window.__fyersSLBridgeInitialized) return;
+  window.__fyersSLBridgeInitialized = true;
+
+  window.__fyersAuthToken = null;
+  window.__fyersApiBaseUrl = null; // Dynamically captured to avoid hardcoded domain mismatches
+
+  function logDebug(message, data) {
+    console.log(`${BRIDGE_LOG_PREFIX} ${message}`, data || "");
+  }
+
+  // Scan localStorage and sessionStorage for JWT or Bearer tokens
+  function findTokenInStorage() {
+    for (const storage of [window.localStorage, window.sessionStorage]) {
+      for (let i = 0; i < storage.length; i++) {
+        try {
+          const key = storage.key(i);
+          const val = storage.getItem(key);
+          if (!val) continue;
+
+          // 1. Direct Bearer token check
+          if (val.startsWith("Bearer ")) {
+            return val;
+          }
+
+          // 2. JWT token check (starts with eyJ and has 3 parts)
+          if (val.startsWith("eyJ") && val.split(".").length === 3) {
+            return "Bearer " + val;
+          }
+
+          // 3. Nested JSON check
+          if (val.trim().startsWith("{") || val.trim().startsWith("[")) {
+            const obj = JSON.parse(val);
+            if (obj && typeof obj === "object") {
+              const tokenKeys = ["accessToken", "access_token", "token", "jwtToken", "jwt", "authorization"];
+              for (const tk of tokenKeys) {
+                if (obj[tk] && typeof obj[tk] === "string") {
+                  const subVal = obj[tk];
+                  if (subVal.startsWith("Bearer ")) return subVal;
+                  if (subVal.startsWith("eyJ") && subVal.split(".").length === 3) return "Bearer " + subVal;
+                  return "Bearer " + subVal;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          // Ignore JSON parse errors
+        }
+      }
+    }
+    return null;
+  }
+
+  // Scan cookies for token
+  function findTokenInCookies() {
+    try {
+      const cookies = document.cookie.split("; ");
+      for (const cookie of cookies) {
+        const parts = cookie.split("=");
+        const val = decodeURIComponent(parts.slice(1).join("="));
+        if (val.startsWith("Bearer ")) {
+          return val;
+        }
+        if (val.startsWith("eyJ") && val.split(".").length === 3) {
+          return "Bearer " + val;
+        }
+      }
+    } catch (err) {
+      // Ignore cookie errors
+    }
+    return null;
+  }
+
+  // Scan for token
+  function scanForToken() {
+    return findTokenInStorage() || findTokenInCookies();
+  }
+
+  // Hook into window.fetch to capture Authorization Token and API Domain dynamically
+  const originalFetch = window.fetch;
+  window.fetch = async function (resource, options) {
+    const url = typeof resource === "string" ? resource : resource?.url || "";
+    
+    // Intercept headers for Authorization
+    if (options && options.headers) {
+      let auth = null;
+      if (options.headers instanceof Headers) {
+        auth = options.headers.get("Authorization");
+      } else if (typeof options.headers === "object") {
+        auth = options.headers["Authorization"] || options.headers["authorization"];
+      }
+
+      if (auth && auth.startsWith("Bearer ")) {
+        if (window.__fyersAuthToken !== auth) {
+          window.__fyersAuthToken = auth;
+          logDebug("Captured Authorization Token from Fetch Request!");
+          dispatchTokenCaptured();
+        }
+      }
+    }
+
+    // Capture API Domain from request URL
+    const domainMatch = url.match(/https:\/\/[a-zA-Z0-9\-\.]+\.fyers\.in/);
+    if (domainMatch) {
+      const domain = domainMatch[0];
+      if (window.__fyersApiBaseUrl !== domain) {
+        window.__fyersApiBaseUrl = domain;
+        logDebug(`Captured API Base URL: ${domain}`);
+        dispatchTokenCaptured();
+      }
+    }
+
+    const response = await originalFetch.apply(this, arguments);
+
+    // Passive Interception: Read responses of successful page fetches
+    try {
+      if (response.ok && (url.includes("/orders") || url.includes("/positions"))) {
+        const clonedResponse = response.clone();
+        const text = await clonedResponse.text();
+        let body = null;
+        try {
+          body = text ? JSON.parse(text) : null;
+        } catch (e) {
+          body = text;
+        }
+
+        if (body) {
+          // If it is the order book (GET)
+          if (url.includes("/orders") && !url.includes("/orders/bo") && (!options || options.method === "GET" || !options.method)) {
+            window.dispatchEvent(new CustomEvent(PAGE_ORDERS_EVENT, { detail: body }));
+          } 
+          // If it is positions (GET)
+          else if (url.includes("/positions") && (!options || options.method === "GET" || !options.method)) {
+            window.dispatchEvent(new CustomEvent(PAGE_POSITIONS_EVENT, { detail: body }));
+          }
+        }
+      }
+    } catch (err) {
+      // Interception errors suppressed
+    }
+
+    return response;
+  };
+
+  function dispatchTokenCaptured() {
+    if (window.__fyersAuthToken) {
+      window.dispatchEvent(new CustomEvent("fyers-token-captured", {
+        detail: {
+          token: window.__fyersAuthToken,
+          baseUrl: window.__fyersApiBaseUrl || "https://api.fyers.in"
+        }
+      }));
+    }
+  }
+
+  // Run initial scan on load
+  const initialToken = scanForToken();
+  if (initialToken) {
+    window.__fyersAuthToken = initialToken;
+    logDebug("Found token in storage/cookies on startup!");
+    setTimeout(dispatchTokenCaptured, 200);
+  } else {
+    logDebug("Waiting for Fyers page fetch requests to capture token...");
+  }
+})();

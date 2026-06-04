@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fyers Stop Loss Manager - Code Flow Guide</title>
+  
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Mermaid.js for native sequence diagram rendering -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#0d1325',
+        primaryColor: '#1a243d',
+        primaryTextColor: '#e2e8f0',
+        lineColor: '#38bdf8',
+        nodeBorder: '#1e293b',
+        actorBorder: '#38bdf8',
+        actorBkg: '#111a30',
+        actorTextColor: '#f8fafc',
+        signalColor: '#cbd5e1',
+        signalLineColor: '#475569',
+        labelBoxBkgColor: '#1e293b',
+        labelBoxBorderColor: '#334155',
+        labelTextColor: '#38bdf8',
+        loopBkgColor: '#16223f',
+        noteBkgColor: '#1e293b',
+        noteBorderColor: '#334155',
+        noteTextColor: '#f6d365'
+      }
+    });
+  </script>
+
+  <style>
+    :root {
+      --bg-dark: #05070f;
+      --card-bg: rgba(13, 20, 37, 0.6);
+      --card-border: rgba(56, 189, 248, 0.15);
+      --accent-blue: #38bdf8;
+      --accent-indigo: #818cf8;
+      --accent-pink: #f472b6;
+      --accent-emerald: #34d399;
+      --accent-yellow: #fbbf24;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(56, 189, 248, 0.05) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(129, 140, 248, 0.05) 0px, transparent 50%);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Header Styling */
+    header {
+      text-align: center;
+      margin-bottom: 60px;
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-indigo));
+      margin: 20px auto 0;
+      border-radius: 2px;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 42px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f8fafc 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: var(--accent-blue);
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    /* Glass Card Styling */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-indigo));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(56, 189, 248, 0.35);
+      box-shadow: 0 15px 35px -5px rgba(56, 189, 248, 0.1);
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      font-size: 22px;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    .card ul {
+      list-style: none;
+    }
+
+    .card ul li {
+      font-size: 13px;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      padding-left: 15px;
+      position: relative;
+    }
+
+    .card ul li::before {
+      content: '✦';
+      position: absolute;
+      left: 0;
+      color: var(--accent-blue);
+      font-size: 10px;
+    }
+
+    /* Diagram Section */
+    .diagram-section {
+      background: rgba(8, 12, 24, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 30px;
+      margin-bottom: 50px;
+      box-shadow: 0 20px 40px -20px rgba(0,0,0,0.7);
+    }
+
+    .diagram-section h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #f8fafc;
+      border-left: 4px solid var(--accent-blue);
+      padding-left: 12px;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      background: #0d1325;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      overflow-x: auto;
+    }
+
+    /* Timeline Section */
+    .timeline {
+      position: relative;
+      margin-bottom: 50px;
+      padding-left: 30px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--accent-blue), var(--accent-indigo), transparent);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .timeline-badge {
+      content: '';
+      position: absolute;
+      left: -30px;
+      top: 5px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--bg-dark);
+      border: 3px solid var(--accent-blue);
+      box-shadow: 0 0 10px var(--accent-blue);
+    }
+
+    .timeline-content {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .timeline-content h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .timeline-step {
+      font-size: 11px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent-blue);
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .timeline-content p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .code-block {
+      background: #04060d;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+      font-size: 12px;
+      color: #9cdcfe;
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+
+    .highlight-yellow { color: var(--accent-yellow); }
+    .highlight-emerald { color: var(--accent-emerald); }
+    .highlight-pink { color: var(--accent-pink); }
+
+    /* Glass Warning Card */
+    .warning-box {
+      background: rgba(251, 191, 36, 0.04);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 40px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .warning-icon {
+      font-size: 24px;
+      color: var(--accent-yellow);
+    }
+
+    .warning-text h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-yellow);
+      margin-bottom: 6px;
+    }
+
+    .warning-text p {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 60px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <span class="subtitle">Architectural Documentation</span>
+      <h1>Fyers Stop Loss Manager</h1>
+    </header>
+
+    <!-- Warning/CORS Resilient Banner -->
+    <div class="warning-box">
+      <div class="warning-icon">🛡️</div>
+      <div class="warning-text">
+        <h4>Cloudflare/WAF Resilience & Fallback Design</h4>
+        <p>Because the Fyers backend API restricts programmatic fetches from cross-origin contexts (returning 503 Service Unavailable or block errors), this extension employs a hybrid execution mode. When the Background Service Worker is rate-limited or blocked, the controller silently falls back to <strong>dynamic DOM scraping</strong>. The scraped data is then mapped to the intercepted order book to guarantee uninterrupted average price and stop-loss metrics.</p>
+      </div>
+    </div>
+
+    <!-- Architectural Segments Grid -->
+    <div class="grid">
+      <!-- Page Context Bridge -->
+      <div class="card">
+        <h3><span class="card-icon">🔌</span> Page Context</h3>
+        <p>Runs directly inside the tab's JS runtime context, giving it access to hook page-level fetch methods.</p>
+        <ul>
+          <li><strong>Script</strong>: <code>fyers-bridge.js</code></li>
+          <li>Hooks <code>window.fetch</code> to read headers.</li>
+          <li>Scans cookies & storage for JWT tokens.</li>
+          <li>Dispatches token credentials to Content Script.</li>
+        </ul>
+      </div>
+
+      <!-- Isolated Content Script -->
+      <div class="card">
+        <h3><span class="card-icon">🧠</span> Content Script</h3>
+        <p>Main supervisor running in Chrome's isolated sandbox. Manages local UI rendering and loops.</p>
+        <ul>
+          <li><strong>Script</strong>: <code>content.js</code></li>
+          <li>Renders floating panel and table list.</li>
+          <li>Performs timeline polling triggers.</li>
+          <li>Initiates fallback DOM scraping loops.</li>
+          <li>Coordinates speech synthesis alerts.</li>
+        </ul>
+      </div>
+
+      <!-- Service Worker -->
+      <div class="card">
+        <h3><span class="card-icon">⚙️</span> Service Worker</h3>
+        <p>Chrome Extension background script. Runs with privileged permissions to bypass CORS rules.</p>
+        <ul>
+          <li><strong>Script</strong>: <code>background.js</code></li>
+          <li>Listens for fetch requests from Content Script.</li>
+          <li>Calls Fyers endpoints via background <code>fetch</code>.</li>
+          <li>Performs backup retry logic on public APIs.</li>
+          <li>Bypasses standard tab CORS constraints.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Sequence Diagram Section -->
+    <div class="diagram-section">
+      <h2>Execution Sequence & Messaging Flow</h2>
+      <div class="mermaid">
+sequenceDiagram
+    autonumber
+    participant Page as Fyers Page Context
+    participant Bridge as Bridge (fyers-bridge.js)
+    participant Content as Content Script (content.js)
+    participant Background as Worker (background.js)
+    participant Fyers as Fyers API Server
+
+    Note over Page,Bridge: Intercepting Authorization Token
+    Page->>Bridge: Intercept window.fetch headers
+    Bridge->>Bridge: Extract Bearer Token & Base URL
+    Bridge-->>Content: Dispatch "fyers-token-captured"
+    
+    Note over Content,Background: Data Synchronization Loop
+    Content->>Background: chrome.runtime.sendMessage("fetchData")
+    Background->>Fyers: GET /trade/v3/positions/v2 & /trade/v3/orders/v2
+    
+    alt API Request Successful (200 OK)
+        Fyers-->>Background: Returns JSON payload
+        Background-->>Content: return { success: true, positions, orders }
+        Content->>Content: Map symbols and render rows
+    else API Request Blocked (Cloudflare 503)
+        Fyers-->>Background: Returns 503 Service Unavailable
+        Background-->>Content: return { success: false, error }
+        Content->>Content: Warning logged, trigger DOM Scraper fallback
+    end
+      </div>
+    </div>
+
+    <!-- Timeline/Step Documentation -->
+    <div class="diagram-section">
+      <h2>Detailed Step Execution Timeline</h2>
+      
+      <div class="timeline">
+        <!-- Step 1 -->
+        <div class="timeline-item">
+          <div class="timeline-badge"></div>
+          <div class="timeline-content">
+            <h4>Token Capture Phase <span class="timeline-step">Step 1</span></h4>
+            <p>On initial page load, <code>fyers-bridge.js</code> is injected and hooks <code>window.fetch</code>. It scans <code>localStorage</code>, <code>sessionStorage</code>, and cookies for Bearer credentials. Once found (or when intercepted from network calls), it fires a custom event:</p>
+            <div class="code-block">
+window.dispatchEvent(new CustomEvent(<span class="highlight-pink">"fyers-token-captured"</span>, {
+  detail: { token: <span class="highlight-yellow">"Bearer eyJ..."</span>, baseUrl: <span class="highlight-yellow">"https://api-y1.fyers.in"</span> }
+}));
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="timeline-item">
+          <div class="timeline-badge"></div>
+          <div class="timeline-content">
+            <h4>Data Fetch & Background Routing <span class="timeline-step">Step 2</span></h4>
+            <p>The content script receives the credentials and routes them to <code>background.js</code> via <code>chrome.runtime.sendMessage</code>. The background worker attempts to query Fyers API paths:</p>
+            <div class="code-block">
+<span class="highlight-emerald">// GET Fyers Web Portal API v3 Paths:</span>
+- <span class="highlight-yellow">https://api-t1.fyers.in/trade/v3/positions/v2</span>
+- <span class="highlight-yellow">https://api-t1.fyers.in/trade/v3/orders/v2</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="timeline-item">
+          <div class="timeline-badge"></div>
+          <div class="timeline-content">
+            <h4>Dynamic DOM Scraper & Fallback Mapping <span class="timeline-step">Step 3</span></h4>
+            <p>If the API call fails, the scraper parses the DOM table. It maps the column headers dynamically by reading header texts (e.g. <code>th</code> text containing "Symbol", "Avg. Price", etc.). Next, it matches the scraped positions to the active orders book using symbol normalization:</p>
+            <div class="code-block">
+<span class="highlight-emerald">// Strips exchange prefixes ("NSE:") and suffixes ("-EQ") for accurate lookup</span>
+<span class="highlight-pink">function</span> normalizeSymbol(sym) {
+  <span class="highlight-pink">return</span> sym.replace(<span class="highlight-yellow">/^(NSE:|BSE:|MCX:|NFO:)/i</span>, <span class="highlight-yellow">""</span>).replace(<span class="highlight-yellow">/-EQ$/i</span>, <span class="highlight-yellow">""</span>).trim().toUpperCase();
+}
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="timeline-item">
+          <div class="timeline-badge"></div>
+          <div class="timeline-content">
+            <h4>SL Trailing & Modifier Execution <span class="timeline-step">Step 4</span></h4>
+            <p>When the user clicks the <code>↑</code> (Move SL) button, the content script checks if the order has an active <code>slOrderId</code>. If yes, it requests the background worker to dispatch a CORS-free modification patch to Fyers. If no API order ID is available, it automates filling Fyers' native Protect Modal:</p>
+            <div class="code-block">
+<span class="highlight-emerald">// Background PATCH for modifying Stop Loss on bracket orders (BO)</span>
+PATCH <span class="highlight-yellow">https://api-t1.fyers.in/trade/v3/orders/bo</span>
+Body: { <span class="highlight-yellow">"id"</span>: orderId, <span class="highlight-yellow">"stopLoss"</span>: newSL, <span class="highlight-yellow">"qty"</span>: qty }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      Fyers Stop Loss Manager Chrome Extension Architecture Documentation &copy; 2026
+    </footer>
+  </div>
+
+</body>
+</html>

@@ -8,6 +8,9 @@
     "https://trade.fyers.in/*",
     "https://*.fyers.in/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -22,6 +25,15 @@
       ],
       "all_frames": true,
       "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["utils/fyers-bridge.js"],
+      "matches": [
+        "https://trade.fyers.in/*",
+        "https://*.fyers.in/*"
+      ]
     }
   ]
 }

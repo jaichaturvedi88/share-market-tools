@@ -146,29 +146,107 @@
     }
 
     const { table } = tableInfo;
+    
+    // 1. Dynamic Column Index Mapping
+    const headers = Array.from(table.querySelectorAll("thead th"));
+    let symbolIdx = -1;
+    let productIdx = -1;
+    let sideIdx = -1;
+    let netQtyIdx = -1;
+    let avgPriceIdx = -1;
+    let ltpIdx = -1;
+    let realizedPlIdx = -1;
+    let unrealizedPlIdx = -1;
+
+    headers.forEach((th, idx) => {
+      const text = (th.textContent || th.innerText || "").trim().toLowerCase();
+      const name = (th.getAttribute("data-name") || "").toLowerCase();
+      
+      if (text.includes("symbol") || name.includes("symbol")) symbolIdx = idx;
+      else if (text.includes("product") || name.includes("product")) productIdx = idx;
+      else if (text.includes("buy/sell") || text.includes("side") || name.includes("side")) sideIdx = idx;
+      else if (text.includes("net qty") || (text.includes("qty") && !text.includes("avg")) || name.includes("netqty") || name.includes("qty")) netQtyIdx = idx;
+      else if (text.includes("avg") || text.includes("average") || name.includes("avgprice") || name.includes("average")) avgPriceIdx = idx;
+      else if (text.includes("ltp") || text.includes("last price") || name.includes("ltp")) ltpIdx = idx;
+      else if (text.includes("realized") || name.includes("realized")) realizedPlIdx = idx;
+      else if (text.includes("unrealized") || text.includes("p&l") || text.includes("pnl") || name.includes("unrealized")) unrealizedPlIdx = idx;
+    });
+
+    logDebug(`Mapped columns - symbol: ${symbolIdx}, product: ${productIdx}, side: ${sideIdx}, netQty: ${netQtyIdx}, avgPrice: ${avgPriceIdx}, ltp: ${ltpIdx}, realized: ${realizedPlIdx}, unrealized: ${unrealizedPlIdx}`);
+
     const rows = Array.from(table.querySelectorAll("tbody.ka-tbody tr.ka-row, tbody tr"));
     const positions = [];
 
     rows.forEach((row) => {
       if (isExtensionElement(row)) return;
 
-      // Extract symbol
-      const symbolCell = row.querySelector('td[data-label="Symbol"]');
-      const symbolBtn = symbolCell?.querySelector("button");
-      const symbol = (symbolBtn?.textContent || symbolCell?.textContent || "").trim();
+      const cells = Array.from(row.querySelectorAll("td"));
+      if (cells.length === 0) return;
+
+      // Detect cell index offset caused by any unmapped columns (like edit pencil icon column)
+      let offset = 0;
+      if (cells.length > headers.length) {
+        const cell1 = cells[1];
+        if (cell1) {
+          const hasIconOrButton = cell1.querySelector("button, svg, img, i, [class*='pencil'], [class*='edit']") || 
+                                 cell1.classList.contains("edit") || 
+                                 (cell1.textContent || "").trim() === "";
+          const secondHeader = headers[1];
+          if (secondHeader) {
+            const secondHeaderText = (secondHeader.textContent || "").trim().toLowerCase();
+            const cell1Text = (cell1.textContent || "").trim().toLowerCase();
+            if (secondHeaderText && !cell1Text.includes(secondHeaderText) && hasIconOrButton) {
+              offset = 1;
+            }
+          }
+        }
+      }
+
+      // Helper function to find cell by data-label (case-insensitive) or index fallback
+      const getCell = (idx, labels) => {
+        if (labels) {
+          const labelList = Array.isArray(labels) ? labels : [labels];
+          for (const label of labelList) {
+            const matchedCell = cells.find(cell => {
+              const dl = cell.getAttribute("data-label");
+              return dl && dl.trim().toLowerCase() === label.trim().toLowerCase();
+            });
+            if (matchedCell) return matchedCell;
+          }
+        }
+        
+        const correctedIdx = (idx > 0 && offset > 0) ? idx + offset : idx;
+        if (correctedIdx !== -1 && cells[correctedIdx]) {
+          return cells[correctedIdx];
+        }
+        return null;
+      };
+
+      // Helper function to extract text
+      const getVal = (idx, labels) => {
+        const cell = getCell(idx, labels);
+        return cell ? (cell.textContent || "").trim() : "";
+      };
+
+      // Extract values
+      const symbolCell = getCell(symbolIdx, ["Symbol"]);
+      let symbol = "";
+      if (symbolCell) {
+        const symbolBtn = symbolCell.querySelector("button");
+        symbol = (symbolBtn?.textContent || symbolCell.textContent || "").trim();
+      }
 
       if (!symbol || symbol.includes("Total") || symbol.includes("P&L")) {
         return; // Skip total/summary rows
       }
 
-      // Extract other columns using data-label attributes
-      const product = (row.querySelector('td[data-label="Product"]')?.textContent || "").trim();
-      const side = (row.querySelector('td[data-label="Buy/Sell"]')?.textContent || "").trim();
-      const netQtyStr = (row.querySelector('td[data-label="Net Qty"]')?.textContent || "").trim();
-      const avgPriceStr = (row.querySelector('td[data-label="Avg Price"]')?.textContent || "").trim();
-      const ltpStr = (row.querySelector('td[data-label="LTP"]')?.textContent || "").trim();
-      const realizedPlStr = (row.querySelector('td[data-label="Realized P&L"]')?.textContent || "").trim();
-      const unrealizedPlStr = (row.querySelector('td[data-label="Unrealized P&L"]')?.textContent || "").trim();
+      const product = getVal(productIdx, ["Product"]);
+      const side = getVal(sideIdx, ["Buy/Sell", "Side"]);
+      const netQtyStr = getVal(netQtyIdx, ["Net Qty", "Qty", "Quantity"]);
+      const avgPriceStr = getVal(avgPriceIdx, ["Avg Price", "Avg. Price", "Average Price", "Buy Avg", "Avg Avg"]);
+      const ltpStr = getVal(ltpIdx, ["LTP", "Last Price"]);
+      const realizedPlStr = getVal(realizedPlIdx, ["Realized P&L", "Realized"]);
+      const unrealizedPlStr = getVal(unrealizedPlIdx, ["Unrealized P&L", "Total P&L", "P&L", "PnL"]);
 
       // Convert to numeric types
       const netQty = window.FyersSLCalculator.toNumber(netQtyStr);
@@ -250,9 +328,16 @@
     let targetRow = null;
 
     for (const row of rows) {
-      const symbolCell = row.querySelector('td[data-label="Symbol"]');
+      const cells = Array.from(row.querySelectorAll("td"));
+      if (cells.length === 0) continue;
+
+      const symbolCell = cells.find(cell => {
+        const dl = cell.getAttribute("data-label");
+        return dl && dl.trim().toLowerCase() === "symbol";
+      }) || cells[0];
+
       const symbolText = (symbolCell?.textContent || "").trim();
-      if (symbolText.includes(symbol)) {
+      if (symbolText && (symbolText.includes(symbol) || symbol.includes(symbolText))) {
         targetRow = row;
         break;
       }
