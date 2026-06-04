@@ -17,16 +17,19 @@ const gtt = (function () {
   const PAGE_FETCH_EVENT = 'zerodha-gtt-helper-fetch';
   const PAGE_FETCH_RESPONSE_EVENT = 'zerodha-gtt-helper-fetch-response';
   const MONITOR_INTERVAL_MINUTES = 5;
+  const TRAIL_SOUND_REPEAT_MS = 60 * 1000;
   let currentRows = [];
   let currentPositions = [];
   let monitorInterval = null;
   let gttTableObserver = null;
   let gttTableObserverTimer = null;
+  let notifiedTrailKeys = new Map();
   let currentSort = {
     key: 'symbol',
     direction: 'asc'
   };
   let hideCompletedTrades = true;
+  let hideTriggeredGttRows = false;
 
   function createGttUi() {
     if (document.querySelector('#gtt-helper-root')) return;
@@ -42,6 +45,10 @@ const gtt = (function () {
         <div class="gtt-helper-header">
           <strong>GTT Details</strong>
           <div>
+            <label class="gtt-helper-toggle-completed" title="Hide triggered rows in Zerodha GTT table">
+              <input id="gtt-helper-hide-triggered-gtt" type="checkbox">
+              <span>Hide GTT</span>
+            </label>
             <label class="gtt-helper-toggle-completed" title="Hide completed trades">
               <input id="gtt-helper-hide-completed" type="checkbox" checked>
               <span>Hide 0</span>
@@ -90,13 +97,17 @@ const gtt = (function () {
       }
     });
 
-    document.querySelector('#gtt-helper-refresh').addEventListener('click', refreshGttAndRender);
+    document.querySelector('#gtt-helper-refresh').addEventListener('click', syncAndRender);
     document.querySelector('#gtt-helper-close').addEventListener('click', () => {
       document.querySelector('#gtt-helper-panel').hidden = true;
     });
     document.querySelector('#gtt-helper-hide-completed').addEventListener('change', (event) => {
       hideCompletedTrades = event.target.checked;
       renderRows(currentRows);
+    });
+    document.querySelector('#gtt-helper-hide-triggered-gtt').addEventListener('change', (event) => {
+      hideTriggeredGttRows = event.target.checked;
+      applyTriggeredGttTableFilter();
     });
     document.querySelector('#gtt-helper-history').addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'open-gtt-history' });
@@ -286,6 +297,7 @@ const gtt = (function () {
   }
 
   function refreshRowsFromGttTable() {
+    applyTriggeredGttTableFilter();
     if (!currentRows.length) return;
 
     const gttPanelTriggers = readGttPanelTriggers(currentRows.map((row) => row.symbol));
@@ -298,17 +310,32 @@ const gtt = (function () {
         ...row,
         ltpText: panelTrigger.ltpText,
         ltpValue: panelTrigger.ltpValue,
-        gttStatus: panelTrigger.gttStatus,
+        gttStatus: panelTrigger.gttStatus || row.gttStatus,
         panelTriggerText: panelTrigger.triggerText,
         panelTriggerValue: panelTrigger.triggerValue,
         triggerPercentText: panelTrigger.percentText,
         triggerPercentValue: panelTrigger.percentValue,
         status: getTradeStatus(row.averagePrice, panelTrigger.triggerValue ?? row.primaryTrigger),
-        isDisabled: isTriggeredStatus(panelTrigger.gttStatus)
+        isDisabled: isTriggeredStatus(panelTrigger.gttStatus || row.gttStatus)
       };
     });
 
     renderRows(rows);
+  }
+
+  function applyTriggeredGttTableFilter() {
+    const wrapper = getGttPanelWrapper();
+    if (!wrapper) return;
+
+    const headerMap = readHeaderMap(wrapper);
+    const rows = [...wrapper.querySelectorAll('tbody tr, tr')];
+
+    rows.forEach((row) => {
+      const status = readGttStatus(row, headerMap);
+      const shouldHide = hideTriggeredGttRows && isTriggeredStatus(status);
+
+      row.style.display = shouldHide ? 'none' : '';
+    });
   }
 
   function fetchJsonFromPage(url, options = {}) {
@@ -364,11 +391,16 @@ const gtt = (function () {
       const symbol = readSymbol(position);
       if (!symbol) return;
 
-      const averagePrice = readNumber(
-        position.day_buy_price ??
-        position.dayBuyPrice ??
-        position.day_buy_price_display
-      );
+      const averagePrice = readFirstPositiveNumber([
+        position.day_buy_price,
+        position.dayBuyPrice,
+        position.day_buy_price_display,
+        position.buy_price,
+        position.buyPrice,
+        position.average_price,
+        position.averagePrice,
+        position.average
+      ]);
 
       positionsBySymbol.set(symbol, {
         symbol,
@@ -376,7 +408,9 @@ const gtt = (function () {
         buyQuantity: readNumber(
           position.buy_quantity ??
           position.buy_qty ??
-          position.buyQuantity
+          position.buyQuantity ??
+          position.quantity ??
+          position.qty
         )
       });
     });
@@ -407,7 +441,7 @@ const gtt = (function () {
 
   function buildRows(positions, triggers, gttPanelTriggers = []) {
     const rowsBySymbol = new Map();
-    const panelTriggersBySymbol = new Map(gttPanelTriggers.map((item) => [normalizeSymbol(item.symbol), item]));
+    const panelTriggersBySymbol = buildPanelTriggerMap(gttPanelTriggers);
 
     positions.forEach((position) => {
       rowsBySymbol.set(normalizeSymbol(position.symbol), {
@@ -467,6 +501,7 @@ const gtt = (function () {
       const matchingKey = findMatchingSymbolKey(rowsBySymbol, panelTrigger.symbol);
       if (matchingKey) {
         const row = rowsBySymbol.get(matchingKey);
+        row.buyQuantity = row.buyQuantity ?? panelTrigger.quantityValue;
         row.panelTriggerText = panelTrigger.triggerText;
         row.panelTriggerValue = panelTrigger.triggerValue;
         row.triggerPercentText = panelTrigger.percentText;
@@ -479,7 +514,7 @@ const gtt = (function () {
       rowsBySymbol.set(normalizeSymbol(panelTrigger.symbol), {
         symbol: panelTrigger.symbol,
         averagePrice: null,
-        buyQuantity: null,
+        buyQuantity: panelTrigger.quantityValue,
         ltpText: panelTrigger.ltpText,
         ltpValue: panelTrigger.ltpValue,
         gttStatus: panelTrigger.gttStatus,
@@ -503,6 +538,7 @@ const gtt = (function () {
       return {
         ...row,
         primaryTrigger,
+        buyQuantity: row.buyQuantity ?? panelTrigger.quantityValue ?? null,
         ltpText: panelTrigger.ltpText || row.ltpText || '',
         ltpValue: panelTrigger.ltpValue ?? row.ltpValue ?? null,
         gttStatus: panelTrigger.gttStatus || row.gttStatus || '',
@@ -522,6 +558,17 @@ const gtt = (function () {
       const source = key;
       return source === target || source.includes(target) || target.includes(source);
     });
+  }
+
+  function buildPanelTriggerMap(gttPanelTriggers) {
+    const map = new Map();
+
+    gttPanelTriggers.forEach((item) => {
+      const key = normalizeSymbol(item.symbol);
+      if (!map.has(key)) map.set(key, item);
+    });
+
+    return map;
   }
 
   function findMatchingPanelTrigger(panelTriggersBySymbol, symbol) {
@@ -610,15 +657,18 @@ const gtt = (function () {
       const symbol = readGttRowSymbol(row) || findSymbolInText(rowText, uniqueSymbols);
       const triggerText = readTriggerText(row, rowText, headerMap);
       const ltpText = readLtpText(row, headerMap);
+      const quantityText = readQuantityText(row, headerMap);
       const gttStatus = readGttStatus(row, headerMap);
       const percentText = readPercentText(rowText);
 
-      if (!symbol || (!triggerText && !percentText)) return null;
+      if (!symbol) return null;
 
       return {
         symbol,
         ltpText,
         ltpValue: readNumber(ltpText),
+        quantityText,
+        quantityValue: readNumber(quantityText),
         gttStatus,
         triggerText,
         triggerValue: readNumber(triggerText),
@@ -668,17 +718,38 @@ const gtt = (function () {
     return '';
   }
 
+  function readQuantityText(row, headerMap) {
+    const labelledCell = row.querySelector('td.quantity, [data-label*="Qty" i], [data-label*="Quantity" i]');
+    if (labelledCell) return readLastPriceText(labelledCell.textContent);
+
+    const cells = [...row.querySelectorAll('td')];
+    const quantityColumn = Object.entries(headerMap).find(([label]) => label.includes('qty') || label.includes('quantity'));
+    if (quantityColumn && cells[Number(quantityColumn[1])]) {
+      return readLastPriceText(cells[Number(quantityColumn[1])].textContent);
+    }
+
+    return '';
+  }
+
   function readGttStatus(row, headerMap) {
-    const labelledCell = row.querySelector('td.status, [data-label*="Status" i], [class*="status" i]');
-    if (labelledCell) return normalizeSpace(labelledCell.textContent).toUpperCase();
+    const labelledCell = row.querySelector('td.status, td[data-label*="Status" i]');
+    const labelledStatus = normalizeGttStatusText(labelledCell?.textContent);
+    if (labelledStatus) return labelledStatus;
 
     const cells = [...row.querySelectorAll('td')];
     const statusColumn = Object.entries(headerMap).find(([label]) => label.includes('status'));
     if (statusColumn && cells[Number(statusColumn[1])]) {
-      return normalizeSpace(cells[Number(statusColumn[1])].textContent).toUpperCase();
+      return normalizeGttStatusText(cells[Number(statusColumn[1])].textContent);
     }
 
     return '';
+  }
+
+  function normalizeGttStatusText(value) {
+    const status = normalizeSpace(value).toUpperCase();
+    const knownStatuses = ['ACTIVE', 'TRIGGERED', 'DISABLED', 'EXPIRED', 'CANCELLED', 'REJECTED'];
+
+    return knownStatuses.find((knownStatus) => status.includes(knownStatus)) || '';
   }
 
   function readPriceBeforePercent(text) {
@@ -729,6 +800,11 @@ const gtt = (function () {
   function readNumber(value) {
     const number = parseFloat(String(value ?? '').replaceAll(',', ''));
     return Number.isNaN(number) ? null : number;
+  }
+
+  function readFirstPositiveNumber(values) {
+    const numbers = values.map(readNumber);
+    return numbers.find((value) => value !== null && value > 0) ?? numbers.find((value) => value !== null) ?? null;
   }
 
   function saveToDb(data) {
@@ -792,6 +868,7 @@ const gtt = (function () {
         <td>${renderMoveSlCell(row)}</td>
       </tr>
     `).join('');
+    notifyTrailCandidates(visibleRows);
     updateSortIndicators();
   }
 
@@ -820,7 +897,7 @@ const gtt = (function () {
         panelTriggerValue: row.panelTriggerValue ?? readNumber(row.panelTriggerText),
         triggerPercentText: row.triggerPercentText || '',
         triggerPercentValue: row.triggerPercentValue ?? readNumber(row.triggerPercentText),
-        isDisabled: row.gttStatus ? isTriggeredStatus(row.gttStatus) : averagePrice === null || averagePrice <= 0
+        isDisabled: row.gttStatus ? isTriggeredStatus(row.gttStatus) : false
       };
     });
   }
@@ -966,6 +1043,34 @@ const gtt = (function () {
     return ltp === null ? null : ltp * 0.8;
   }
 
+  function notifyTrailCandidates(rows) {
+    rows.forEach((row) => {
+      const targetStopLoss = calculateTargetStopLoss(row);
+      const canTrail = !row.isDisabled && row.triggerPercentValue < -25 && targetStopLoss !== null;
+      const notifyKey = `${normalizeSymbol(row.symbol)}:${row.panelTriggerValue}:${row.triggerPercentValue}`;
+      const lastNotifiedAt = notifiedTrailKeys.get(notifyKey) || 0;
+      const now = Date.now();
+
+      if (!canTrail) {
+        notifiedTrailKeys.delete(notifyKey);
+        return;
+      }
+
+      if (now - lastNotifiedAt < TRAIL_SOUND_REPEAT_MS) return;
+
+      notifiedTrailKeys.set(notifyKey, now);
+      playTrailSound();
+    });
+  }
+
+  function playTrailSound() {
+    const audio = new Audio(chrome.runtime.getURL('resources/move-sl.mp3'));
+    audio.volume = 0.8;
+    audio.play().catch((error) => {
+      console.warn('GTT helper alert sound failed', error);
+    });
+  }
+
   async function moveStopLoss(row, targetStopLoss) {
     if (!row.triggerId) {
       throw new Error(`trigger id is missing for ${row.symbol}`);
@@ -1042,7 +1147,7 @@ const gtt = (function () {
   }
 
   function roundPrice(value) {
-    return Number(readNumber(value).toFixed(2));
+    return Number(readNumber(value).toFixed(1));
   }
 
   async function saveSlMovement(row, targetStopLoss) {

@@ -31,7 +31,7 @@
         }
     ],
     "web_accessible_resources": [{
-        "resources": ["libs/*", "libs/pages/gtt-fetch-bridge.js"],
+        "resources": ["libs/*", "libs/pages/gtt-fetch-bridge.js", "resources/*"],
         "matches": ["<all_urls>"]
   }]
 }
