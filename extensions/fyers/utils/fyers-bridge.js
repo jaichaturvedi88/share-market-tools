@@ -37,10 +37,29 @@
         try { text = await data.text(); } catch (e) {}
       } else if (data instanceof ArrayBuffer) {
         try { text = new TextDecoder().decode(data); } catch (e) {}
+      } else if (ArrayBuffer.isView(data)) {
+        try { text = new TextDecoder().decode(data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)); } catch (e) {}
       }
       
       const cleanText = text.trim();
-      if (!cleanText || cleanText === "2" || cleanText === "3" || cleanText === "ping" || cleanText === "pong" || cleanText.length <= 3) {
+      if (!cleanText) {
+        return;
+      }
+      
+      const lowerText = cleanText.toLowerCase();
+      if (
+        lowerText === "2" || 
+        lowerText === "3" || 
+        lowerText === "ping" || 
+        lowerText === "pong" || 
+        lowerText === "heartbeat" || 
+        lowerText === "keepalive" ||
+        lowerText.length <= 3 ||
+        lowerText.includes("ping") || 
+        lowerText.includes("pong") || 
+        lowerText.includes("heartbeat") || 
+        lowerText.includes("keepalive")
+      ) {
         return;
       }
 
