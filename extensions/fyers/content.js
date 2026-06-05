@@ -54,6 +54,7 @@
   window.addEventListener("fyers-positions-updated", (e) => {
     const data = e.detail;
     window.__apiPositions = data.data || data.netPositions || (Array.isArray(data) ? data : []);
+    chrome.runtime.sendMessage({ action: "logPositions", positions: window.__apiPositions });
     if (refs.panel.classList.contains("is-open")) {
       renderRows();
     }
@@ -62,9 +63,31 @@
   window.addEventListener("fyers-orders-updated", (e) => {
     const data = e.detail;
     window.__apiOrders = data.data || data.orders || (Array.isArray(data) ? data : []);
+    chrome.runtime.sendMessage({ action: "logOrders", orders: window.__apiOrders });
     if (refs.panel.classList.contains("is-open")) {
       renderRows();
     }
+  });
+
+  // Listen to bridge WebSocket events and log to DB via background worker
+  window.addEventListener("fyers-ws-message", (e) => {
+    const { url, direction, data } = e.detail;
+    chrome.runtime.sendMessage({
+      action: "logWSMessage",
+      url,
+      direction,
+      data
+    });
+  });
+
+  // Listen to bridge network calls and log to DB via background worker
+  window.addEventListener("fyers-network-call", (e) => {
+    const { url, payload } = e.detail;
+    chrome.runtime.sendMessage({
+      action: "logNetworkCall",
+      url,
+      payload
+    });
   });
 
   // Listen for Captured tokens from bridge
@@ -162,10 +185,11 @@
     autoLabel.append(autoCheckbox, h("span", "", "Auto Confirm"));
 
     // Action buttons in header
+    const dbBtn = h("button", "", "📊", { type: "button", id: "fsl-helper-db", title: "Open Database Viewer" });
     const refreshBtn = h("button", "", "↻", { type: "button", id: "fsl-helper-refresh", title: "Refresh details" });
     const closeBtn = h("button", "", "×", { type: "button", id: "fsl-helper-close", title: "Close helper" });
 
-    controls.append(profitLabel, voiceLabel, hide0Label, autoLabel, refreshBtn, closeBtn);
+    controls.append(profitLabel, voiceLabel, hide0Label, autoLabel, dbBtn, refreshBtn, closeBtn);
     header.append(title, controls);
 
     // Status Area
@@ -222,6 +246,7 @@
       header,
       closeBtn,
       refreshBtn,
+      dbBtn,
       profitInput,
       voiceCheckbox,
       hide0Checkbox,
@@ -552,11 +577,38 @@
           console.warn("[Fyers SL Manager] Move SL message failed:", chrome.runtime.lastError);
           setStatus(`API SL Move failed: ${chrome.runtime.lastError.message}`, "error");
           btnElement.disabled = false;
+
+          // Log failed SL movement
+          chrome.runtime.sendMessage({
+            action: "logSLMovement",
+            symbol: position.symbol,
+            qty: Math.abs(position.netQty),
+            oldSL: position.currentSL,
+            newSL: targetSL,
+            ltp: position.ltp,
+            unrealizedPl: position.unrealizedPl,
+            method: "API",
+            status: "FAILED",
+            error: chrome.runtime.lastError.message
+          });
           return;
         }
 
         if (response && response.success) {
           setStatus(`SL modified for ${position.symbol} to ${targetSL.toFixed(2)} via API.`, "success");
+
+          // Log successful SL movement
+          chrome.runtime.sendMessage({
+            action: "logSLMovement",
+            symbol: position.symbol,
+            qty: Math.abs(position.netQty),
+            oldSL: position.currentSL,
+            newSL: targetSL,
+            ltp: position.ltp,
+            unrealizedPl: position.unrealizedPl,
+            method: "API",
+            status: "SUCCESS"
+          });
           
           // Suppress voice alerts for this chunk level
           const ratio = Math.floor(Number(position.unrealizedPl) / state.targetProfit);
@@ -567,6 +619,20 @@
         } else {
           setStatus(`API SL Move failed: ${response?.error || "Unknown error"}`, "error");
           btnElement.disabled = false;
+
+          // Log failed SL movement
+          chrome.runtime.sendMessage({
+            action: "logSLMovement",
+            symbol: position.symbol,
+            qty: Math.abs(position.netQty),
+            oldSL: position.currentSL,
+            newSL: targetSL,
+            ltp: position.ltp,
+            unrealizedPl: position.unrealizedPl,
+            method: "API",
+            status: "FAILED",
+            error: response?.error || "Unknown error"
+          });
         }
       });
     } else {
@@ -580,6 +646,19 @@
 
         if (result.ok) {
           setStatus(result.msg || `SL moved for ${position.symbol} to ${targetSL.toFixed(2)}.`, "success");
+
+          // Log successful DOM SL movement
+          chrome.runtime.sendMessage({
+            action: "logSLMovement",
+            symbol: position.symbol,
+            qty: Math.abs(position.netQty),
+            oldSL: position.currentSL,
+            newSL: targetSL,
+            ltp: position.ltp,
+            unrealizedPl: position.unrealizedPl,
+            method: "DOM",
+            status: "SUCCESS"
+          });
           
           // Suppress voice alerts for this chunk level
           const ratio = Math.floor(Number(position.unrealizedPl) / state.targetProfit);
@@ -587,10 +666,38 @@
         } else {
           setStatus(`DOM SL Move failed: ${result.error}`, "error");
           btnElement.disabled = false;
+
+          // Log failed DOM SL movement
+          chrome.runtime.sendMessage({
+            action: "logSLMovement",
+            symbol: position.symbol,
+            qty: Math.abs(position.netQty),
+            oldSL: position.currentSL,
+            newSL: targetSL,
+            ltp: position.ltp,
+            unrealizedPl: position.unrealizedPl,
+            method: "DOM",
+            status: "FAILED",
+            error: result.error
+          });
         }
       } catch (err) {
         setStatus(`DOM SL Move failed: ${err.message}`, "error");
         btnElement.disabled = false;
+
+        // Log failed DOM SL movement exception
+        chrome.runtime.sendMessage({
+          action: "logSLMovement",
+          symbol: position.symbol,
+          qty: Math.abs(position.netQty),
+          oldSL: position.currentSL,
+          newSL: targetSL,
+          ltp: position.ltp,
+          unrealizedPl: position.unrealizedPl,
+          method: "DOM",
+          status: "FAILED",
+          error: err.message
+        });
       }
     }
   }
@@ -881,6 +988,9 @@
   refs.fab.addEventListener("click", togglePanel);
   refs.closeBtn.addEventListener("click", togglePanel);
   refs.refreshBtn.addEventListener("click", syncAndRender);
+  refs.dbBtn.addEventListener("click", () => {
+    chrome.runtime.sendMessage({ action: "openDBViewer" });
+  });
 
   // Target profit input
   refs.profitInput.addEventListener("input", (e) => {

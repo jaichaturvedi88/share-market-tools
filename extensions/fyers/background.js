@@ -5,6 +5,66 @@ function logDebug(message, data) {
   console.log(`${LOG_PREFIX} ${message}`, data || "");
 }
 
+// --- IndexedDB Configuration ---
+const DB_NAME = "FyersSLDatabase";
+const DB_VERSION = 2; // Incremented database version to trigger upgradeneeded for new table
+
+function getDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onupgradeneeded = (e) => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains("events")) {
+        db.createObjectStore("events", { keyPath: "id", autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains("events_filtered")) {
+        db.createObjectStore("events_filtered", { keyPath: "id", autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains("sl_movements")) {
+        db.createObjectStore("sl_movements", { keyPath: "id", autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains("orders")) {
+        db.createObjectStore("orders", { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains("positions")) {
+        db.createObjectStore("positions", { keyPath: "id" });
+      }
+    };
+  });
+}
+
+async function dbAdd(storeName, item) {
+  try {
+    const db = await getDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(storeName, "readwrite");
+      const store = transaction.objectStore(storeName);
+      const request = store.add(item);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (err) {
+    logDebug(`Error adding to ${storeName}:`, err);
+  }
+}
+
+async function dbPut(storeName, item) {
+  try {
+    const db = await getDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(storeName, "readwrite");
+      const store = transaction.objectStore(storeName);
+      const request = store.put(item);
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  } catch (err) {
+    logDebug(`Error putting in ${storeName}:`, err);
+  }
+}
+
 // Handle messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   logDebug("Received action:", message.action);
@@ -27,6 +87,109 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ success: false, error: err.message });
       });
     return true; // Keep message channel open for async response
+  }
+
+  if (message.action === "openDBViewer") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("db-viewer.html") });
+    sendResponse({ success: true });
+    return true;
+  }
+
+  if (message.action === "logWSMessage") {
+    const eventRecord = {
+      timestamp: new Date().toISOString(),
+      type: "ws",
+      url: message.url,
+      payload: message.data
+    };
+    Promise.all([
+      dbAdd("events", eventRecord),
+      dbAdd("events_filtered", eventRecord)
+    ]).then(() => {
+      sendResponse({ success: true });
+    }).catch(err => {
+      logDebug("Error logging WS message to DB:", err.message);
+      sendResponse({ success: false, error: err.message });
+    });
+    return true;
+  }
+
+  if (message.action === "logNetworkCall") {
+    const eventRecord = {
+      timestamp: new Date().toISOString(),
+      type: "network",
+      url: message.url,
+      payload: message.payload
+    };
+    Promise.all([
+      dbAdd("events", eventRecord),
+      dbAdd("events_filtered", eventRecord)
+    ]).then(() => {
+      sendResponse({ success: true });
+    }).catch(err => {
+      logDebug("Error logging network call to DB:", err.message);
+      sendResponse({ success: false, error: err.message });
+    });
+    return true;
+  }
+
+  if (message.action === "logSLMovement") {
+    const movementRecord = {
+      timestamp: new Date().toISOString(),
+      symbol: message.symbol,
+      qty: message.qty,
+      oldSL: message.oldSL,
+      newSL: message.newSL,
+      ltp: message.ltp,
+      unrealizedPl: message.unrealizedPl,
+      method: message.method,
+      status: message.status,
+      error: message.error || null
+    };
+    dbAdd("sl_movements", movementRecord).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (message.action === "logPositions") {
+    const promises = (message.positions || []).map(pos => {
+      const id = pos.symbol || "unknown";
+      return dbPut("positions", {
+        id: id,
+        timestamp: new Date().toISOString(),
+        symbol: pos.symbol,
+        netQty: pos.netQty,
+        avgPrice: pos.avgPrice,
+        ltp: pos.ltp,
+        unrealizedPl: pos.unrealizedPl,
+        raw: pos
+      });
+    });
+    Promise.all(promises).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (message.action === "logOrders") {
+    const promises = (message.orders || []).map(ord => {
+      const id = String(ord.id || ord.orderId || ord.order_id || Math.random());
+      return dbPut("orders", {
+        id: id,
+        timestamp: new Date().toISOString(),
+        symbol: ord.symbol || ord.symbol_desc || ord.symbolDesc || "unknown",
+        qty: ord.qty || ord.quantity || 0,
+        price: ord.price || ord.limitPrice || 0,
+        side: ord.side === 1 ? "BUY" : (ord.side === -1 ? "SELL" : String(ord.side)),
+        status: String(ord.status || ord.orderStatus || ord.order_status || ""),
+        raw: ord
+      });
+    });
+    Promise.all(promises).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
   }
 });
 

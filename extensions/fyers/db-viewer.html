@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fyers SL & Event Database Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="db-viewer.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-logo-icon">🛡️</span>
+        <div class="sidebar-logo-text">
+          <h2>Fyers SL Manager</h2>
+          <span class="status-badge"><span class="dot"></span> Database Online</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <h3 class="nav-section-title">Database Tables</h3>
+        <ul id="table-list">
+          <li class="nav-item active" data-table="events">
+            <span class="nav-icon">📝</span>
+            <span class="nav-text">Events & Logs (All)</span>
+            <span class="badge" id="count-events">0</span>
+          </li>
+          <li class="nav-item" data-table="events_filtered">
+            <span class="nav-icon">🧪</span>
+            <span class="nav-text">Events & Logs (Filtered)</span>
+            <span class="badge" id="count-events_filtered">0</span>
+          </li>
+          <li class="nav-item" data-table="sl_movements">
+            <span class="nav-icon">📈</span>
+            <span class="nav-text">SL Movements</span>
+            <span class="badge" id="count-sl_movements">0</span>
+          </li>
+          <li class="nav-item" data-table="orders">
+            <span class="nav-icon">📦</span>
+            <span class="nav-text">Latest Orders</span>
+            <span class="badge" id="count-orders">0</span>
+          </li>
+          <li class="nav-item" data-table="positions">
+            <span class="nav-icon">💼</span>
+            <span class="nav-text">Latest Positions</span>
+            <span class="badge" id="count-positions">0</span>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="clear-all-db" class="btn btn-danger-outline">⚠️ Clear All Tables</button>
+      </div>
+    </aside>
+
+    <!-- Right Content Area -->
+    <main class="content-area">
+      <header class="content-header">
+        <div class="header-title">
+          <h1 id="active-table-title">Events & Logs</h1>
+          <p id="table-description">Logs of raw WebSocket feeds and HTTP API network calls</p>
+        </div>
+        
+        <div class="header-actions">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="search" id="table-search" placeholder="Search table...">
+          </div>
+          <button id="btn-refresh" class="btn btn-primary">Refresh</button>
+          <button id="btn-clear-table" class="btn btn-danger">Clear Table</button>
+        </div>
+      </header>
+
+      <!-- Main Data Table Container -->
+      <section class="table-container">
+        <div class="table-scroll-wrapper">
+          <table id="data-table">
+            <thead id="table-head">
+              <!-- Dynamically populated headers -->
+            </thead>
+            <tbody id="table-body">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Pagination Footer -->
+      <footer class="pagination-footer">
+        <div class="pagination-info">
+          <span id="page-records-info">Showing 0-0 of 0 records</span>
+        </div>
+        
+        <div class="pagination-controls">
+          <div class="page-size-selector">
+            <label for="page-size">Rows per page:</label>
+            <select id="page-size">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          
+          <div class="pagination-buttons">
+            <button id="btn-prev-page" class="btn btn-secondary" disabled>Previous</button>
+            <span class="page-number-display">Page <span id="current-page">1</span> of <span id="total-pages">1</span></span>
+            <button id="btn-next-page" class="btn btn-secondary" disabled>Next</button>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="db-viewer.js"></script>
+</body>
+</html>

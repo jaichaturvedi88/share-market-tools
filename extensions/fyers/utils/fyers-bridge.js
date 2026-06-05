@@ -16,6 +16,127 @@
     console.log(`${BRIDGE_LOG_PREFIX} ${message}`, data || "");
   }
 
+  // Hook into WebSocket to intercept all incoming/outgoing messages
+  const OriginalWebSocket = window.WebSocket;
+  window.WebSocket = function (url, protocols) {
+    const ws = new OriginalWebSocket(url, protocols);
+    logDebug(`New WebSocket connection initiated to: ${url}`);
+
+    async function processMessage(data, isOutgoing) {
+      // 1. Filter out price ticker feeds
+      const lowerUrl = String(url || "").toLowerCase();
+      if (lowerUrl.includes("data") || lowerUrl.includes("ticker") || lowerUrl.includes("tick")) {
+        return;
+      }
+
+      // 2. Filter out ping/pong heartbeats
+      let text = "";
+      if (typeof data === "string") {
+        text = data;
+      } else if (data instanceof Blob) {
+        try { text = await data.text(); } catch (e) {}
+      } else if (data instanceof ArrayBuffer) {
+        try { text = new TextDecoder().decode(data); } catch (e) {}
+      }
+      
+      const cleanText = text.trim();
+      if (!cleanText || cleanText === "2" || cleanText === "3" || cleanText === "ping" || cleanText === "pong" || cleanText.length <= 3) {
+        return;
+      }
+
+      let parsed = null;
+      if (typeof data === "string") {
+        try {
+          parsed = JSON.parse(data);
+        } catch (e) {
+          parsed = data;
+        }
+      } else if (data instanceof Blob) {
+        try {
+          const text = await data.text();
+          try {
+            parsed = JSON.parse(text);
+          } catch (e) {
+            parsed = text;
+          }
+        } catch (e) {
+          parsed = "[Blob data: " + data.size + " bytes]";
+        }
+      } else if (data instanceof ArrayBuffer) {
+        try {
+          const text = new TextDecoder().decode(data);
+          try {
+            parsed = JSON.parse(text);
+          } catch (e) {
+            parsed = text;
+          }
+        } catch (e) {
+          parsed = "[ArrayBuffer data: " + data.byteLength + " bytes]";
+        }
+      } else {
+        parsed = String(data);
+      }
+
+      window.dispatchEvent(new CustomEvent("fyers-ws-message", {
+        detail: {
+          url: url,
+          direction: isOutgoing ? "outgoing" : "incoming",
+          data: parsed
+        }
+      }));
+    }
+
+    // Wrap send to intercept outgoing messages
+    const originalSend = ws.send;
+    ws.send = function (data) {
+      processMessage(data, true);
+      return originalSend.apply(this, arguments);
+    };
+
+    // Wrap addEventListener for incoming messages
+    const originalAddEventListener = ws.addEventListener;
+    ws.addEventListener = function (type, listener, options) {
+      if (type === "message") {
+        const wrappedListener = function (event) {
+          processMessage(event.data, false);
+          return listener.apply(this, arguments);
+        };
+        return originalAddEventListener.call(this, type, wrappedListener, options);
+      }
+      return originalAddEventListener.apply(this, arguments);
+    };
+
+    // Wrap onmessage property setter
+    let onmessageWrapper = null;
+    Object.defineProperty(ws, "onmessage", {
+      get: function () {
+        return onmessageWrapper;
+      },
+      set: function (listener) {
+        if (!listener) {
+          onmessageWrapper = null;
+          originalAddEventListener.call(ws, "message", null);
+          return;
+        }
+        onmessageWrapper = function (event) {
+          processMessage(event.data, false);
+          return listener.apply(this, arguments);
+        };
+        originalAddEventListener.call(ws, "message", onmessageWrapper);
+      },
+      configurable: true,
+      enumerable: true
+    });
+
+    return ws;
+  };
+  window.WebSocket.prototype = OriginalWebSocket.prototype;
+  for (const key in OriginalWebSocket) {
+    if (OriginalWebSocket.hasOwnProperty(key)) {
+      window.WebSocket[key] = OriginalWebSocket[key];
+    }
+  }
+
   // Scan localStorage and sessionStorage for JWT or Bearer tokens
   function findTokenInStorage() {
     for (const storage of [window.localStorage, window.sessionStorage]) {
@@ -117,20 +238,50 @@
       }
     }
 
+    // Capture request payload for logging
+    let requestBody = null;
+    if (options && options.body) {
+      try {
+        if (typeof options.body === "string") {
+          requestBody = JSON.parse(options.body);
+        } else {
+          requestBody = options.body;
+        }
+      } catch (e) {
+        requestBody = String(options.body);
+      }
+    }
+
     const response = await originalFetch.apply(this, arguments);
 
     // Passive Interception: Read responses of successful page fetches
     try {
-      if (response.ok && (url.includes("/orders") || url.includes("/positions"))) {
-        const clonedResponse = response.clone();
-        const text = await clonedResponse.text();
-        let body = null;
-        try {
-          body = text ? JSON.parse(text) : null;
-        } catch (e) {
-          body = text;
-        }
+      const clonedResponse = response.clone();
+      const text = await clonedResponse.text();
+      let resBody = null;
+      try {
+        resBody = text ? JSON.parse(text) : null;
+      } catch (e) {
+        resBody = text;
+      }
 
+      // Log Fyers API network calls
+      if (url.includes("fyers.in")) {
+        window.dispatchEvent(new CustomEvent("fyers-network-call", {
+          detail: {
+            url: url,
+            payload: {
+              method: options?.method || "GET",
+              requestBody: requestBody,
+              responseStatus: response.status,
+              responseBody: resBody
+            }
+          }
+        }));
+      }
+
+      if (response.ok && (url.includes("/orders") || url.includes("/positions"))) {
+        const body = resBody;
         if (body) {
           // If it is the order book (GET)
           if (url.includes("/orders") && !url.includes("/orders/bo") && (!options || options.method === "GET" || !options.method)) {
