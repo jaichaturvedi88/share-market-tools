@@ -66,9 +66,12 @@
         </div>
         
         <div class="header-actions">
-          <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="search" id="table-search" placeholder="Search table...">
+          <div class="search-box-container">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="search" id="table-search" placeholder="Search table...">
+            </div>
+            <span class="search-tip">💡 Use <code>-term</code> to exclude (e.g. <code>-ws</code> will exclude wss data)</span>
           </div>
           <button id="btn-refresh" class="btn btn-primary">Refresh</button>
           <button id="btn-clear-table" class="btn btn-danger">Clear Table</button>

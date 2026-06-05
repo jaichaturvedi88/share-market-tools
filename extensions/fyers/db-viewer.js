@@ -321,16 +321,60 @@ function sortFilteredRecords() {
 // Apply Search Query to Filter Records
 function applyFilterAndRender() {
   state.filteredRecords = state.records.filter(record => {
-    // 1. Apply global search query
-    const matchesGlobal = !state.searchQuery || checkObjectMatchesQuery(record, state.searchQuery);
-    if (!matchesGlobal) return false;
+    // 1. Apply global search query supporting exclusions (e.g. -wss)
+    if (state.searchQuery) {
+      const terms = state.searchQuery.split(/[\s,]+/).filter(t => t.length > 0);
+      let hasPositive = false;
+      let matchesAllPositive = true;
+      
+      for (const term of terms) {
+        if (term.startsWith("-") && term.length > 1) {
+          const negTerm = term.substring(1).toLowerCase();
+          if (checkObjectMatchesQuery(record, negTerm)) {
+            return false; // Exclude if negative term is matched in the record
+          }
+        } else {
+          hasPositive = true;
+          const posTerm = term.toLowerCase();
+          if (!checkObjectMatchesQuery(record, posTerm)) {
+            matchesAllPositive = false;
+          }
+        }
+      }
+      
+      if (hasPositive && !matchesAllPositive) {
+        return false;
+      }
+    }
     
-    // 2. Apply column-specific filters (trimmed for comparison)
+    // 2. Apply column-specific filters (trimmed, supporting exclusions like -wss)
     for (const [headerName, filterVal] of Object.entries(state.columnFilters)) {
       const trimmedVal = filterVal.trim();
       if (!trimmedVal) continue;
+      
       const cellValue = getRecordFieldValueForHeader(record, state.activeTable, headerName).toLowerCase();
-      if (!cellValue.includes(trimmedVal.toLowerCase())) {
+      const terms = trimmedVal.split(/[\s,]+/).filter(t => t.length > 0);
+      let hasPositive = false;
+      let matchesAllPositive = true;
+      let excluded = false;
+      
+      for (const term of terms) {
+        if (term.startsWith("-") && term.length > 1) {
+          const negTerm = term.substring(1).toLowerCase();
+          if (cellValue.includes(negTerm)) {
+            excluded = true;
+            break;
+          }
+        } else {
+          hasPositive = true;
+          const posTerm = term.toLowerCase();
+          if (!cellValue.includes(posTerm)) {
+            matchesAllPositive = false;
+          }
+        }
+      }
+      
+      if (excluded || (hasPositive && !matchesAllPositive)) {
         return false;
       }
     }

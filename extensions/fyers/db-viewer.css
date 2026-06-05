@@ -220,6 +220,29 @@ body {
 }
 
 /* Search Box */
+.search-box-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-tip {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.search-tip code {
+  color: var(--primary);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, monospace;
+}
+
 .search-box {
   position: relative;
   display: flex;
