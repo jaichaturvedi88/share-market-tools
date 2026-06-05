@@ -90,9 +90,24 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSidebarListeners();
   setupActionListeners();
   setupPaginationListeners();
+  setupSidebarCollapse();
   renderHeaders();
   loadAllData();
 });
+
+// Sidebar Collapse Handler
+function setupSidebarCollapse() {
+  const sidebar = document.querySelector(".sidebar");
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+  if (!sidebarToggle) return;
+  
+  sidebarToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("collapsed");
+    const isCollapsed = sidebar.classList.contains("collapsed");
+    sidebarToggle.textContent = isCollapsed ? "▶" : "◀";
+    sidebarToggle.title = isCollapsed ? "Expand Sidebar" : "Collapse Sidebar";
+  });
+}
 
 // Update record badges on the sidebar
 async function updateSidebarCounts() {
