@@ -1,7 +1,7 @@
 // db-viewer.js - IndexedDB Viewer Logic
 
 const DB_NAME = "FyersSLDatabase";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // App State
 const state = {
@@ -19,6 +19,9 @@ const state = {
   }
 };
 
+// No focus tracking needed as inputs are not destroyed
+
+
 // Database Connection Helper
 function getDB() {
   return new Promise((resolve, reject) => {
@@ -30,6 +33,9 @@ function getDB() {
       const db = request.result;
       if (!db.objectStoreNames.contains("events")) {
         db.createObjectStore("events", { keyPath: "id", autoIncrement: true });
+      }
+      if (!db.objectStoreNames.contains("events_filtered")) {
+        db.createObjectStore("events_filtered", { keyPath: "id", autoIncrement: true });
       }
       if (!db.objectStoreNames.contains("sl_movements")) {
         db.createObjectStore("sl_movements", { keyPath: "id", autoIncrement: true });
@@ -84,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupSidebarListeners();
   setupActionListeners();
   setupPaginationListeners();
+  renderHeaders();
   loadAllData();
 });
 
@@ -121,6 +128,7 @@ function setupSidebarListeners() {
       state.searchQuery = "";
       
       updateHeaderDetails();
+      renderHeaders();
       loadActiveTableData();
     });
   });
@@ -317,11 +325,12 @@ function applyFilterAndRender() {
     const matchesGlobal = !state.searchQuery || checkObjectMatchesQuery(record, state.searchQuery);
     if (!matchesGlobal) return false;
     
-    // 2. Apply column-specific filters
+    // 2. Apply column-specific filters (trimmed for comparison)
     for (const [headerName, filterVal] of Object.entries(state.columnFilters)) {
-      if (!filterVal) continue;
+      const trimmedVal = filterVal.trim();
+      if (!trimmedVal) continue;
       const cellValue = getRecordFieldValueForHeader(record, state.activeTable, headerName).toLowerCase();
-      if (!cellValue.includes(filterVal.toLowerCase())) {
+      if (!cellValue.includes(trimmedVal.toLowerCase())) {
         return false;
       }
     }
@@ -349,39 +358,49 @@ function checkObjectMatchesQuery(obj, query) {
   return String(obj).toLowerCase().includes(query);
 }
 
-// Render headers and rows based on current active table and pagination
-function renderTable() {
-  const tableHead = document.getElementById("table-head");
-  const tableBody = document.getElementById("table-body");
-  
-  // Capture focus state before clearing headers
-  let activeColIndex = null;
-  let selectionStart = 0;
-  let selectionEnd = 0;
-  if (document.activeElement && document.activeElement.classList.contains("column-filter-input")) {
-    activeColIndex = document.activeElement.getAttribute("data-col-index");
-    selectionStart = document.activeElement.selectionStart;
-    selectionEnd = document.activeElement.selectionEnd;
+// Helper to classify columns for styling and fixed width properties
+function getColumnClass(hText) {
+  const norm = hText.toLowerCase();
+  if (norm === "id" || norm === "order id") return "col-id";
+  if (norm === "time" || norm === "logged at") return "col-time";
+  if (norm === "type" || norm === "side") return "col-type";
+  if (norm === "direction") return "col-direction";
+  if (
+    norm === "qty" ||
+    norm === "net qty" ||
+    norm === "old sl" ||
+    norm === "new sl" ||
+    norm === "ltp" ||
+    norm === "p&l" ||
+    norm === "unrealized p&l" ||
+    norm === "avg price" ||
+    norm === "price"
+  ) {
+    return "col-numeric";
   }
+  return "";
+}
 
+// Render table headers and column filters once per table type
+function renderHeaders() {
+  const tableHead = document.getElementById("table-head");
   tableHead.innerHTML = "";
-  tableBody.innerHTML = "";
 
-  const filtered = state.filteredRecords;
-  const startIdx = (state.currentPage - 1) * state.pageSize;
-  const endIdx = Math.min(startIdx + state.pageSize, filtered.length);
-  const paginatedRecords = filtered.slice(startIdx, endIdx);
-  
-  // Render Headers
   const headers = getHeadersForTable(state.activeTable);
-  
+
   // Row 1: Header names with sort triggers
   const trHead = document.createElement("tr");
+  trHead.className = "header-row";
   headers.forEach(hText => {
     const th = document.createElement("th");
     th.style.cursor = "pointer";
     th.style.userSelect = "none";
     th.title = `Click to sort by ${hText}`;
+    th.setAttribute("data-header-name", hText);
+    
+    // Add column class for sizing
+    const colClass = getColumnClass(hText);
+    if (colClass) th.classList.add(colClass);
     
     const textSpan = document.createElement("span");
     textSpan.textContent = hText;
@@ -390,14 +409,6 @@ function renderTable() {
     // Render arrow indicator
     const indicator = document.createElement("span");
     indicator.className = "sort-indicator";
-    if (state.currentSort.column === hText) {
-      indicator.textContent = state.currentSort.direction === "asc" ? " ▲" : " ▼";
-      indicator.style.color = "var(--primary)";
-      th.classList.add("sorted");
-    } else {
-      indicator.textContent = " ⇅";
-      indicator.style.opacity = "0.3";
-    }
     th.appendChild(indicator);
     
     // Click event to toggle/apply sort
@@ -410,6 +421,7 @@ function renderTable() {
         state.currentSort.column = hText;
         state.currentSort.direction = "asc";
       }
+      updateSortIndicators();
       applyFilterAndRender();
     });
     
@@ -422,6 +434,11 @@ function renderTable() {
   trFilter.className = "filter-row";
   headers.forEach((hText, index) => {
     const th = document.createElement("th");
+    
+    // Add column class for sizing
+    const colClass = getColumnClass(hText);
+    if (colClass) th.classList.add(colClass);
+
     const input = document.createElement("input");
     input.type = "text";
     input.className = "column-filter-input";
@@ -431,7 +448,7 @@ function renderTable() {
     input.value = state.columnFilters[hText] || "";
     
     input.addEventListener("input", (e) => {
-      const val = e.target.value.trim();
+      const val = e.target.value;
       if (val) {
         state.columnFilters[hText] = val;
       } else {
@@ -445,6 +462,48 @@ function renderTable() {
     trFilter.appendChild(th);
   });
   tableHead.appendChild(trFilter);
+
+  // Initial call to update indicators
+  updateSortIndicators();
+}
+
+// Update the sort indicators without rebuilding the DOM
+function updateSortIndicators() {
+  const tableHead = document.getElementById("table-head");
+  const headers = getHeadersForTable(state.activeTable);
+  
+  headers.forEach(hText => {
+    const th = tableHead.querySelector(`.header-row th[data-header-name="${hText}"]`);
+    if (!th) return;
+    
+    const indicator = th.querySelector(".sort-indicator");
+    if (!indicator) return;
+    
+    if (state.currentSort.column === hText) {
+      indicator.textContent = state.currentSort.direction === "asc" ? " ▲" : " ▼";
+      indicator.style.color = "var(--primary)";
+      indicator.style.opacity = "1";
+      th.classList.add("sorted");
+    } else {
+      indicator.textContent = " ⇅";
+      indicator.style.color = "";
+      indicator.style.opacity = "0.3";
+      th.classList.remove("sorted");
+    }
+  });
+}
+
+// Render data rows based on current active table, filters and pagination
+function renderTable() {
+  const tableBody = document.getElementById("table-body");
+  tableBody.innerHTML = "";
+
+  const filtered = state.filteredRecords;
+  const startIdx = (state.currentPage - 1) * state.pageSize;
+  const endIdx = Math.min(startIdx + state.pageSize, filtered.length);
+  const paginatedRecords = filtered.slice(startIdx, endIdx);
+  
+  const headers = getHeadersForTable(state.activeTable);
 
   // Update Footer pagination details
   const totalPages = Math.ceil(filtered.length / state.pageSize) || 1;
@@ -477,6 +536,15 @@ function renderTable() {
 
     populateRowCells(trData, state.activeTable, record);
     
+    // Assign column classes to data cells matching headers
+    Array.from(trData.children).forEach((td, cellIdx) => {
+      const hText = headers[cellIdx];
+      if (hText) {
+        const colClass = getColumnClass(hText);
+        if (colClass) td.classList.add(colClass);
+      }
+    });
+
     // Toggle expand detail view on click
     trData.addEventListener("click", () => {
       toggleRowExpansion(rowId, record, headers.length);
@@ -513,15 +581,6 @@ function renderTable() {
       tableBody.appendChild(trDetails);
     }
   });
-
-  // Restore focus to active column filter input if necessary
-  if (activeColIndex !== null) {
-    const input = tableHead.querySelector(`.column-filter-input[data-col-index="${activeColIndex}"]`);
-    if (input) {
-      input.focus();
-      input.setSelectionRange(selectionStart, selectionEnd);
-    }
-  }
 }
 
 // Toggle Row Details Expanded Status
@@ -562,7 +621,8 @@ function formatTime(isoString) {
 // Populate row fields based on table type
 function populateRowCells(tr, tableName, record) {
   switch (tableName) {
-    case "events": {
+    case "events":
+    case "events_filtered": {
       const cId = document.createElement("td");
       cId.style.fontWeight = "bold";
       cId.textContent = record.id;

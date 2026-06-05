@@ -608,3 +608,47 @@ tr.active-row {
   background-color: var(--bg-card);
   box-shadow: 0 0 0 2px var(--primary-glow);
 }
+
+/* Custom Column Widths and Alignments */
+.col-id {
+  width: 80px;
+  min-width: 80px;
+  max-width: 100px;
+  white-space: nowrap;
+}
+
+.col-time {
+  width: 180px;
+  min-width: 180px;
+  max-width: 200px;
+  white-space: nowrap;
+}
+
+.col-type {
+  width: 110px;
+  min-width: 110px;
+  max-width: 125px;
+  white-space: nowrap;
+}
+
+.col-direction {
+  width: 100px;
+  min-width: 100px;
+  max-width: 115px;
+  white-space: nowrap;
+}
+
+.col-numeric {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Align headers and header inputs in numeric columns to the right */
+th.col-numeric {
+  text-align: right;
+}
+
+th.col-numeric .column-filter-input {
+  text-align: right;
+}
+
