@@ -306,17 +306,18 @@ const gtt = (function () {
       const panelTrigger = panelTriggersBySymbol.get(normalizeSymbol(row.symbol)) || findMatchingPanelTrigger(panelTriggersBySymbol, row.symbol);
       if (!panelTrigger) return row;
 
+      const finalGttStatus = panelTrigger.gttStatus || row.gttStatus || '';
       return {
         ...row,
         ltpText: panelTrigger.ltpText,
         ltpValue: panelTrigger.ltpValue,
-        gttStatus: panelTrigger.gttStatus || row.gttStatus,
+        gttStatus: finalGttStatus,
         panelTriggerText: panelTrigger.triggerText,
         panelTriggerValue: panelTrigger.triggerValue,
         triggerPercentText: panelTrigger.percentText,
         triggerPercentValue: panelTrigger.percentValue,
         status: getTradeStatus(row.averagePrice, panelTrigger.triggerValue ?? row.primaryTrigger),
-        isDisabled: isTriggeredStatus(panelTrigger.gttStatus || row.gttStatus)
+        isDisabled: isTriggeredStatus(finalGttStatus) && (row.buyQuantity === null || row.buyQuantity === 0)
       };
     });
 
@@ -391,6 +392,8 @@ const gtt = (function () {
       const symbol = readSymbol(position);
       if (!symbol) return;
 
+      if (positionsBySymbol.has(symbol)) return;
+
       const averagePrice = readFirstPositiveNumber([
         position.day_buy_price,
         position.dayBuyPrice,
@@ -406,11 +409,11 @@ const gtt = (function () {
         symbol,
         averagePrice,
         buyQuantity: readNumber(
+          position.quantity ??
+          position.qty ??
           position.buy_quantity ??
           position.buy_qty ??
-          position.buyQuantity ??
-          position.quantity ??
-          position.qty
+          position.buyQuantity
         )
       });
     });
@@ -535,19 +538,21 @@ const gtt = (function () {
       const primaryTrigger = readPrimaryTrigger(row.triggerValues);
       const panelTrigger = panelTriggersBySymbol.get(normalizeSymbol(row.symbol)) || {};
 
+      const finalGttStatus = panelTrigger.gttStatus || row.gttStatus || '';
+      const finalQuantity = row.buyQuantity ?? panelTrigger.quantityValue ?? null;
       return {
         ...row,
         primaryTrigger,
-        buyQuantity: row.buyQuantity ?? panelTrigger.quantityValue ?? null,
+        buyQuantity: finalQuantity,
         ltpText: panelTrigger.ltpText || row.ltpText || '',
         ltpValue: panelTrigger.ltpValue ?? row.ltpValue ?? null,
-        gttStatus: panelTrigger.gttStatus || row.gttStatus || '',
+        gttStatus: finalGttStatus,
         panelTriggerText: panelTrigger.triggerText || row.panelTriggerText || '',
         panelTriggerValue: panelTrigger.triggerValue ?? row.panelTriggerValue ?? null,
         triggerPercentText: panelTrigger.percentText || row.triggerPercentText || '',
         triggerPercentValue: panelTrigger.percentValue ?? row.triggerPercentValue ?? null,
         status: getTradeStatus(row.averagePrice, panelTrigger.triggerValue ?? row.panelTriggerValue ?? primaryTrigger),
-        isDisabled: isTriggeredStatus(panelTrigger.gttStatus || row.gttStatus)
+        isDisabled: isTriggeredStatus(finalGttStatus) && (finalQuantity === null || finalQuantity === 0)
       };
     }).sort((left, right) => left.symbol.localeCompare(right.symbol));
   }
@@ -886,18 +891,20 @@ const gtt = (function () {
       const status = getTradeStatus(row.averagePrice, row.panelTriggerValue ?? primaryTrigger);
       const averagePrice = readNumber(row.averagePrice);
 
+      const finalGttStatus = row.gttStatus || '';
+      const finalQuantity = row.buyQuantity;
       return {
         ...row,
         primaryTrigger,
         status,
         ltpText: row.ltpText || '',
         ltpValue: row.ltpValue ?? readNumber(row.ltpText),
-        gttStatus: row.gttStatus || '',
+        gttStatus: finalGttStatus,
         panelTriggerText: row.panelTriggerText || '',
         panelTriggerValue: row.panelTriggerValue ?? readNumber(row.panelTriggerText),
         triggerPercentText: row.triggerPercentText || '',
         triggerPercentValue: row.triggerPercentValue ?? readNumber(row.triggerPercentText),
-        isDisabled: row.gttStatus ? isTriggeredStatus(row.gttStatus) : false
+        isDisabled: finalGttStatus ? (isTriggeredStatus(finalGttStatus) && (finalQuantity === null || finalQuantity === 0)) : false
       };
     });
   }
@@ -913,17 +920,19 @@ const gtt = (function () {
     const averagePrice = existingHasAverage ? existing.averagePrice : incoming.averagePrice;
     const buyQuantity = existingHasAverage ? existing.buyQuantity : incoming.buyQuantity;
 
+    const mergedQuantity = buyQuantity ?? existing.buyQuantity ?? incoming.buyQuantity;
+    const mergedGttStatus = incoming.gttStatus || existing.gttStatus || '';
     return {
       ...existing,
       ...incoming,
       symbol: preferredSymbol,
       averagePrice,
-      buyQuantity: buyQuantity ?? existing.buyQuantity ?? incoming.buyQuantity,
+      buyQuantity: mergedQuantity,
       panelTriggerText: incoming.panelTriggerText || existing.panelTriggerText,
       panelTriggerValue: incoming.panelTriggerValue ?? existing.panelTriggerValue,
       ltpText: incoming.ltpText || existing.ltpText,
       ltpValue: incoming.ltpValue ?? existing.ltpValue,
-      gttStatus: incoming.gttStatus || existing.gttStatus,
+      gttStatus: mergedGttStatus,
       triggerId: incoming.triggerId || existing.triggerId,
       triggerCondition: incoming.triggerCondition || existing.triggerCondition,
       triggerOrders: incoming.triggerOrders?.length ? incoming.triggerOrders : existing.triggerOrders,
@@ -937,7 +946,7 @@ const gtt = (function () {
           ...(incoming.triggerValues || [])
         ])
       ],
-      isDisabled: isTriggeredStatus(incoming.gttStatus || existing.gttStatus)
+      isDisabled: isTriggeredStatus(mergedGttStatus) && (mergedQuantity === null || mergedQuantity === 0)
     };
   }
 
