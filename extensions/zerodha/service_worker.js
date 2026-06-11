@@ -3,7 +3,7 @@ console.log('Hi! from service_worker.js')
 chrome.runtime.onMessage.addListener((message) => {
     if (message?.type === 'open-gtt-history') {
         chrome.tabs.create({
-            url: chrome.runtime.getURL('gtt-history.html')
+            url: chrome.runtime.getURL('reports/gtt-history.html')
         });
     }
 });
