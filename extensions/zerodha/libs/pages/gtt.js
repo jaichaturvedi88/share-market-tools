@@ -1059,11 +1059,12 @@ const gtt = (function () {
       if (now - lastNotifiedAt < TRAIL_SOUND_REPEAT_MS) return;
 
       notifiedTrailKeys.set(notifyKey, now);
-      playTrailSound();
+      playTrailSound(row);
     });
   }
 
-  function playTrailSound() {
+  function playTrailSound(row) {
+    console.log(`[GTT Helper] Playing audio to move SL for symbol: ${row?.symbol}`);
     const audio = new Audio(chrome.runtime.getURL('resources/move-sl.mp3'));
     audio.volume = 0.8;
     audio.play().catch((error) => {
