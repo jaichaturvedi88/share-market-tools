@@ -301,22 +301,34 @@ const gtt = (function () {
     if (!currentRows.length) return;
 
     const gttPanelTriggers = readGttPanelTriggers(currentRows.map((row) => row.symbol));
-    const panelTriggersBySymbol = new Map(gttPanelTriggers.map((item) => [normalizeSymbol(item.symbol), item]));
+    const panelTriggersBySymbol = buildPanelTriggerMap(gttPanelTriggers);
     const rows = currentRows.map((row) => {
       const panelTrigger = panelTriggersBySymbol.get(normalizeSymbol(row.symbol)) || findMatchingPanelTrigger(panelTriggersBySymbol, row.symbol);
       if (!panelTrigger) return row;
 
       const finalGttStatus = panelTrigger.gttStatus || row.gttStatus || '';
+      const triggerVal = panelTrigger.triggerValue ?? row.panelTriggerValue ?? row.primaryTrigger;
+      const ltpVal = panelTrigger.ltpValue ?? row.ltpValue ?? null;
+      
+      let percentText = panelTrigger.percentText || row.triggerPercentText || '';
+      let percentValue = panelTrigger.percentValue ?? row.triggerPercentValue ?? null;
+      
+      if ((!percentText || percentText === '-') && ltpVal !== null && triggerVal !== null && ltpVal > 0) {
+        const pct = ((triggerVal - ltpVal) / ltpVal) * 100;
+        percentText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
+        percentValue = pct;
+      }
+
       return {
         ...row,
         ltpText: panelTrigger.ltpText,
-        ltpValue: panelTrigger.ltpValue,
+        ltpValue: ltpVal,
         gttStatus: finalGttStatus,
         panelTriggerText: panelTrigger.triggerText,
-        panelTriggerValue: panelTrigger.triggerValue,
-        triggerPercentText: panelTrigger.percentText,
-        triggerPercentValue: panelTrigger.percentValue,
-        status: getTradeStatus(row.averagePrice, panelTrigger.triggerValue ?? row.primaryTrigger),
+        panelTriggerValue: triggerVal,
+        triggerPercentText: percentText,
+        triggerPercentValue: percentValue,
+        status: getTradeStatus(row.averagePrice, triggerVal),
         isDisabled: isTriggeredStatus(finalGttStatus) && (row.buyQuantity === null || row.buyQuantity === 0)
       };
     });
@@ -437,7 +449,8 @@ const gtt = (function () {
         triggerCondition: condition,
         triggerOrders: orders,
         triggerType: trigger.type || 'single',
-        expiresAt: trigger.expires_at || trigger.expiresAt || ''
+        expiresAt: trigger.expires_at || trigger.expiresAt || '',
+        status: (trigger.status || '').toLowerCase()
       };
     }).filter((trigger) => trigger.symbol);
   }
@@ -489,12 +502,21 @@ const gtt = (function () {
         triggerValues: []
       };
 
+      const isCurrentActive = row.gttStatus && row.gttStatus.toLowerCase() === 'active';
+      const isIncomingActive = trigger.status === 'active';
+      
+      if (isCurrentActive && !isIncomingActive) {
+        row.triggerValues = [...new Set([...row.triggerValues, ...trigger.triggerValues])];
+        return;
+      }
+
       row.triggerValues = [...row.triggerValues, ...trigger.triggerValues];
       row.triggerId = trigger.triggerId || row.triggerId;
       row.triggerCondition = trigger.triggerCondition || row.triggerCondition;
       row.triggerOrders = trigger.triggerOrders?.length ? trigger.triggerOrders : row.triggerOrders;
       row.triggerType = trigger.triggerType || row.triggerType;
       row.expiresAt = trigger.expiresAt || row.expiresAt;
+      row.gttStatus = trigger.status || row.gttStatus;
       row.primaryTrigger = readPrimaryTrigger(row.triggerValues);
       row.status = getTradeStatus(row.averagePrice, row.panelTriggerValue ?? row.primaryTrigger);
       rowsBySymbol.set(rowKey, row);
@@ -504,6 +526,13 @@ const gtt = (function () {
       const matchingKey = findMatchingSymbolKey(rowsBySymbol, panelTrigger.symbol);
       if (matchingKey) {
         const row = rowsBySymbol.get(matchingKey);
+
+        const isCurrentActive = row.gttStatus && row.gttStatus.toLowerCase() === 'active';
+        const isIncomingActive = panelTrigger.gttStatus && panelTrigger.gttStatus.toLowerCase() === 'active';
+        if (isCurrentActive && !isIncomingActive) {
+          return;
+        }
+
         row.buyQuantity = row.buyQuantity ?? panelTrigger.quantityValue;
         row.panelTriggerText = panelTrigger.triggerText;
         row.panelTriggerValue = panelTrigger.triggerValue;
@@ -540,18 +569,31 @@ const gtt = (function () {
 
       const finalGttStatus = panelTrigger.gttStatus || row.gttStatus || '';
       const finalQuantity = row.buyQuantity ?? panelTrigger.quantityValue ?? null;
+      
+      const triggerVal = panelTrigger.triggerValue ?? row.panelTriggerValue ?? primaryTrigger;
+      const ltpVal = panelTrigger.ltpValue ?? row.ltpValue ?? null;
+      
+      let percentText = panelTrigger.percentText || row.triggerPercentText || '';
+      let percentValue = panelTrigger.percentValue ?? row.triggerPercentValue ?? null;
+      
+      if ((!percentText || percentText === '-') && ltpVal !== null && triggerVal !== null && ltpVal > 0) {
+        const pct = ((triggerVal - ltpVal) / ltpVal) * 100;
+        percentText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
+        percentValue = pct;
+      }
+
       return {
         ...row,
         primaryTrigger,
         buyQuantity: finalQuantity,
         ltpText: panelTrigger.ltpText || row.ltpText || '',
-        ltpValue: panelTrigger.ltpValue ?? row.ltpValue ?? null,
+        ltpValue: ltpVal,
         gttStatus: finalGttStatus,
         panelTriggerText: panelTrigger.triggerText || row.panelTriggerText || '',
-        panelTriggerValue: panelTrigger.triggerValue ?? row.panelTriggerValue ?? null,
-        triggerPercentText: panelTrigger.percentText || row.triggerPercentText || '',
-        triggerPercentValue: panelTrigger.percentValue ?? row.triggerPercentValue ?? null,
-        status: getTradeStatus(row.averagePrice, panelTrigger.triggerValue ?? row.panelTriggerValue ?? primaryTrigger),
+        panelTriggerValue: triggerVal,
+        triggerPercentText: percentText,
+        triggerPercentValue: percentValue,
+        status: getTradeStatus(row.averagePrice, triggerVal),
         isDisabled: isTriggeredStatus(finalGttStatus) && (finalQuantity === null || finalQuantity === 0)
       };
     }).sort((left, right) => left.symbol.localeCompare(right.symbol));
@@ -570,7 +612,13 @@ const gtt = (function () {
 
     gttPanelTriggers.forEach((item) => {
       const key = normalizeSymbol(item.symbol);
-      if (!map.has(key)) map.set(key, item);
+      const existing = map.get(key);
+      const isExistingActive = existing && existing.gttStatus && existing.gttStatus.toLowerCase() === 'active';
+      const isIncomingActive = item.gttStatus && item.gttStatus.toLowerCase() === 'active';
+
+      if (!existing || (!isExistingActive && isIncomingActive)) {
+        map.set(key, item);
+      }
     });
 
     return map;
@@ -893,17 +941,30 @@ const gtt = (function () {
 
       const finalGttStatus = row.gttStatus || '';
       const finalQuantity = row.buyQuantity;
+      
+      const triggerVal = row.panelTriggerValue ?? primaryTrigger;
+      const ltpVal = row.ltpValue ?? readNumber(row.ltpText);
+      
+      let percentText = row.triggerPercentText || '';
+      let percentValue = row.triggerPercentValue ?? readNumber(row.triggerPercentText);
+      
+      if ((!percentText || percentText === '-') && ltpVal !== null && triggerVal !== null && ltpVal > 0) {
+        const pct = ((triggerVal - ltpVal) / ltpVal) * 100;
+        percentText = `${pct > 0 ? '+' : ''}${pct.toFixed(2)}%`;
+        percentValue = pct;
+      }
+
       return {
         ...row,
         primaryTrigger,
         status,
         ltpText: row.ltpText || '',
-        ltpValue: row.ltpValue ?? readNumber(row.ltpText),
+        ltpValue: ltpVal,
         gttStatus: finalGttStatus,
         panelTriggerText: row.panelTriggerText || '',
-        panelTriggerValue: row.panelTriggerValue ?? readNumber(row.panelTriggerText),
-        triggerPercentText: row.triggerPercentText || '',
-        triggerPercentValue: row.triggerPercentValue ?? readNumber(row.triggerPercentText),
+        panelTriggerValue: triggerVal,
+        triggerPercentText: percentText,
+        triggerPercentValue: percentValue,
         isDisabled: finalGttStatus ? (isTriggeredStatus(finalGttStatus) && (finalQuantity === null || finalQuantity === 0)) : false
       };
     });
@@ -912,34 +973,38 @@ const gtt = (function () {
   function mergeRows(existing, incoming) {
     if (!existing) return incoming;
 
+    const isExistingActive = existing.gttStatus && existing.gttStatus.toLowerCase() === 'active';
+    const isIncomingActive = incoming.gttStatus && incoming.gttStatus.toLowerCase() === 'active';
+    const preferExistingGtt = isExistingActive && !isIncomingActive;
+
     const existingAverage = readNumber(existing.averagePrice);
     const incomingAverage = readNumber(incoming.averagePrice);
     const existingHasAverage = existingAverage !== null && existingAverage > 0;
-    const incomingHasAverage = incomingAverage !== null && incomingAverage > 0;
     const preferredSymbol = existingHasAverage ? existing.symbol : incoming.symbol;
     const averagePrice = existingHasAverage ? existing.averagePrice : incoming.averagePrice;
     const buyQuantity = existingHasAverage ? existing.buyQuantity : incoming.buyQuantity;
 
     const mergedQuantity = buyQuantity ?? existing.buyQuantity ?? incoming.buyQuantity;
-    const mergedGttStatus = incoming.gttStatus || existing.gttStatus || '';
+    const mergedGttStatus = preferExistingGtt ? existing.gttStatus : (incoming.gttStatus || existing.gttStatus || '');
+
     return {
       ...existing,
       ...incoming,
       symbol: preferredSymbol,
       averagePrice,
       buyQuantity: mergedQuantity,
-      panelTriggerText: incoming.panelTriggerText || existing.panelTriggerText,
-      panelTriggerValue: incoming.panelTriggerValue ?? existing.panelTriggerValue,
+      panelTriggerText: preferExistingGtt ? existing.panelTriggerText : (incoming.panelTriggerText || existing.panelTriggerText),
+      panelTriggerValue: preferExistingGtt ? existing.panelTriggerValue : (incoming.panelTriggerValue ?? existing.panelTriggerValue),
       ltpText: incoming.ltpText || existing.ltpText,
       ltpValue: incoming.ltpValue ?? existing.ltpValue,
       gttStatus: mergedGttStatus,
-      triggerId: incoming.triggerId || existing.triggerId,
-      triggerCondition: incoming.triggerCondition || existing.triggerCondition,
-      triggerOrders: incoming.triggerOrders?.length ? incoming.triggerOrders : existing.triggerOrders,
-      triggerType: incoming.triggerType || existing.triggerType,
-      expiresAt: incoming.expiresAt || existing.expiresAt,
-      triggerPercentText: incoming.triggerPercentText || existing.triggerPercentText,
-      triggerPercentValue: incoming.triggerPercentValue ?? existing.triggerPercentValue,
+      triggerId: preferExistingGtt ? existing.triggerId : (incoming.triggerId || existing.triggerId),
+      triggerCondition: preferExistingGtt ? existing.triggerCondition : (incoming.triggerCondition || existing.triggerCondition),
+      triggerOrders: preferExistingGtt ? existing.triggerOrders : (incoming.triggerOrders?.length ? incoming.triggerOrders : existing.triggerOrders),
+      triggerType: preferExistingGtt ? existing.triggerType : (incoming.triggerType || existing.triggerType),
+      expiresAt: preferExistingGtt ? existing.expiresAt : (incoming.expiresAt || existing.expiresAt),
+      triggerPercentText: preferExistingGtt ? existing.triggerPercentText : (incoming.triggerPercentText || existing.triggerPercentText),
+      triggerPercentValue: preferExistingGtt ? existing.triggerPercentValue : (incoming.triggerPercentValue ?? existing.triggerPercentValue),
       triggerValues: [
         ...new Set([
           ...(existing.triggerValues || []),
