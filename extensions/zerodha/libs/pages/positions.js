@@ -60,24 +60,25 @@ const positions = (function () {
 
   function hideCompletedTrades() {
     const checkbox = document.getElementById('hide-completed-trades');
+    if (!checkbox) return;
 
     checkbox.addEventListener('change', () => {
       let positionsTable = document.querySelector('div.table-wrapper > table > tbody');
-      let currentPositions = positionsTable.querySelectorAll('tr')
+      if (!positionsTable) return;
+      let currentPositions = positionsTable.querySelectorAll('tr');
 
       currentPositions.forEach(tr => {
-        let productType = tr.querySelector('td[data-label="Product"] > span').textContent?.toUpperCase()?.trim();
-        let quantity = readNumberFromTableCell(tr, 'td[data-label="Qty."] > span');
+        let quantityCell = tr.querySelector('td.quantity > span') || tr.querySelector('td[data-label="Qty."] > span');
+        if (!quantityCell) return;
 
-        if (productType === PRODUCT_TYPE.NRML) {
-          if (quantity === 0 & checkbox.checked) {
-            tr.style.display = 'none';
-          } else {
-            tr.style.display = "table-row";
-          }
+        let quantity = parseFloat(quantityCell.textContent.replaceAll(',', ''));
+        if (Number.isNaN(quantity)) return;
+
+        if (quantity === 0 && checkbox.checked) {
+          tr.style.display = 'none';
+        } else {
+          tr.style.display = 'table-row';
         }
-
-        // console.log(POSITIONS.SYMBOL);
       });
     });
   }

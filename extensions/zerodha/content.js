@@ -2,11 +2,18 @@ console.log('Its from content.js file')
 
 function createUi(url) {
   const holdingsUI = document.querySelector('div.calculator');
+  const gttUI = document.querySelector('#gtt-helper-root');
   holdingsUI?.remove();
+  if (!url.includes("/orders/gtt")) {
+    gttUI?.remove();
+  }
+
   if (url.includes("/positions")) {
     positions.createPositionsPanel();
   } else if (url.includes("/holdings")){
     holdings.createHoldingsUi()
+  } else if (url.includes("/orders/gtt")) {
+    gtt.createGttUi();
   }
 }
 

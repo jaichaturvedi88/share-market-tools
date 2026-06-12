@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kite Helper DB Viewer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="db-viewer.css">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="../kite-logo.png" alt="Kite Logo" class="app-logo">
+        <h2>Kite Helper DB</h2>
+      </div>
+      <div class="sidebar-title">TABLES</div>
+      <ul id="tables-list" class="tables-list">
+        <!-- Dynmically loaded tables list -->
+        <li class="loading-text">Loading tables...</li>
+      </ul>
+      <div class="sidebar-footer">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+          <span class="theme-icon">&#9788;</span>
+          <span class="theme-label">Light Mode</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="title-container">
+          <h1 id="selected-table-title">Select a Table</h1>
+          <span id="record-count-badge" class="badge">0 records</span>
+        </div>
+        <div class="controls-container">
+          <div class="search-box">
+            <span class="search-icon">&#128269;</span>
+            <input type="search" id="table-search" placeholder="Search rows..." disabled>
+          </div>
+          <button id="refresh-btn" class="btn btn-secondary" title="Refresh Table Data">&#x21bb;</button>
+          <button id="clear-table-btn" class="btn btn-danger" title="Clear current table data" disabled>Clear Table</button>
+        </div>
+      </header>
+
+      <!-- Data View -->
+      <section class="data-view">
+        <div id="loading-overlay" class="overlay hidden">
+          <div class="spinner"></div>
+          <p>Loading table data...</p>
+        </div>
+        
+        <!-- Table container -->
+        <div id="grid-container" class="grid-container">
+          <div class="empty-state">
+            <div class="empty-icon">&#128196;</div>
+            <h3>No Table Selected</h3>
+            <p>Please select a database table from the sidebar list to inspect its contents.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pagination Footer -->
+      <footer class="pagination-footer">
+        <div class="pagination-info">
+          Showing <span id="rows-range-start">0</span> to <span id="rows-range-end">0</span> of <span id="rows-total-count">0</span> records
+        </div>
+        <div class="pagination-controls">
+          <div class="limit-selector">
+            Rows per page:
+            <select id="page-size-select">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <nav class="pagination-nav">
+            <button id="prev-page-btn" class="btn btn-nav" disabled>&lt; Prev</button>
+            <span id="page-indicator">Page 1 of 1</span>
+            <button id="next-page-btn" class="btn btn-nav" disabled>Next &gt;</button>
+          </nav>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="db-viewer.js"></script>
+</body>
+</html>

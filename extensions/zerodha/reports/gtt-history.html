@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>GTT SL History</title>
+  <link rel="stylesheet" href="gtt-history.css">
+</head>
+
+<body>
+  <main>
+    <header>
+      <h1>GTT SL History</h1>
+      <div>
+        <button id="refresh-history" type="button">Refresh</button>
+        <button id="clear-history" type="button">Clear</button>
+      </div>
+    </header>
+
+    <section class="history-filters">
+      <label for="stock-filter">Stock</label>
+      <input id="stock-filter" type="search" placeholder="Filter by stock name">
+    </section>
+
+    <p id="history-status">Loading...</p>
+
+    <section class="history-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Moved At</th>
+            <th>Symbol</th>
+            <th>Trigger ID</th>
+            <th>Old SL</th>
+            <th>New SL</th>
+            <th>LTP</th>
+            <th>Trigr %</th>
+            <th>Qty</th>
+            <th>Buy</th>
+          </tr>
+        </thead>
+        <tbody id="history-rows">
+          <tr><td colspan="9">No history yet.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="gtt-history.js"></script>
+</body>
+
+</html>
