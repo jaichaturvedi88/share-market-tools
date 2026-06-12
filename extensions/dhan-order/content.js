@@ -215,7 +215,7 @@
 
     refs.risk.textContent = formatNumber(calculation.riskPerShare, 2);
     refs.quantity.textContent = calculation.quantity > 0 ? String(calculation.quantity) : "-";
-    refs.target.textContent = formatNumber(calculation.targetPrice, 2);
+    refs.target.textContent = formatNumber(calculation.targetPrice, 1);
     refs.amount.textContent = formatNumber(calculation.totalAmount, 2);
     refreshSplitModeUi();
 
