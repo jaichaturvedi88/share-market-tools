@@ -139,8 +139,11 @@
     state.orderPrepared.order2 = false;
     refs.order1.disabled = false;
     refs.order2.disabled = false;
+    refs.fillTool.disabled = false;
+    refs.fetch.textContent = "Get LTP";
     refs.order1.textContent = "Order 1";
     refs.order2.textContent = "Order 2";
+    refs.fillTool.textContent = "Fill Tool";
     refs.order1.classList.remove("is-ready");
     refs.order2.classList.remove("is-ready");
   }
@@ -163,17 +166,23 @@
     refs.order2.classList.toggle("is-hidden", !splitEnabled);
 
     if (splitEnabled) {
-      refs.order1.textContent = state.orderPrepared.order1 ? "\u2713 Order 1 Ready" : "Order 1";
-      refs.order2.textContent = state.orderPrepared.order2 ? "\u2713 Order 2 Ready" : "Order 2";
+      refs.fetch.textContent = "LTP";
+      refs.order1.textContent = state.orderPrepared.order1 ? "\u2713 Ord 1" : "Ord 1";
+      refs.order2.textContent = state.orderPrepared.order2 ? "\u2713 Ord 2" : "Ord 2";
+      refs.fillTool.textContent = "Tool";
       refs.order1.disabled = state.orderPrepared.order1;
       refs.order2.disabled = state.orderPrepared.order2;
+      refs.fillTool.disabled = false;
       refs.order1.classList.toggle("is-ready", state.orderPrepared.order1);
       refs.order2.classList.toggle("is-ready", state.orderPrepared.order2);
     } else {
+      refs.fetch.textContent = "Get LTP";
       refs.order1.textContent = "Fill Data";
       refs.order2.textContent = "Order 2";
+      refs.fillTool.textContent = "Fill Tool";
       refs.order1.disabled = false;
       refs.order2.disabled = false;
+      refs.fillTool.disabled = false;
       refs.order1.classList.remove("is-ready");
       refs.order2.classList.remove("is-ready");
     }
@@ -483,6 +492,42 @@
     }
   }
 
+
+
+  async function fillDrawingToolLevels() {
+    const calculation = recalculate();
+
+    if (!calculation.isValid) {
+      setStatus(calculation.errors[0], "error");
+      return;
+    }
+
+    setStatus("Filling drawing tool levels...", "");
+    refs.fillTool.disabled = true;
+
+    try {
+      const result = await window.DhanOrderDomHandler.prepareDrawingToolLevels({
+        buyPrice: window.DhanOrderCalculator.roundPrice(calculation.buyPrice).toFixed(2),
+        targetPrice: window.DhanOrderCalculator.roundToDecimals(calculation.targetPrice, 1).toFixed(1),
+        stopLoss: window.DhanOrderCalculator.roundToDecimals(calculation.stopLoss, 1).toFixed(1)
+      });
+
+      if (result.ok) {
+        setStatus("Drawing tool levels filled.", "success");
+      } else {
+        if (result.error) {
+          setStatus(result.error, "error");
+        } else {
+          setStatus(`Drawing tool partially filled. Check ${result.missing.join(", ")} manually.`, "error");
+        }
+      }
+    } catch (error) {
+      setStatus(`Could not fill drawing tool: ${error.message}`, "error");
+    } finally {
+      refs.fillTool.disabled = false;
+    }
+  }
+
   function buildPanel() {
     if (document.getElementById("dhan-fast-trade-root")) {
       return null;
@@ -534,10 +579,12 @@
     const fetch = createElement("button", "dft-btn dft-secondary", "Get LTP");
     const order1 = createElement("button", "dft-btn dft-primary", "Fill Data");
     const order2 = createElement("button", "dft-btn dft-primary is-hidden", "Order 2");
+    const fillTool = createElement("button", "dft-btn dft-secondary", "Fill Tool");
     fetch.type = "button";
     order1.type = "button";
     order2.type = "button";
-    actions.append(fetch, order1, order2);
+    fillTool.type = "button";
+    actions.append(fetch, order1, order2, fillTool);
 
     const splitResult = createElement("div", "dft-split-result is-hidden");
     const splitTotalQty = createElement("span", "dft-split-total", "Total Qty: -");
@@ -574,6 +621,7 @@
       actions,
       fetch,
       order1,
+      fillTool,
       order2,
       status
     };
@@ -589,6 +637,7 @@
   refs.close.addEventListener("click", closePanel);
   refs.fetch.addEventListener("click", fetchLtp);
   refs.order1.addEventListener("click", () => prepareOrder(1));
+  refs.fillTool.addEventListener("click", fillDrawingToolLevels);
   refs.order2.addEventListener("click", () => prepareOrder(2));
   refs.split.addEventListener("change", () => {
     resetOrderState();

@@ -11,6 +11,18 @@
     target: ["target", "profit"]
   };
 
+  const LONG_POSITION_FIELDS = {
+    buyPrice: "Risk/RewardlongEntryPrice",
+    targetPrice: "Risk/RewardlongProfitLevelPrice",
+    stopLoss: "Risk/RewardlongStopLevelPrice"
+  };
+
+  const SHORT_POSITION_FIELDS = {
+    buyPrice: "Risk/RewardshortEntryPrice",
+    targetPrice: "Risk/RewardshortProfitLevelPrice",
+    stopLoss: "Risk/RewardshortStopLevelPrice"
+  };
+
   function normalize(value) {
     return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   }
@@ -69,6 +81,11 @@
     });
 
     return matches;
+  }
+
+  function querySelectorAllDocuments(selector) {
+    return getSearchDocuments()
+      .flatMap((item) => querySelectorAllDeep(item.doc, selector));
   }
 
   function getClickableElements(root) {
@@ -145,20 +162,31 @@
   }
 
   function dispatchInputEvents(element) {
+    element.dispatchEvent(new Event("focus", { bubbles: true }));
     element.dispatchEvent(new InputEvent("input", {
       bubbles: true,
       inputType: "insertText",
       data: element.value || element.textContent || ""
     }));
+    element.dispatchEvent(new Event("change", { bubbles: true }));
+    element.dispatchEvent(new Event("blur", { bubbles: true }));
   }
 
   function setNativeValue(element, value) {
-    const descriptor = Object.getOwnPropertyDescriptor(element.constructor.prototype, "value");
-    if (descriptor && descriptor.set) {
-      descriptor.set.call(element, value);
+    const valueText = String(value);
+    const prototype = Object.getPrototypeOf(element);
+    const prototypeDescriptor = Object.getOwnPropertyDescriptor(prototype, "value");
+    const elementDescriptor = Object.getOwnPropertyDescriptor(element, "value");
+
+    if (prototypeDescriptor?.set && elementDescriptor?.set !== prototypeDescriptor.set) {
+      prototypeDescriptor.set.call(element, valueText);
+    } else if (prototypeDescriptor?.set) {
+      prototypeDescriptor.set.call(element, valueText);
     } else {
-      element.value = value;
+      element.value = valueText;
     }
+
+    element.setAttribute("value", valueText);
   }
 
   function labelTextFor(input) {
@@ -258,8 +286,9 @@
       return false;
     }
 
-    input.focus();
     const valueText = String(value);
+    clickElement(input);
+    input.focus();
 
     if (input.isContentEditable) {
       input.textContent = valueText;
@@ -293,6 +322,49 @@
     await wait(160);
     filled.stopLoss = fillInputElement(inputs[3], trade.stopLoss, "stop loss");
     return filled;
+  }
+
+  function findDrawingToolInput(propertyId) {
+    return querySelectorAllDocuments(`input[data-property-id="${propertyId}"]`)
+      .find((input) => isVisible(input) && !isExtensionElement(input));
+  }
+
+
+
+  async function waitForDrawingToolInputs() {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
+      const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
+      const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
+      if (longBuy && longTarget && longStop) {
+        return { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
+      }
+
+      const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
+      const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
+      const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
+      if (shortBuy && shortTarget && shortStop) {
+        return { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
+      }
+
+      await wait(250);
+    }
+
+    const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
+    const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
+    const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
+    if (longBuy && longTarget && longStop) {
+      return { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
+    }
+
+    const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
+    const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
+    const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
+    if (shortBuy && shortTarget && shortStop) {
+      return { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
+    }
+
+    return null;
   }
 
   function findCheckboxByHints(hints) {
@@ -547,8 +619,46 @@
     };
   }
 
+  function findSubmitButton() {
+    return querySelectorAllDocuments('button[name="submit"], button[data-name="submit-button"]')
+      .find((button) => isVisible(button) && !isExtensionElement(button));
+  }
+
+  async function prepareDrawingToolLevels(trade) {
+    debugLog("Prepare drawing tool levels started", trade);
+    const inputs = await waitForDrawingToolInputs();
+    if (!inputs) {
+      return {
+        ok: false,
+        error: "No active Drawing Tool (Long/Short Position) settings dialog visible."
+      };
+    }
+
+    const filled = {
+      buyPrice: fillInputElement(inputs.buyPriceInput, trade.buyPrice, `${inputs.type} position entry price`),
+      targetPrice: fillInputElement(inputs.targetInput, trade.targetPrice, `${inputs.type} position profit price`),
+      stopLoss: fillInputElement(inputs.stopLossInput, trade.stopLoss, `${inputs.type} position stop price`)
+    };
+
+    const missing = Object.entries(filled)
+      .filter(([, wasFilled]) => !wasFilled)
+      .map(([name]) => name);
+
+    const submitButton = findSubmitButton();
+    if (submitButton) {
+      submitButton.focus();
+      debugLog("Focused submit button", submitButton);
+    }
+
+    return {
+      ok: missing.length === 0,
+      missing
+    };
+  }
+
   window.DhanOrderDomHandler = {
     getActiveWatchlistScrip,
+    prepareDrawingToolLevels,
     prepareTrade
   };
 })();
