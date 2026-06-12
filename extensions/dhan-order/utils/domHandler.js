@@ -17,6 +17,12 @@
     stopLoss: "Risk/RewardlongStopLevelPrice"
   };
 
+  const SHORT_POSITION_FIELDS = {
+    buyPrice: "Risk/RewardshortEntryPrice",
+    targetPrice: "Risk/RewardshortProfitLevelPrice",
+    stopLoss: "Risk/RewardshortStopLevelPrice"
+  };
+
   function normalize(value) {
     return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   }
@@ -318,29 +324,47 @@
     return filled;
   }
 
-  function findLongPositionInput(propertyId) {
+  function findDrawingToolInput(propertyId) {
     return querySelectorAllDocuments(`input[data-property-id="${propertyId}"]`)
       .find((input) => isVisible(input) && !isExtensionElement(input));
   }
 
-  async function waitForLongPositionInputs() {
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-      const buyPriceInput = findLongPositionInput(LONG_POSITION_FIELDS.buyPrice);
-      const targetInput = findLongPositionInput(LONG_POSITION_FIELDS.targetPrice);
-      const stopLossInput = findLongPositionInput(LONG_POSITION_FIELDS.stopLoss);
 
-      if (buyPriceInput && targetInput && stopLossInput) {
-        return { buyPriceInput, targetInput, stopLossInput };
+
+  async function waitForDrawingToolInputs() {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
+      const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
+      const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
+      if (longBuy && longTarget && longStop) {
+        return { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
+      }
+
+      const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
+      const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
+      const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
+      if (shortBuy && shortTarget && shortStop) {
+        return { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
       }
 
       await wait(250);
     }
 
-    return {
-      buyPriceInput: findLongPositionInput(LONG_POSITION_FIELDS.buyPrice),
-      targetInput: findLongPositionInput(LONG_POSITION_FIELDS.targetPrice),
-      stopLossInput: findLongPositionInput(LONG_POSITION_FIELDS.stopLoss)
-    };
+    const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
+    const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
+    const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
+    if (longBuy && longTarget && longStop) {
+      return { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
+    }
+
+    const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
+    const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
+    const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
+    if (shortBuy && shortTarget && shortStop) {
+      return { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
+    }
+
+    return null;
   }
 
   function findCheckboxByHints(hints) {
@@ -595,19 +619,36 @@
     };
   }
 
-  async function prepareLongPositionLevels(trade) {
-    debugLog("Prepare long position levels started", trade);
-    const { buyPriceInput, targetInput, stopLossInput } = await waitForLongPositionInputs();
+  function findSubmitButton() {
+    return querySelectorAllDocuments('button[name="submit"], button[data-name="submit-button"]')
+      .find((button) => isVisible(button) && !isExtensionElement(button));
+  }
+
+  async function prepareDrawingToolLevels(trade) {
+    debugLog("Prepare drawing tool levels started", trade);
+    const inputs = await waitForDrawingToolInputs();
+    if (!inputs) {
+      return {
+        ok: false,
+        error: "No active Drawing Tool (Long/Short Position) settings dialog visible."
+      };
+    }
 
     const filled = {
-      buyPrice: fillInputElement(buyPriceInput, trade.buyPrice, "long position entry price"),
-      targetPrice: fillInputElement(targetInput, trade.targetPrice, "long position profit price"),
-      stopLoss: fillInputElement(stopLossInput, trade.stopLoss, "long position stop price")
+      buyPrice: fillInputElement(inputs.buyPriceInput, trade.buyPrice, `${inputs.type} position entry price`),
+      targetPrice: fillInputElement(inputs.targetInput, trade.targetPrice, `${inputs.type} position profit price`),
+      stopLoss: fillInputElement(inputs.stopLossInput, trade.stopLoss, `${inputs.type} position stop price`)
     };
 
     const missing = Object.entries(filled)
       .filter(([, wasFilled]) => !wasFilled)
       .map(([name]) => name);
+
+    const submitButton = findSubmitButton();
+    if (submitButton) {
+      submitButton.focus();
+      debugLog("Focused submit button", submitButton);
+    }
 
     return {
       ok: missing.length === 0,
@@ -617,7 +658,7 @@
 
   window.DhanOrderDomHandler = {
     getActiveWatchlistScrip,
-    prepareLongPositionLevels,
+    prepareDrawingToolLevels,
     prepareTrade
   };
 })();

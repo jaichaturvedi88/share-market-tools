@@ -29,7 +29,6 @@
     const maxLoss = toNumber(values.maxLoss);
     const buyPrice = toNumber(values.buyPrice);
     const stopLoss = toNumber(values.stopLoss);
-    const riskPerShare = buyPrice - stopLoss;
     const errors = [];
 
     if (!Number.isFinite(rr) || rr <= 0) {
@@ -41,23 +40,35 @@
     }
 
     if (!Number.isFinite(buyPrice) || buyPrice <= 0) {
-      errors.push("Buy price must be greater than 0.");
+      errors.push("Entry price must be greater than 0.");
     }
 
     if (!Number.isFinite(stopLoss) || stopLoss <= 0) {
       errors.push("Stop loss must be greater than 0.");
     }
 
-    if (Number.isFinite(buyPrice) && Number.isFinite(stopLoss) && stopLoss >= buyPrice) {
-      errors.push("SL must be less than Buy Price.");
+    let riskPerShare = 0;
+    let targetPrice = 0;
+    let isShort = false;
+
+    if (Number.isFinite(buyPrice) && Number.isFinite(stopLoss)) {
+      if (stopLoss > buyPrice) {
+        isShort = true;
+        riskPerShare = stopLoss - buyPrice;
+        targetPrice = buyPrice - riskPerShare * rr;
+      } else if (buyPrice > stopLoss) {
+        riskPerShare = buyPrice - stopLoss;
+        targetPrice = buyPrice + riskPerShare * rr;
+      } else {
+        errors.push("SL and Entry price cannot be equal.");
+      }
     }
 
-    if (Number.isFinite(riskPerShare) && riskPerShare <= 0) {
+    if (errors.length === 0 && riskPerShare <= 0) {
       errors.push("Risk Per Share must be greater than 0.");
     }
 
     const quantity = riskPerShare > 0 && maxLoss > 0 ? Math.floor(maxLoss / riskPerShare) : 0;
-    const targetPrice = roundToDecimals(buyPrice + riskPerShare * rr, 1);
     const totalAmount = roundPrice(quantity * buyPrice);
 
     if (errors.length === 0 && quantity <= 0) {
@@ -73,8 +84,9 @@
       stopLoss,
       riskPerShare: roundPrice(riskPerShare),
       quantity,
-      targetPrice,
-      totalAmount
+      targetPrice: roundToDecimals(targetPrice, 1),
+      totalAmount,
+      isShort
     };
   }
 
