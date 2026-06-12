@@ -53,7 +53,7 @@ const gtt = (function () {
               <input id="gtt-helper-hide-completed" type="checkbox" checked>
               <span>Hide 0</span>
             </label>
-            <button id="gtt-helper-history" type="button" title="Open SL history">H</button>
+            <button id="gtt-helper-history" type="button" title="Open SL history">&#128202;</button>
             <button id="gtt-helper-refresh" type="button" title="Refresh GTT details">&#x21bb;</button>
             <button id="gtt-helper-close" type="button" title="Close GTT helper">&times;</button>
           </div>
@@ -1226,6 +1226,23 @@ const gtt = (function () {
   }
 
   async function saveSlMovement(row, targetStopLoss) {
+    let buyPrice = readNumber(row.averagePrice);
+
+    if (!buyPrice) {
+      try {
+        const positionsResponse = await fetchJsonFromPage(ENDPOINTS.positions);
+        const latestPositions = extractPositions(positionsResponse);
+        const matchingPosition = latestPositions.find(p => isSameSymbol(p.symbol, row.symbol));
+        if (matchingPosition && matchingPosition.averagePrice) {
+          buyPrice = matchingPosition.averagePrice;
+          row.averagePrice = buyPrice;
+          currentRows = currentRows.map(r => isSameSymbol(r.symbol, row.symbol) ? { ...r, averagePrice: buyPrice } : r);
+        }
+      } catch (error) {
+        console.warn('[GTT Helper] Failed to fetch latest positions for SL history buy price:', error);
+      }
+    }
+
     const saved = await readFromDb([STORAGE_KEYS.slHistory]);
     const history = saved[STORAGE_KEYS.slHistory] || [];
     const entry = {
@@ -1239,7 +1256,7 @@ const gtt = (function () {
       triggerPercent: row.triggerPercentText || '',
       triggerPercentValue: row.triggerPercentValue,
       quantity: readNumber(row.buyQuantity),
-      buy: readNumber(row.averagePrice)
+      buy: buyPrice
     };
 
     history.unshift(entry);
