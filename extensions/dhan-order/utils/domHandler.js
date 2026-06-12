@@ -553,7 +553,27 @@
     };
   }
 
+  function findCustomBuyButton() {
+    const candidates = querySelectorAllDocuments('div[class*="customButton-"], [class*="customButton-"]')
+      .filter((el) => isVisible(el) && !isExtensionElement(el));
+
+    const buyButton = candidates.find((el) => {
+      const rect = el.querySelector('rect[fill="#2962FF"], rect[fill="#22ab94"], rect[fill="#089981"]');
+      return !!rect;
+    });
+
+    return buyButton || candidates[0];
+  }
+
   async function openBuyOrderWindow() {
+    const customBuy = findCustomBuyButton();
+    if (customBuy) {
+      debugLog("Found custom buy button, clicking it", customBuy);
+      clickElement(customBuy);
+      await wait(500);
+      return;
+    }
+
     const clickedBuy = clickByText(CLICK_TEXTS.buy);
     if (!clickedBuy) {
       clickByText(CLICK_TEXTS.order);
@@ -612,6 +632,13 @@
     const missing = Object.entries(filled)
       .filter(([, wasFilled]) => !wasFilled)
       .map(([name]) => name);
+
+    const buyButton = querySelectorAllDeep(orderRoot, 'button#tfdbuysellbutton, button.tfdbuybutton, #tfdbuysellbutton')
+      .find((btn) => isVisible(btn) && !isExtensionElement(btn));
+    if (buyButton) {
+      buyButton.focus();
+      debugLog("Focused order form buy/sell button", buyButton);
+    }
 
     return {
       ok: missing.length === 0,
