@@ -96,17 +96,20 @@
 }
 
 .tvft-logs-btn {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   border: 1px solid rgba(80, 87, 111, 0.3);
   border-radius: 6px;
   background: #131722;
   color: #d1d4dc;
   cursor: pointer;
-  font-size: 11px;
-  line-height: 1;
+  font-size: 13px;
+  line-height: 0;
+  padding: 0;
+  margin: 0;
   transition: all 120ms ease;
 }
 
@@ -117,17 +120,20 @@
 }
 
 .tvft-close {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   border: 1px solid rgba(80, 87, 111, 0.3);
   border-radius: 6px;
   background: #131722;
   color: #d1d4dc;
   cursor: pointer;
   font-size: 15px;
-  line-height: 1;
+  line-height: 0;
+  padding: 0;
+  margin: 0;
   transition: all 120ms ease;
 }
 

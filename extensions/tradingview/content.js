@@ -94,7 +94,7 @@
     input.id = id;
     input.type = "checkbox";
     inputWrap.append(input);
-    wrapper.append(text, inputWrap);
+    wrapper.append(inputWrap, text);
     return { wrapper, input };
   }
 
