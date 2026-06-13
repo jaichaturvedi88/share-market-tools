@@ -196,11 +196,29 @@
   }
 
   function clickElement(element) {
-    element.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 1, pointerType: "mouse" }));
-    element.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-    element.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 1, pointerType: "mouse" }));
-    element.dispatchEvent(new MouseEvent("mouseup", { bubbles: true }));
-    element.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const rect = element.getBoundingClientRect();
+    const clientX = rect.left + rect.width / 2;
+    const clientY = rect.top + rect.height / 2;
+    const screenX = window.screenX + clientX;
+    const screenY = window.screenY + clientY;
+
+    const eventProps = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      clientX: clientX,
+      clientY: clientY,
+      screenX: screenX,
+      screenY: screenY,
+      pointerId: 1,
+      pointerType: "mouse"
+    };
+
+    element.dispatchEvent(new PointerEvent("pointerdown", eventProps));
+    element.dispatchEvent(new MouseEvent("mousedown", eventProps));
+    element.dispatchEvent(new PointerEvent("pointerup", eventProps));
+    element.dispatchEvent(new MouseEvent("mouseup", eventProps));
+    element.dispatchEvent(new MouseEvent("click", eventProps));
   }
 
   function clickBuyButton() {
@@ -445,10 +463,7 @@
       return true;
     }
 
-    // Try key events
-    triggerShiftT();
-
-    // Try finding order panel widget button on sidebar as fallback
+    // 1. Try finding and clicking the order panel widget button on the sidebar first to avoid global keys
     const buttons = querySelectorAllDocuments('[class*="widget-"], [class*="button-"], button, [role="button"]')
       .filter(el => isVisible(el) && !isExtensionElement(el));
     
@@ -457,12 +472,15 @@
       const label = el.getAttribute("aria-label") || "";
       const text = el.textContent || "";
       const testStr = (title + " " + label + " " + text).toLowerCase();
-      return testStr.includes("order panel") || testStr.includes("order ticket") || testStr.includes("dom") || (testStr.includes("shift+t") || testStr.includes("shift + t"));
+      return testStr.includes("order panel") || testStr.includes("order ticket") || /\bdom\b/.test(testStr) || (testStr.includes("shift+t") || testStr.includes("shift + t"));
     });
 
-    if (orderBtn && !isTradingViewOrderPanelOpen()) {
+    if (orderBtn) {
       const clickable = orderBtn.closest('button, [role="button"], [tabindex]') || orderBtn;
       clickElement(clickable);
+    } else {
+      // 2. Fallback to global key events if sidebar button cannot be located
+      triggerShiftT();
     }
 
     // Poll to wait for the panel to open (up to 1000ms)
