@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Fyers Stop Loss Manager",
+  "description": "Monitor open positions on Fyers and manage your Stop Loss based on target profit rules with voice alerts.",
+  "version": "1.0.0",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://trade.fyers.in/*",
+    "https://*.fyers.in/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://trade.fyers.in/*",
+        "https://*.fyers.in/*"
+      ],
+      "css": ["content.css"],
+      "js": [
+        "utils/calculator.js",
+        "utils/domHandler.js",
+        "content.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["utils/fyers-bridge.js"],
+      "matches": [
+        "https://trade.fyers.in/*",
+        "https://*.fyers.in/*"
+      ]
+    }
+  ]
+}
