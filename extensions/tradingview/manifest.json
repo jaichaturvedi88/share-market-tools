@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "TradingView Fast Trade Panel",
+  "description": "Floating utility panel for faster order preparation and execution on TradingView Replay / Charts.",
+  "version": "0.1.0",
+  "permissions": ["storage"],
+  "host_permissions": ["https://*.tradingview.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.tradingview.com/*"],
+      "css": ["content.css"],
+      "js": [
+        "utils/calculator.js",
+        "utils/domHandler.js",
+        "content.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}
