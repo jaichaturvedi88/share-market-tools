@@ -584,6 +584,14 @@
     }
   });
 
+  // Auto-select text on click/focus for all textboxes in our panel
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target && target.closest("#tv-fast-trade-root") && (target.tagName === "INPUT" && (target.type === "number" || target.type === "text"))) {
+      target.select();
+    }
+  }, true);
+
   // Init
   loadSettings();
   loadPanelPosition();
