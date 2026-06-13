@@ -367,6 +367,22 @@
   }
 
   async function fillTradingviewOrder(side) {
+    // 1. Validate the current inputs first before fetching LTP
+    const currentValues = readValues();
+    const currentBuyPrice = parseFloat(currentValues.buyPrice);
+    const currentStopLoss = parseFloat(currentValues.stopLoss);
+
+    if (Number.isFinite(currentBuyPrice) && Number.isFinite(currentStopLoss)) {
+      if (side === "buy" && currentStopLoss >= currentBuyPrice) {
+        setStatus("Error: Stop Price must be below Buy Price for Buy trades.", "error");
+        return;
+      }
+      if (side === "sell" && currentStopLoss <= currentBuyPrice) {
+        setStatus("Error: Stop Price must be above Buy Price for Sell trades.", "error");
+        return;
+      }
+    }
+
     // Always fetch latest LTP first to ensure calculations are accurate
     await fetchLtp();
     if (!refs.buyPrice.value) {
@@ -379,7 +395,7 @@
       return;
     }
 
-    // Validate if the stop loss matches the trade direction
+    // Validate if the stop loss matches the trade direction again
     if (side === "buy" && calculation.stopLoss >= calculation.buyPrice) {
       setStatus("Error: Stop Price must be below Buy Price for Buy trades.", "error");
       return;
