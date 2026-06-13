@@ -146,8 +146,8 @@
 
 .tvft-trade-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
 }
 
 .tvft-section {
@@ -267,15 +267,17 @@
 }
 
 .tvft-secondary {
-  border: 1px solid rgba(80, 87, 111, 0.4);
-  background: #131722;
-  color: #d1d4dc;
+  background: #3a3e4c;
+  color: #f2f5f7;
 }
 
 .tvft-secondary:hover {
-  border-color: #2962FF;
-  background: #1c2030;
-  color: #f2f5f7;
+  background: #4e5366;
+  box-shadow: 0 0 0 3px rgba(80, 87, 111, 0.25);
+}
+
+.tvft-secondary:active {
+  transform: translateY(1px);
 }
 
 .tvft-status {

@@ -163,7 +163,7 @@
     state.values = {
       rr: refs.rr.value,
       maxLoss: refs.maxLoss.value,
-      buyPrice: state.activeBuyPrice || "",
+      buyPrice: refs.buyPrice.value || "",
       stopLoss: refs.stopLoss.value
     };
     return state.values;
@@ -203,8 +203,7 @@
   }
 
   function clearTradeFields() {
-    state.activeBuyPrice = null;
-    refs.buyPriceDisp.textContent = "-";
+    refs.buyPrice.value = "";
     refs.stopLoss.value = "";
     refs.risk.valueElement.textContent = "-";
     refs.quantity.valueElement.textContent = "-";
@@ -351,16 +350,15 @@
       return;
     }
 
-    state.activeBuyPrice = buyPrice;
-    refs.buyPriceDisp.textContent = formatNumber(buyPrice, 2);
+    refs.buyPrice.value = buyPrice.toFixed(2);
     recalculate();
     setStatus(`Fetched Buy Price: ${buyPrice.toFixed(2)}`, "success");
   }
 
   async function fillTradingviewOrder(side) {
-    if (!state.activeBuyPrice) {
+    if (!refs.buyPrice.value) {
       fetchLtp();
-      if (!state.activeBuyPrice) {
+      if (!refs.buyPrice.value) {
         return;
       }
     }
@@ -464,19 +462,12 @@
     const maxLoss = field("tvft-max-loss", "Max Loss", "number", "1000");
     topGrid.append(rr.wrapper, maxLoss.wrapper);
 
-    // Active Buy Price Display
-    const activeSection = createElement("div", "tvft-section");
-    const buyPriceWrapper = createElement("div", "tvft-output");
-    const buyPriceLabel = createElement("span", "", "Buy Price");
-    const buyPriceDisp = createElement("span", "", "-");
-    buyPriceWrapper.append(buyPriceLabel, buyPriceDisp);
-    activeSection.append(buyPriceWrapper);
-
-    // Inputs SL / Outputs
+    // Inputs Buy / SL / Outputs
     const tradeSection = createElement("div", "tvft-section tvft-trade-grid");
+    const buyPrice = field("tvft-buy-price", "Buy Price", "number", "0.00");
     const stopLoss = field("tvft-stop-loss", "Stop Price", "number", "0.00");
     const risk = readOnlyField("Risk / Share");
-    tradeSection.append(stopLoss.wrapper, risk.wrapper);
+    tradeSection.append(buyPrice.wrapper, stopLoss.wrapper, risk.wrapper);
 
     const outputSection = createElement("div", "tvft-section tvft-grid");
     const quantity = readOnlyField("Qty");
@@ -504,7 +495,7 @@
     // Status bar
     const status = createElement("div", "tvft-status");
 
-    panel.append(header, topGrid, activeSection, tradeSection, outputSection, actions, perfSection, status);
+    panel.append(header, topGrid, tradeSection, outputSection, actions, perfSection, status);
     root.append(button, panel);
     document.documentElement.appendChild(root);
 
@@ -516,7 +507,7 @@
       close,
       rr: rr.input,
       maxLoss: maxLoss.input,
-      buyPriceDisp,
+      buyPrice: buyPrice.input,
       stopLoss: stopLoss.input,
       risk,
       quantity,
@@ -550,7 +541,7 @@
 
   enableDrag();
 
-  [refs.rr, refs.maxLoss].forEach((input) => {
+  [refs.rr, refs.maxLoss, refs.buyPrice].forEach((input) => {
     input.addEventListener("input", () => {
       persistSettings();
       resetOrderState();
