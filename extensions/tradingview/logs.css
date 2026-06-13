@@ -1,0 +1,159 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  background-color: #131722;
+  color: #d1d4dc;
+  font-family: -apple-system, BlinkMacSystemFont, "Trebuchet MS", Roboto, Ubuntu, sans-serif;
+  color-scheme: dark;
+}
+
+.logs-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(80, 87, 111, 0.3);
+}
+
+.logs-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #f2f5f7;
+}
+
+.logs-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#logs-search {
+  height: 34px;
+  width: 200px;
+  padding: 0 12px;
+  background: #1c2030;
+  border: 1px solid rgba(80, 87, 111, 0.5);
+  border-radius: 6px;
+  color: #f2f5f7;
+  outline: none;
+  font-size: 13px;
+}
+
+#logs-search:focus {
+  border-color: #2962FF;
+}
+
+#logs-type-filter {
+  height: 34px;
+  padding: 0 12px;
+  background: #1c2030;
+  border: 1px solid rgba(80, 87, 111, 0.5);
+  border-radius: 6px;
+  color: #f2f5f7;
+  outline: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.logs-btn {
+  height: 34px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 6px;
+  background: #2962FF;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.logs-btn:hover {
+  background: #3c72ff;
+}
+
+.logs-danger {
+  background: #f7525f;
+}
+
+.logs-danger:hover {
+  background: #ff6673;
+}
+
+.logs-main {
+  background: #1c2030;
+  border: 1px solid rgba(80, 87, 111, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.logs-table th, .logs-table td {
+  padding: 12px 16px;
+  font-size: 13px;
+}
+
+.logs-table th {
+  background: #131722;
+  border-bottom: 1px solid rgba(80, 87, 111, 0.4);
+  color: #868993;
+  font-weight: 700;
+}
+
+.logs-table td {
+  border-bottom: 1px solid rgba(80, 87, 111, 0.15);
+  color: #d1d4dc;
+}
+
+.logs-table tr:hover td {
+  background: rgba(80, 87, 111, 0.1);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.badge-info {
+  background: rgba(41, 98, 255, 0.15);
+  color: #2962FF;
+  border: 1px solid rgba(41, 98, 255, 0.3);
+}
+
+.badge-success {
+  background: rgba(8, 153, 129, 0.15);
+  color: #089981;
+  border: 1px solid rgba(8, 153, 129, 0.3);
+}
+
+.badge-warning {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.badge-error {
+  background: rgba(247, 82, 95, 0.15);
+  color: #f7525f;
+  border: 1px solid rgba(247, 82, 95, 0.3);
+}

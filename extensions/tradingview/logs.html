@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TradingView Fast Trade Logs</title>
+  <link rel="stylesheet" href="logs.css">
+</head>
+<body>
+  <div class="logs-container">
+    <header class="logs-header">
+      <h1>TradingView Fast Trade Logs</h1>
+      <div class="logs-controls">
+        <input type="text" id="logs-search" placeholder="Search logs...">
+        <select id="logs-type-filter">
+          <option value="all">All Types</option>
+          <option value="info">Info</option>
+          <option value="success">Success</option>
+          <option value="warning">Warning</option>
+          <option value="error">Error</option>
+        </select>
+        <button id="logs-clear-btn" class="logs-btn logs-danger">Clear Logs</button>
+        <button id="logs-refresh-btn" class="logs-btn">Refresh</button>
+      </div>
+    </header>
+    <main class="logs-main">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th style="width: 180px;">Timestamp</th>
+            <th style="width: 120px;">Type</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody id="logs-tbody">
+          <!-- Logs will be rendered here -->
+        </tbody>
+      </table>
+    </main>
+  </div>
+  <script src="logs.js"></script>
+</body>
+</html>
