@@ -343,7 +343,13 @@
     window.addEventListener("resize", keepPanelInViewport);
   }
 
-  function fetchLtp() {
+  async function fetchLtp() {
+    setStatus("Ensuring Order Panel is open...", "");
+    const panelOpened = await window.TvDomHandler.ensureOrderPanelOpen();
+    if (!panelOpened) {
+      logConsole("Could not verify if Order panel opened.", "warning");
+    }
+
     const buyPrice = window.TvDomHandler.fetchBuyPrice();
     if (!buyPrice || !Number.isFinite(buyPrice)) {
       setStatus("Could not fetch Buy Price. Open the order ticket first.", "error");
@@ -356,11 +362,10 @@
   }
 
   async function fillTradingviewOrder(side) {
+    // Always fetch latest LTP first to ensure calculations are accurate
+    await fetchLtp();
     if (!refs.buyPrice.value) {
-      fetchLtp();
-      if (!refs.buyPrice.value) {
-        return;
-      }
+      return;
     }
 
     const calculation = recalculate();
@@ -436,9 +441,9 @@
     const root = createElement("div");
     root.id = "tv-fast-trade-root";
 
-    const button = createElement("button", "tvft-fab", "\u26A1 TV Trade");
+    const button = createElement("button", "tvft-fab", "\u26A1");
     button.type = "button";
-    button.title = "Open TV Fast Trade (Alt+V)";
+    button.title = "Open TV Quick Trade (Alt+V)";
 
     const panel = createElement("aside", "tvft-panel");
     panel.setAttribute("aria-label", "TradingView fast trade panel");

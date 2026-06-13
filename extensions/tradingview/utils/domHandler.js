@@ -392,11 +392,94 @@
     return data;
   }
 
+  function isTradingViewOrderPanelOpen() {
+    const submitBtn = querySelectorAllDocuments('[data-name="place-and-modify-button"], [data-qa-id*="submit"], [data-qa-id*="place-order"]')
+      .find(el => isVisible(el) && !isExtensionElement(el));
+    if (submitBtn) return true;
+
+    const qtyInput = querySelectorAllDocuments('input[data-qa-id*="quantity-field"], input[data-qa-id*="quantity-input"], input[data-qa-id*="qty-input"], input[id="quantity-field"]')
+      .find(el => isVisible(el) && !isExtensionElement(el));
+    if (qtyInput) return true;
+
+    return false;
+  }
+
+  function triggerShiftT() {
+    const keys = [
+      { key: "T", code: "KeyT", keyCode: 84, shiftKey: true },
+      { key: "t", code: "KeyT", keyCode: 84, shiftKey: true }
+    ];
+
+    keys.forEach(k => {
+      const eventDown = new KeyboardEvent("keydown", {
+        key: k.key,
+        code: k.code,
+        keyCode: k.keyCode,
+        which: k.keyCode,
+        shiftKey: k.shiftKey,
+        bubbles: true,
+        cancelable: true
+      });
+      document.dispatchEvent(eventDown);
+      window.dispatchEvent(eventDown);
+
+      const eventUp = new KeyboardEvent("keyup", {
+        key: k.key,
+        code: k.code,
+        keyCode: k.keyCode,
+        which: k.keyCode,
+        shiftKey: k.shiftKey,
+        bubbles: true,
+        cancelable: true
+      });
+      document.dispatchEvent(eventUp);
+      window.dispatchEvent(eventUp);
+    });
+  }
+
+  async function ensureOrderPanelOpen() {
+    if (isTradingViewOrderPanelOpen()) {
+      return true;
+    }
+
+    // Try key events
+    triggerShiftT();
+
+    // Try finding order panel widget button on sidebar as fallback
+    const buttons = querySelectorAllDocuments('[class*="widget-"], [class*="button-"], button, [role="button"]')
+      .filter(el => isVisible(el) && !isExtensionElement(el));
+    
+    const orderBtn = buttons.find(el => {
+      const title = el.getAttribute("title") || "";
+      const label = el.getAttribute("aria-label") || "";
+      const text = el.textContent || "";
+      const testStr = (title + " " + label + " " + text).toLowerCase();
+      return testStr.includes("order panel") || testStr.includes("order ticket") || testStr.includes("dom") || (testStr.includes("shift+t") || testStr.includes("shift + t"));
+    });
+
+    if (orderBtn && !isTradingViewOrderPanelOpen()) {
+      const clickable = orderBtn.closest('button, [role="button"], [tabindex]') || orderBtn;
+      clickElement(clickable);
+    }
+
+    // Poll to wait for the panel to open (up to 1000ms)
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 100));
+      if (isTradingViewOrderPanelOpen()) {
+        await new Promise(r => setTimeout(r, 150)); // Settle rendering
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   window.TvDomHandler = {
     fetchBuyPrice,
     fillOrderTicket,
     clickBuyButton,
     switchTradeSide,
-    fetchAnalyticsData
+    fetchAnalyticsData,
+    ensureOrderPanelOpen
   };
 })();
