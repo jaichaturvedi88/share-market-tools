@@ -8,7 +8,8 @@
     maxLoss: "tvFastTrade.maxLoss",
     stopLoss: "tvFastTrade.stopLoss",
     panelX: "tvFastTrade.panelX",
-    panelY: "tvFastTrade.panelY"
+    panelY: "tvFastTrade.panelY",
+    tgtCheck: "tvFastTrade.tgtCheck"
   };
 
   const DEFAULTS = {
@@ -149,7 +150,8 @@
   function persistSettings() {
     chrome.storage.local.set({
       [STORAGE_KEYS.rr]: refs.rr.value,
-      [STORAGE_KEYS.maxLoss]: refs.maxLoss.value
+      [STORAGE_KEYS.maxLoss]: refs.maxLoss.value,
+      [STORAGE_KEYS.tgtCheck]: refs.tgtCheck.checked
     });
   }
 
@@ -183,7 +185,9 @@
 
     refs.risk.valueElement.textContent = formatNumber(calculation.riskPerShare, 2);
     refs.quantity.valueElement.textContent = calculation.quantity > 0 ? String(calculation.quantity) : "-";
-    refs.target.valueElement.textContent = formatNumber(calculation.targetPrice, 2);
+    
+    const fillTgt = refs.tgtCheck.checked;
+    refs.target.valueElement.textContent = fillTgt ? formatNumber(calculation.targetPrice, 2) : "-";
 
     if (values.stopLoss) {
       setStatus(calculation.errors[0] || "", calculation.errors.length ? "error" : "");
@@ -197,6 +201,7 @@
     refs.rr.value = saved[STORAGE_KEYS.rr] || DEFAULTS.rr;
     refs.maxLoss.value = saved[STORAGE_KEYS.maxLoss] || DEFAULTS.maxLoss;
     refs.stopLoss.value = saved[STORAGE_KEYS.stopLoss] || "";
+    refs.tgtCheck.checked = saved[STORAGE_KEYS.tgtCheck] !== false;
 
     recalculate();
     logConsole("Settings loaded from local storage.");
@@ -294,7 +299,7 @@
     let dragState = null;
 
     refs.header.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0 || event.target.closest("button")) {
+      if (event.button !== 0 || event.target.closest("button") || event.target.closest("input") || event.target.closest("label")) {
         return;
       }
       const rect = refs.panel.getBoundingClientRect();
@@ -408,7 +413,8 @@
       const result = await window.TvDomHandler.fillOrderTicket({
         quantity: orderQuantity,
         targetPrice: calculation.targetPrice,
-        stopLoss: calculation.stopLoss
+        stopLoss: calculation.stopLoss,
+        fillTgt: refs.tgtCheck.checked
       });
 
       if (result.ok) {
@@ -452,13 +458,15 @@
     const header = createElement("div", "tvft-header");
     const title = createElement("h2", "tvft-title", "TV Fast Trade");
     const headerActions = createElement("div", "tvft-header-actions");
+    const tgtCheck = checkboxField("tvft-tgt-check", "Tgt");
+    tgtCheck.input.checked = true;
     const logsBtn = createElement("button", "tvft-logs-btn", "📋");
     logsBtn.type = "button";
     logsBtn.title = "View Logs";
     const close = createElement("button", "tvft-close", "\u00D7");
     close.type = "button";
     close.title = "Close";
-    headerActions.append(logsBtn, close);
+    headerActions.append(tgtCheck.wrapper, logsBtn, close);
     header.append(title, headerActions);
 
     // Inputs Grid
@@ -508,6 +516,7 @@
       button,
       panel,
       header,
+      tgtCheck: tgtCheck.input,
       logsBtn,
       close,
       rr: rr.input,
@@ -552,6 +561,11 @@
       resetOrderState();
       recalculate();
     });
+  });
+
+  refs.tgtCheck.addEventListener("change", () => {
+    persistSettings();
+    recalculate();
   });
 
   refs.stopLoss.addEventListener("input", () => {

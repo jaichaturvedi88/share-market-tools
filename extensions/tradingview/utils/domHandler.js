@@ -113,11 +113,11 @@
     return null;
   }
 
-  function enableToggle(labelText) {
+  function setToggleState(labelText, shouldBeOn) {
     const toggle = findToggleFor(labelText);
     if (toggle) {
       const isChecked = toggle.checked || toggle.getAttribute('aria-checked') === 'true' || toggle.classList.contains('checked') || toggle.classList.contains('active');
-      if (!isChecked) {
+      if (Boolean(isChecked) !== Boolean(shouldBeOn)) {
         toggle.click();
         return true;
       }
@@ -125,9 +125,9 @@
     return false;
   }
 
-  function ensureExitsEnabled() {
-    enableToggle("Take profit");
-    enableToggle("Stop loss");
+  function ensureExitsEnabled(fillTgt) {
+    setToggleState("Take profit", fillTgt);
+    setToggleState("Stop loss", true);
   }
 
   function dispatchInputEvents(element) {
@@ -168,13 +168,11 @@
   }
 
   async function fillOrderTicket(trade) {
-    ensureExitsEnabled();
+    const fillTgt = Boolean(trade.fillTgt);
+    ensureExitsEnabled(fillTgt);
     await new Promise(r => setTimeout(r, 250)); // Wait for inputs to render
 
     const qtyInput = querySelectorAllDocuments('input[data-qa-id*="quantity-field"], input[data-qa-id*="quantity-input"], input[data-qa-id*="qty-input"], input[name*="qty"], input[name*="quantity"], input[id="quantity-field"]')
-      .find(el => isVisible(el) && !isExtensionElement(el));
-
-    const tpInput = querySelectorAllDocuments('input[data-qa-id*="take-profit-input"]')
       .find(el => isVisible(el) && !isExtensionElement(el));
 
     const slInput = querySelectorAllDocuments('input[data-qa-id*="stop-loss-input"]')
@@ -182,9 +180,14 @@
 
     const filled = {
       qty: fillInputElement(qtyInput, trade.quantity, "quantity"),
-      tp: fillInputElement(tpInput, trade.targetPrice.toFixed(2), "take profit"),
       sl: fillInputElement(slInput, trade.stopLoss.toFixed(2), "stop loss")
     };
+
+    if (fillTgt) {
+      const tpInput = querySelectorAllDocuments('input[data-qa-id*="take-profit-input"]')
+        .find(el => isVisible(el) && !isExtensionElement(el));
+      filled.tp = fillInputElement(tpInput, trade.targetPrice.toFixed(2), "take profit");
+    }
 
     return {
       ok: Object.values(filled).every(Boolean),
