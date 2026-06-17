@@ -472,7 +472,7 @@
       const label = el.getAttribute("aria-label") || "";
       const text = el.textContent || "";
       const testStr = (title + " " + label + " " + text).toLowerCase();
-      return testStr.includes("order panel") || testStr.includes("order ticket") || /\bdom\b/.test(testStr) || (testStr.includes("shift+t") || testStr.includes("shift + t"));
+      return testStr.includes("order panel") || testStr.includes("order ticket") || (testStr.includes("shift+t") || testStr.includes("shift + t"));
     });
 
     if (orderBtn) {
