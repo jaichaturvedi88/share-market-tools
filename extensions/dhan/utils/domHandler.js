@@ -329,7 +329,33 @@
       .find((input) => isVisible(input) && !isExtensionElement(input));
   }
 
+  function openDrawingToolSettingsDialog() {
+    const settingsButton = querySelectorAllDocuments('.floating-toolbar-react-widgets [data-name="settings"], [class*="floating-toolbar"] [data-name="settings"]')
+      .find((el) => isVisible(el) && !isExtensionElement(el));
 
+    if (settingsButton) {
+      debugLog("Found drawing settings button, clicking it", settingsButton);
+      clickElement(settingsButton);
+      return true;
+    }
+
+    // Fallback: search for any visible [data-name="settings"] that is not an indicator settings button
+    const fallbackButton = querySelectorAllDocuments('[data-name="settings"]')
+      .find((el) => {
+        if (!isVisible(el) || isExtensionElement(el)) return false;
+        if (el.closest('[class*="legend"], [class*="status-line"]')) return false;
+        return true;
+      });
+
+    if (fallbackButton) {
+      debugLog("Found fallback drawing settings button, clicking it", fallbackButton);
+      clickElement(fallbackButton);
+      return true;
+    }
+
+    debugLog("Drawing settings button not found");
+    return false;
+  }
 
   async function waitForDrawingToolInputs() {
     for (let attempt = 0; attempt < 8; attempt += 1) {
@@ -647,13 +673,39 @@
   }
 
   function findSubmitButton() {
-    return querySelectorAllDocuments('button[name="submit"], button[data-name="submit-button"]')
-      .find((button) => isVisible(button) && !isExtensionElement(button));
+    return querySelectorAllDocuments('button')
+      .find((button) => {
+        if (!isVisible(button) || isExtensionElement(button)) return false;
+        const text = button.textContent.trim().toLowerCase();
+        return text === "ok" || text === "submit" || button.name === "submit" || button.getAttribute("data-name") === "submit-button";
+      });
   }
 
   async function prepareDrawingToolLevels(trade) {
     debugLog("Prepare drawing tool levels started", trade);
-    const inputs = await waitForDrawingToolInputs();
+
+    // Step 1: Check if inputs are already visible
+    let inputs = null;
+    const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
+    const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
+    const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
+    if (longBuy && longTarget && longStop) {
+      inputs = { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
+    } else {
+      const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
+      const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
+      const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
+      if (shortBuy && shortTarget && shortStop) {
+        inputs = { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
+      }
+    }
+
+    if (!inputs) {
+      debugLog("Drawing tool settings dialog not open. Opening it...");
+      openDrawingToolSettingsDialog();
+      inputs = await waitForDrawingToolInputs();
+    }
+
     if (!inputs) {
       return {
         ok: false,
@@ -661,20 +713,32 @@
       };
     }
 
-    const filled = {
-      buyPrice: fillInputElement(inputs.buyPriceInput, trade.buyPrice, `${inputs.type} position entry price`),
-      targetPrice: fillInputElement(inputs.targetInput, trade.targetPrice, `${inputs.type} position profit price`),
-      stopLoss: fillInputElement(inputs.stopLossInput, trade.stopLoss, `${inputs.type} position stop price`)
-    };
+    // Step 2: Fill form with delays so React/TradingView handles state changes
+    const filled = {};
+    filled.buyPrice = fillInputElement(inputs.buyPriceInput, trade.buyPrice, `${inputs.type} position entry price`);
+    await wait(150);
+    filled.targetPrice = fillInputElement(inputs.targetInput, trade.targetPrice, `${inputs.type} position profit price`);
+    await wait(150);
+    filled.stopLoss = fillInputElement(inputs.stopLossInput, trade.stopLoss, `${inputs.type} position stop price`);
+    await wait(150);
+
+    // Blur the stop loss input to trigger final updates
+    try {
+      inputs.stopLossInput.blur();
+    } catch (e) {}
+    await wait(150);
 
     const missing = Object.entries(filled)
       .filter(([, wasFilled]) => !wasFilled)
       .map(([name]) => name);
 
+    // Step 3: Click ok
     const submitButton = findSubmitButton();
     if (submitButton) {
       submitButton.focus();
-      debugLog("Focused submit button", submitButton);
+      await wait(150);
+      debugLog("Found submit button, clicking it", submitButton);
+      clickElement(submitButton);
     }
 
     return {
