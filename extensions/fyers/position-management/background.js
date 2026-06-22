@@ -90,7 +90,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === "openDBViewer") {
-    chrome.tabs.create({ url: chrome.runtime.getURL("db-viewer.html") });
+    chrome.tabs.create({ url: chrome.runtime.getURL("position-management/db-viewer.html") });
     sendResponse({ success: true });
     return true;
   }
