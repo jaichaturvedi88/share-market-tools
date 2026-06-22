@@ -305,6 +305,8 @@
   font-size: 11px;
   line-height: 1.4;
   white-space: pre-line;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .dft-status.is-error {
