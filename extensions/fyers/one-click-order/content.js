@@ -406,7 +406,10 @@
     const root = createElement("div");
     root.id = "foc-root";
 
-    const button = createElement("button", "foc-fab", "OCO");
+    const button = createElement("button", "foc-fab");
+    const buttonIcon = createElement("span", "foc-fab-icon");
+    const buttonText = createElement("span", "foc-fab-text", "OCO");
+    button.append(buttonIcon, buttonText);
     button.type = "button";
     button.title = "open One Click Order panel";
 

@@ -148,9 +148,9 @@
     const root = h("div", "", undefined, { id: "fyers-sl-manager-root" });
 
     // 1. Floating Toggle Button (Matches Zerodha Trades toggle)
-    const fab = h("button", "", undefined, { id: "fsl-helper-toggle", type: "button", title: "Open SL details" });
+    const fab = h("button", "", undefined, { id: "fsl-helper-toggle", type: "button", title: "Open SL Manager panel" });
     const fabIcon = h("span", "fsl-helper-icon", "🛡️");
-    const fabText = h("span", "", " SL Manager");
+    const fabText = h("span", "", "SLM");
     fab.append(fabIcon, fabText);
 
     // 2. Sliding Panel (Matches Zerodha panel)
