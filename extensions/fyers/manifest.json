@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Fyers Stop Loss Manager",
-  "description": "Monitor open positions on Fyers and manage your Stop Loss based on target profit rules with voice alerts.",
+  "name": "Fyers Trading Assistant",
+  "description": "Stop Loss Manager & One-Click Order Assistant for Fyers with voice alerts.",
   "version": "1.0.0",
   "permissions": ["storage"],
   "host_permissions": [
@@ -9,7 +9,7 @@
     "https://*.fyers.in/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "position-management/background.js"
   },
   "content_scripts": [
     {
@@ -17,11 +17,17 @@
         "https://trade.fyers.in/*",
         "https://*.fyers.in/*"
       ],
-      "css": ["content.css"],
+      "css": [
+        "position-management/content.css",
+        "one-click-order/content.css"
+      ],
       "js": [
-        "utils/calculator.js",
-        "utils/domHandler.js",
-        "content.js"
+        "position-management/utils/calculator.js",
+        "position-management/utils/domHandler.js",
+        "position-management/content.js",
+        "one-click-order/utils/calculator.js",
+        "one-click-order/utils/domHandler.js",
+        "one-click-order/content.js"
       ],
       "all_frames": true,
       "run_at": "document_idle"
@@ -29,7 +35,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["utils/fyers-bridge.js"],
+      "resources": ["position-management/utils/fyers-bridge.js"],
       "matches": [
         "https://trade.fyers.in/*",
         "https://*.fyers.in/*"

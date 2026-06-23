@@ -223,36 +223,44 @@
     return findTokenInStorage() || findTokenInCookies();
   }
 
-  // Hook into window.fetch to capture Authorization Token and API Domain dynamically
+// Hook into window.fetch to capture Authorization Token and API Domain dynamically
   const originalFetch = window.fetch;
   window.fetch = async function (resource, options) {
     const url = typeof resource === "string" ? resource : resource?.url || "";
     
-    // Intercept headers for Authorization
-    if (options && options.headers) {
-      let auth = null;
-      if (options.headers instanceof Headers) {
-        auth = options.headers.get("Authorization");
-      } else if (typeof options.headers === "object") {
-        auth = options.headers["Authorization"] || options.headers["authorization"];
-      }
-
-      if (auth && auth.startsWith("Bearer ")) {
-        if (window.__fyersAuthToken !== auth) {
-          window.__fyersAuthToken = auth;
-          logDebug("Captured Authorization Token from Fetch Request!");
-          dispatchTokenCaptured();
-        }
-      }
+    // Skip interception for Fyers internal telemetry/logging endpoints.
+    // These URLs are rate-limited and our interception only causes console noise.
+    const isSkippedUrl = url.includes("/fe_hwk_logs/") || url.includes("/fe_logs/") || url.includes("/analytics/") || url.includes("/telemetry/");
+    if (isSkippedUrl) {
+      return originalFetch.apply(this, arguments);
+    }
+    
+    // Keep the authorization value paired with the domain from the same request.
+    // Fyers' trading UI sends its JWT without a "Bearer " prefix. Other page
+    // services (for example Hawkeye) use unrelated Bearer tokens and must not
+    // replace an already captured raw trading token.
+    const requestHeaders = options?.headers || resource?.headers;
+    let auth = null;
+    if (requestHeaders instanceof Headers) {
+      auth = requestHeaders.get("Authorization");
+    } else if (Array.isArray(requestHeaders)) {
+      const authHeader = requestHeaders.find(([name]) => String(name).toLowerCase() === "authorization");
+      auth = authHeader?.[1] || null;
+    } else if (requestHeaders && typeof requestHeaders === "object") {
+      auth = requestHeaders.Authorization || requestHeaders.authorization || null;
     }
 
-    // Capture API Domain from request URL
     const domainMatch = url.match(/https:\/\/[a-zA-Z0-9\-\.]+\.fyers\.in/);
-    if (domainMatch) {
+    const isRawTradingToken = auth?.startsWith("eyJ") && auth.split(".").length === 3;
+    const hasRawTradingToken = window.__fyersAuthToken?.startsWith("eyJ");
+    const shouldCaptureAuth = isRawTradingToken || (auth?.startsWith("Bearer ") && !hasRawTradingToken);
+
+    if (shouldCaptureAuth && domainMatch) {
       const domain = domainMatch[0];
-      if (window.__fyersApiBaseUrl !== domain) {
+      if (window.__fyersAuthToken !== auth || window.__fyersApiBaseUrl !== domain) {
+        window.__fyersAuthToken = auth;
         window.__fyersApiBaseUrl = domain;
-        logDebug(`Captured API Base URL: ${domain}`);
+        logDebug(`Captured paired trading authorization and API domain: ${domain}`);
         dispatchTokenCaptured();
       }
     }
@@ -271,7 +279,14 @@
       }
     }
 
-    const response = await originalFetch.apply(this, arguments);
+    // Always re-throw network-level errors cleanly so Fyers' own error handlers
+    // are not disrupted by our interception layer.
+    let response;
+    try {
+      response = await originalFetch.apply(this, arguments);
+    } catch (networkError) {
+      throw networkError;
+    }
 
     // Passive Interception: Read responses of successful page fetches
     try {
@@ -297,6 +312,14 @@
             }
           }
         }));
+
+        // Special: capture order POST requests from the Fyers UI so we can learn the exact format
+        if (url.includes("/orders") && options?.method === "POST") {
+          logDebug("[ORDER CAPTURE] Fyers UI placed order!", { url, requestBody, status: response.status, responseBody: resBody });
+          window.dispatchEvent(new CustomEvent("fyers-order-request-captured", {
+            detail: { url, requestBody, status: response.status, responseBody: resBody }
+          }));
+        }
       }
 
       if (response.ok && (url.includes("/orders") || url.includes("/positions"))) {
@@ -313,7 +336,7 @@
         }
       }
     } catch (err) {
-      // Interception errors suppressed
+      // Interception errors suppressed — never let our hook break Fyers' page
     }
 
     return response;
