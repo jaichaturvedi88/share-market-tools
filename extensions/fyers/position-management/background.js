@@ -191,6 +191,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (message.action === "placeOrder") {
+    handlePlaceOrder(message.token, message.baseUrl, message.payload)
+      .then(res => sendResponse(res))
+      .catch(err => {
+        logDebug("PlaceOrder error:", err.message);
+        sendResponse({ success: false, error: err.message });
+      });
+    return true;
+  }
+
+  if (message.action === "placeSL") {
+    handlePlaceSL(message.token, message.baseUrl, message.payload)
+      .then(res => sendResponse(res))
+      .catch(err => {
+        logDebug("PlaceSL error:", err.message);
+        sendResponse({ success: false, error: err.message });
+      });
+    return true;
+  }
 });
 
 // Fetch Positions and Orders
@@ -380,4 +400,142 @@ async function handleMoveSL(token, baseUrl, orderId, newSL, qty) {
   }
 
   throw new Error(lastError || "Failed to modify Stop Loss");
+}
+
+async function handlePlaceOrder(token, baseUrl, orderPayload) {
+  const headers = {
+    "Accept": "*/*",
+    "Content-Type": "text/plain;charset=UTF-8",
+    "Authorization": token,
+    "Origin": "https://trade.fyers.in",
+    "Referer": "https://trade.fyers.in/"
+  };
+
+  const payloadStr = JSON.stringify(orderPayload);
+  // Try captured base domain first (where user is active), then fallbacks
+  let capturedBase = baseUrl || "";
+  if (capturedBase.includes("trade.fyers.in")) capturedBase = "";
+  const domainsToTry = [capturedBase, "https://api-t1.fyers.in", "https://api-y1.fyers.in", "https://api.fyers.in"].filter(Boolean);
+  const uniqueDomains = [...new Set(domainsToTry)];
+  
+  // Order creation uses the synchronous placement route. `/api/v3/orders`
+  // itself is an order-book route and rejects POST with "provide valid method".
+  const pathsToTry = [
+    "/trade/v3/orders",
+    "/trade/v3/orders/sync",
+    "/api/v3/orders/sync"
+  ];
+  
+  let lastError = null;
+  let lastUrlTried = null;
+  let lastRawResponse = null;
+  const attempts = [];
+
+  logDebug("PlaceOrder payload:", payloadStr);
+  logDebug("PlaceOrder domains to try:", uniqueDomains);
+
+  for (const domain of uniqueDomains) {
+    for (const path of pathsToTry) {
+      try {
+        const url = domain.endsWith("/") ? domain.slice(0, -1) + path : domain + path;
+        lastUrlTried = url;
+        logDebug(`Placing order at ${url}`);
+        const res = await fetch(url, {
+          method: "POST",
+          headers,
+          body: payloadStr
+        });
+
+        const text = await res.text();
+        lastRawResponse = text;
+        let body = null;
+        try {
+          body = text ? JSON.parse(text) : null;
+        } catch (e) {
+          body = text;
+        }
+
+        logDebug(`PlaceOrder response [${res.status}] from ${url}:`, text);
+        attempts.push({ url, status: res.status, response: body });
+
+        // Fyers API returns HTTP 200 even for errors, check s: "ok"
+        if (res.ok && body && body.s === "ok") {
+          return { success: true, body, urlTried: url };
+        } else {
+          lastError = body?.message || body?.value || text || `Status ${res.status}`;
+        }
+      } catch (err) {
+        lastError = err.message;
+        lastRawResponse = err.message;
+        attempts.push({ url: lastUrlTried, error: err.message });
+        logDebug(`PlaceOrder fetch error for ${domain} with path ${path}:`, err.message);
+      }
+    }
+  }
+
+  // Return structured error so content script can log details
+  return {
+    success: false,
+    error: lastError || "Failed to place order",
+    urlTried: lastUrlTried,
+    rawResponse: lastRawResponse,
+    attempts
+  };
+}
+
+async function handlePlaceSL(token, baseUrl, slPayload) {
+  const headers = {
+    "Accept": "*/*",
+    "Content-Type": "application/json",
+    "Authorization": token,
+    "Origin": "https://trade.fyers.in",
+    "Referer": "https://trade.fyers.in/"
+  };
+
+  const payloadStr = JSON.stringify(slPayload);
+  let capturedBase = baseUrl || "";
+  if (capturedBase.includes("trade.fyers.in")) capturedBase = "";
+  const domainsToTry = [capturedBase, "https://api-t1.fyers.in", "https://api-y1.fyers.in", "https://api.fyers.in"].filter(Boolean);
+  const uniqueDomains = [...new Set(domainsToTry)];
+  
+  // Try both BO order placement paths
+  const pathsToTry = ["/trade/v3/orders/bo", "/api/v3/orders/bo"];
+  let lastError = null;
+
+  logDebug("PlaceSL payload:", payloadStr);
+
+  for (const domain of uniqueDomains) {
+    for (const path of pathsToTry) {
+      try {
+        const url = domain.endsWith("/") ? domain.slice(0, -1) + path : domain + path;
+        logDebug(`Placing SL at ${url}`);
+        const res = await fetch(url, {
+          method: "POST",
+          headers,
+          body: payloadStr
+        });
+
+        const text = await res.text();
+        let body = null;
+        try {
+          body = text ? JSON.parse(text) : null;
+        } catch (e) {
+          body = text;
+        }
+
+        logDebug(`PlaceSL response [${res.status}] from ${url}:`, text);
+
+        if (res.ok && body && body.s === "ok") {
+          return { success: true, body };
+        } else {
+          lastError = body?.message || body?.value || text || `Status ${res.status}`;
+        }
+      } catch (err) {
+        lastError = err.message;
+        logDebug(`PlaceSL fetch error for ${domain} with path ${path}:`, err.message);
+      }
+    }
+  }
+
+  throw new Error(lastError || "Failed to place Stop Loss");
 }

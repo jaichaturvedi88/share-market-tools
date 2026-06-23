@@ -11,18 +11,6 @@
     target: ["target", "profit"]
   };
 
-  const LONG_POSITION_FIELDS = {
-    buyPrice: "Risk/RewardlongEntryPrice",
-    targetPrice: "Risk/RewardlongProfitLevelPrice",
-    stopLoss: "Risk/RewardlongStopLevelPrice"
-  };
-
-  const SHORT_POSITION_FIELDS = {
-    buyPrice: "Risk/RewardshortEntryPrice",
-    targetPrice: "Risk/RewardshortProfitLevelPrice",
-    stopLoss: "Risk/RewardshortStopLevelPrice"
-  };
-
   function normalize(value) {
     return String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   }
@@ -324,75 +312,6 @@
     return filled;
   }
 
-  function findDrawingToolInput(propertyId) {
-    return querySelectorAllDocuments(`input[data-property-id="${propertyId}"]`)
-      .find((input) => isVisible(input) && !isExtensionElement(input));
-  }
-
-  function openDrawingToolSettingsDialog() {
-    const settingsButton = querySelectorAllDocuments('.floating-toolbar-react-widgets [data-name="settings"], [class*="floating-toolbar"] [data-name="settings"]')
-      .find((el) => isVisible(el) && !isExtensionElement(el));
-
-    if (settingsButton) {
-      debugLog("Found drawing settings button, clicking it", settingsButton);
-      clickElement(settingsButton);
-      return true;
-    }
-
-    // Fallback: search for any visible [data-name="settings"] that is not an indicator settings button
-    const fallbackButton = querySelectorAllDocuments('[data-name="settings"]')
-      .find((el) => {
-        if (!isVisible(el) || isExtensionElement(el)) return false;
-        if (el.closest('[class*="legend"], [class*="status-line"]')) return false;
-        return true;
-      });
-
-    if (fallbackButton) {
-      debugLog("Found fallback drawing settings button, clicking it", fallbackButton);
-      clickElement(fallbackButton);
-      return true;
-    }
-
-    debugLog("Drawing settings button not found");
-    return false;
-  }
-
-  async function waitForDrawingToolInputs() {
-    for (let attempt = 0; attempt < 8; attempt += 1) {
-      const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
-      const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
-      const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
-      if (longBuy && longTarget && longStop) {
-        return { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
-      }
-
-      const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
-      const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
-      const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
-      if (shortBuy && shortTarget && shortStop) {
-        return { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
-      }
-
-      await wait(250);
-    }
-
-    const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
-    const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
-    const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
-    if (longBuy && longTarget && longStop) {
-      return { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
-    }
-
-    const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
-    const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
-    const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
-    if (shortBuy && shortTarget && shortStop) {
-      return { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
-    }
-
-    return null;
-  }
-
   function findCheckboxByHints(hints) {
     const inputs = Array.from(document.querySelectorAll('input[type="checkbox"]'))
       .filter((element) => isVisible(element) && !isExtensionElement(element));
@@ -503,17 +422,58 @@
 
     for (const selector of selectors) {
       const element = row.querySelector(selector);
-      debugLog(`LTP selector checked: ${selector}`, {
-        found: Boolean(element),
-        text: element?.textContent || ""
-      });
-
       if (element) {
         return element;
       }
     }
 
     return null;
+  }
+
+  /**
+   * Reads the full symbol (e.g., "NSE:ASHOKLEY-EQ") from the Fyers detail
+   * widget bar at the top of the page. The HTML structure is:
+   *   <span class="main-...">NSE:ASHOKLEY-EQ<span data-name="details-exchange">NSE</span></span>
+   * The symbol is always the first text node of the parent span.
+   */
+  function getSymbolFromDetailPanel() {
+    const exchangeEl = document.querySelector('[data-name="details-exchange"]');
+    if (!exchangeEl) return null;
+
+    const parentEl = exchangeEl.parentElement;
+    if (!parentEl) return null;
+
+    // Walk child nodes to find the first non-empty text node
+    for (const node of parentEl.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent.trim();
+        if (text && text.includes(":")) {
+          return text.toUpperCase();
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Reads the LTP from the detail widget panel.
+   * The price span has translate="no" and is the first numeric span in the detail widget.
+   */
+  function getLtpFromDetailPanel() {
+    const detailWidget = document.querySelector('[data-test-id-widget-type="detail"], .widgetbar-widget-detail');
+    if (!detailWidget) return NaN;
+
+    // Find span with translate="no" that contains a numeric price
+    const spans = Array.from(detailWidget.querySelectorAll('span[translate="no"]'));
+    for (const span of spans) {
+      const price = parsePrice(span.textContent);
+      if (Number.isFinite(price) && price > 0) {
+        return price;
+      }
+    }
+
+    return NaN;
   }
 
   function getActiveWatchlistScrip() {
@@ -530,6 +490,17 @@
       selectedRows: selectedRows.length
     });
 
+    // --- Primary: read symbol from detail panel (always has full NSE:SYMBOL-EQ format) ---
+    const panelSymbol = getSymbolFromDetailPanel();
+    const panelLtp = getLtpFromDetailPanel();
+
+    debugLog("Detail panel read", { panelSymbol, panelLtp });
+
+    if (panelSymbol && Number.isFinite(panelLtp) && panelLtp > 0) {
+      return { ok: true, symbol: panelSymbol, ltp: panelLtp };
+    }
+
+    // --- Fallback: read from active watchlist row ---
     const activeRow = findActiveWatchlistRow(searchDocs);
 
     if (!activeRow) {
@@ -546,19 +517,40 @@
       };
     }
 
-    const symbol = activeRow.getAttribute("data-symbol-short") || "";
+    const symbolShort = activeRow.getAttribute("data-symbol-short") || "";
+    const symbolFull = activeRow.getAttribute("data-symbol") || "";
+    const exchange = activeRow.getAttribute("data-exchange") || "NSE";
+
+    // Build the full Fyers symbol (e.g., NSE:RELTD-EQ)
+    // panelSymbol is authoritative — always use it directly if available
+    let symbol = panelSymbol || "";
+    if (!symbol) {
+      if (symbolFull && symbolFull.includes(":")) {
+        symbol = symbolFull.trim().toUpperCase();
+      } else if (symbolFull) {
+        symbol = `${exchange}:${symbolFull.trim().toUpperCase()}`;
+      } else if (symbolShort) {
+        const base = symbolShort.trim().toUpperCase();
+        const isDerivative = exchange === "NFO" || exchange === "BFO" || exchange === "CDS" || exchange === "MCX";
+        // Guard: data-symbol-short may already contain '-EQ' (e.g. 'ASHOKLEY-EQ')
+        const suffix = (!isDerivative && !base.endsWith("-EQ")) ? "-EQ" : "";
+        symbol = `${exchange}:${base}${suffix}`;
+      }
+    }
+
     const ltpElement = findLtpElement(activeRow);
-    const ltp = parsePrice(ltpElement?.textContent);
+    const ltp = panelLtp || parsePrice(ltpElement?.textContent);
 
     debugLog("Active row resolved", {
-      symbol,
-      dataActive: activeRow.getAttribute("data-active"),
-      dataSelected: activeRow.getAttribute("data-selected"),
+      symbolShort,
+      symbolFull,
+      exchange,
+      symbolConstructed: symbol,
       ltpText: ltpElement?.textContent || "",
       ltp
     });
 
-    if (!symbol.trim()) {
+    if (!symbol) {
       return {
         ok: false,
         error: "Active watchlist symbol was empty."
@@ -574,10 +566,12 @@
 
     return {
       ok: true,
-      symbol: symbol.trim().toUpperCase(),
+
+      symbol,
       ltp
     };
   }
+
 
   function findCustomBuyButton() {
     const candidates = querySelectorAllDocuments('div[class*="customButton-"], [class*="customButton-"]')
@@ -672,84 +666,8 @@
     };
   }
 
-  function findSubmitButton() {
-    return querySelectorAllDocuments('button')
-      .find((button) => {
-        if (!isVisible(button) || isExtensionElement(button)) return false;
-        const text = button.textContent.trim().toLowerCase();
-        return text === "ok" || text === "submit" || button.name === "submit" || button.getAttribute("data-name") === "submit-button";
-      });
-  }
-
-  async function prepareDrawingToolLevels(trade) {
-    debugLog("Prepare drawing tool levels started", trade);
-
-    // Step 1: Check if inputs are already visible
-    let inputs = null;
-    const longBuy = findDrawingToolInput(LONG_POSITION_FIELDS.buyPrice);
-    const longTarget = findDrawingToolInput(LONG_POSITION_FIELDS.targetPrice);
-    const longStop = findDrawingToolInput(LONG_POSITION_FIELDS.stopLoss);
-    if (longBuy && longTarget && longStop) {
-      inputs = { type: "long", buyPriceInput: longBuy, targetInput: longTarget, stopLossInput: longStop };
-    } else {
-      const shortBuy = findDrawingToolInput(SHORT_POSITION_FIELDS.buyPrice);
-      const shortTarget = findDrawingToolInput(SHORT_POSITION_FIELDS.targetPrice);
-      const shortStop = findDrawingToolInput(SHORT_POSITION_FIELDS.stopLoss);
-      if (shortBuy && shortTarget && shortStop) {
-        inputs = { type: "short", buyPriceInput: shortBuy, targetInput: shortTarget, stopLossInput: shortStop };
-      }
-    }
-
-    if (!inputs) {
-      debugLog("Drawing tool settings dialog not open. Opening it...");
-      openDrawingToolSettingsDialog();
-      inputs = await waitForDrawingToolInputs();
-    }
-
-    if (!inputs) {
-      return {
-        ok: false,
-        error: "No active Drawing Tool (Long/Short Position) settings dialog visible."
-      };
-    }
-
-    // Step 2: Fill form with delays so React/TradingView handles state changes
-    const filled = {};
-    filled.buyPrice = fillInputElement(inputs.buyPriceInput, trade.buyPrice, `${inputs.type} position entry price`);
-    await wait(150);
-    filled.targetPrice = fillInputElement(inputs.targetInput, trade.targetPrice, `${inputs.type} position profit price`);
-    await wait(150);
-    filled.stopLoss = fillInputElement(inputs.stopLossInput, trade.stopLoss, `${inputs.type} position stop price`);
-    await wait(150);
-
-    // Blur the stop loss input to trigger final updates
-    try {
-      inputs.stopLossInput.blur();
-    } catch (e) {}
-    await wait(150);
-
-    const missing = Object.entries(filled)
-      .filter(([, wasFilled]) => !wasFilled)
-      .map(([name]) => name);
-
-    // Step 3: Click ok
-    const submitButton = findSubmitButton();
-    if (submitButton) {
-      submitButton.focus();
-      await wait(150);
-      debugLog("Found submit button, clicking it", submitButton);
-      clickElement(submitButton);
-    }
-
-    return {
-      ok: missing.length === 0,
-      missing
-    };
-  }
-
   window.FyersOCODomHandler = {
     getActiveWatchlistScrip,
-    prepareDrawingToolLevels,
     prepareTrade
   };
 })();

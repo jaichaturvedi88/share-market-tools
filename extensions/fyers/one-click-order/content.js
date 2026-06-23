@@ -9,7 +9,9 @@
     buyPrice: "fyersOneClick.buyPrice",
     stopLoss: "fyersOneClick.stopLoss",
     panelX: "fyersOneClick.panelX",
-    panelY: "fyersOneClick.panelY"
+    panelY: "fyersOneClick.panelY",
+    authToken: "fyersSL.authToken",
+    apiBaseUrl: "fyersSL.apiBaseUrl"
   };
 
   const DEFAULTS = {
@@ -21,10 +23,8 @@
     calculation: null,
     activeSymbol: "",
     hasSavedPanelPosition: false,
-    orderPrepared: {
-      order1: false,
-      order2: false
-    },
+    authToken: null,
+    apiBaseUrl: null,
     values: {
       rr: DEFAULTS.rr,
       maxLoss: DEFAULTS.maxLoss,
@@ -32,6 +32,20 @@
       stopLoss: ""
     }
   };
+
+  // Listen for Captured tokens from bridge
+  window.addEventListener("fyers-token-captured", (e) => {
+    const { token, baseUrl } = e.detail;
+    if (token && (state.authToken !== token || state.apiBaseUrl !== baseUrl)) {
+      state.authToken = token;
+      state.apiBaseUrl = baseUrl;
+      chrome.storage.local.set({
+        [STORAGE_KEYS.authToken]: token,
+        [STORAGE_KEYS.apiBaseUrl]: baseUrl
+      });
+      console.log("[Fyers OCO Content] Token captured! Base URL:", baseUrl);
+    }
+  });
 
   function createElement(tag, className, text) {
     const element = document.createElement(tag);
@@ -73,34 +87,12 @@
     return { wrapper, valueElement };
   }
 
-  function checkboxField(id, label) {
-    const wrapper = createElement("label", "foc-label foc-check-field");
-    const input = createElement("input", "foc-check");
-    const inputWrap = createElement("div", "foc-check-box");
-    const text = createElement("span", "", label);
-    input.id = id;
-    input.type = "checkbox";
-    inputWrap.append(input);
-    wrapper.append(text, inputWrap);
-    return { wrapper, input };
-  }
-
   function readOnlyField(label) {
     const wrapper = createElement("div", "foc-label");
     const text = createElement("span", "", label);
     const valueElement = createElement("div", "foc-readonly-field", "-");
     wrapper.append(text, valueElement);
     return { wrapper, valueElement };
-  }
-
-  function splitResultItem(label) {
-    const wrapper = createElement("label", "foc-split-result-item");
-    const input = createElement("input", "foc-split-result-check");
-    const text = createElement("span", "foc-split-result-value", label);
-    input.type = "checkbox";
-    input.disabled = true;
-    wrapper.append(input, text);
-    return { wrapper, input, text };
   }
 
   function formatNumber(value, decimals) {
@@ -119,77 +111,59 @@
     return trimmed.length > 20 ? trimmed.slice(0, 20) : trimmed;
   }
 
+  function findNumberInObject(value, fieldNames) {
+    if (!value || typeof value !== "object") {
+      return NaN;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const found = findNumberInObject(item, fieldNames);
+        if (Number.isFinite(found)) {
+          return found;
+        }
+      }
+      return NaN;
+    }
+
+    for (const fieldName of fieldNames) {
+      const numberValue = Number(value[fieldName]);
+      if (Number.isFinite(numberValue) && numberValue > 0) {
+        return numberValue;
+      }
+    }
+
+    for (const child of Object.values(value)) {
+      const found = findNumberInObject(child, fieldNames);
+      if (Number.isFinite(found)) {
+        return found;
+      }
+    }
+
+    return NaN;
+  }
+
+  function getExecutionPrice(orderResponseBody, fallbackPrice) {
+    const executionPrice = findNumberInObject(orderResponseBody, ["price_traded", "tradedPrice", "avgPrice", "price"]);
+    return Number.isFinite(executionPrice) && executionPrice > 0 ? executionPrice : fallbackPrice;
+  }
+
   function setStatus(message, type) {
     refs.status.textContent = message || "";
     refs.status.classList.toggle("is-error", type === "error");
     refs.status.classList.toggle("is-success", type === "success");
   }
 
-  function getSplitQuantities(totalQuantity) {
-    const order1Qty = Math.ceil(totalQuantity / 2);
-    return {
-      order1Qty,
-      order2Qty: totalQuantity - order1Qty
-    };
-  }
-
   function resetOrderButtons() {
-    state.orderPrepared.order1 = false;
-    state.orderPrepared.order2 = false;
-    refs.order1.disabled = false;
-    refs.order2.disabled = false;
-    refs.fillTool.disabled = false;
+    refs.buy.disabled = false;
+    refs.sell.disabled = false;
     refs.fetch.textContent = "Get LTP";
-    refs.order1.textContent = "Order 1";
-    refs.order2.textContent = "Order 2";
-    refs.fillTool.textContent = "Fill Tool";
-    refs.order1.classList.remove("is-ready");
-    refs.order2.classList.remove("is-ready");
-  }
-
-  function refreshSplitModeUi() {
-    const splitEnabled = refs.split.checked;
-    const calculation = state.calculation;
-    const quantity = calculation?.quantity || 0;
-    const splitQuantities = getSplitQuantities(quantity);
-    const hasStopLoss = refs.stopLoss.value.trim() !== "";
-    const showSplitResult = splitEnabled && hasStopLoss && calculation?.isValid && quantity > 0;
-
-    refs.splitResult.classList.toggle("is-hidden", !showSplitResult);
-    refs.actions.classList.toggle("is-split", splitEnabled);
-    refs.splitTotalQty.textContent = splitEnabled && quantity > 0 ? `Total Qty: ${quantity}` : "Total Qty: -";
-    refs.order1ResultText.textContent = splitEnabled && splitQuantities.order1Qty > 0 ? String(splitQuantities.order1Qty) : "-";
-    refs.order2ResultText.textContent = splitEnabled && splitQuantities.order2Qty > 0 ? String(splitQuantities.order2Qty) : "-";
-    refs.order1ResultCheck.checked = state.orderPrepared.order1;
-    refs.order2ResultCheck.checked = state.orderPrepared.order2;
-    refs.order2.classList.toggle("is-hidden", !splitEnabled);
-
-    if (splitEnabled) {
-      refs.fetch.textContent = "LTP";
-      refs.order1.textContent = state.orderPrepared.order1 ? "\u2713 Ord 1" : "Ord 1";
-      refs.order2.textContent = state.orderPrepared.order2 ? "\u2713 Ord 2" : "Ord 2";
-      refs.fillTool.textContent = "Tool";
-      refs.order1.disabled = state.orderPrepared.order1;
-      refs.order2.disabled = state.orderPrepared.order2;
-      refs.fillTool.disabled = false;
-      refs.order1.classList.toggle("is-ready", state.orderPrepared.order1);
-      refs.order2.classList.toggle("is-ready", state.orderPrepared.order2);
-    } else {
-      refs.fetch.textContent = "Get LTP";
-      refs.order1.textContent = "Fill Data";
-      refs.order2.textContent = "Order 2";
-      refs.fillTool.textContent = "Fill Tool";
-      refs.order1.disabled = false;
-      refs.order2.disabled = false;
-      refs.fillTool.disabled = false;
-      refs.order1.classList.remove("is-ready");
-      refs.order2.classList.remove("is-ready");
-    }
+    refs.buy.textContent = "Buy";
+    refs.sell.textContent = "Sell";
   }
 
   function resetOrderState() {
     resetOrderButtons();
-    refreshSplitModeUi();
   }
 
   function persistSettings() {
@@ -225,7 +199,6 @@
     refs.quantity.textContent = calculation.quantity > 0 ? String(calculation.quantity) : "-";
     refs.target.textContent = formatNumber(calculation.targetPrice, 1);
     refs.amount.textContent = formatNumber(calculation.totalAmount, 2);
-    refreshSplitModeUi();
 
     if (values.buyPrice || values.stopLoss) {
       setStatus(calculation.errors[0] || "", calculation.errors.length ? "error" : "");
@@ -240,6 +213,8 @@
 
   async function loadSettings() {
     const saved = await chrome.storage.local.get(Object.values(STORAGE_KEYS));
+    state.authToken = saved[STORAGE_KEYS.authToken] || null;
+    state.apiBaseUrl = saved[STORAGE_KEYS.apiBaseUrl] || null;
     refs.rr.value = saved[STORAGE_KEYS.rr] || DEFAULTS.rr;
     refs.maxLoss.value = saved[STORAGE_KEYS.maxLoss] || DEFAULTS.maxLoss;
     refs.buyPrice.value = saved[STORAGE_KEYS.buyPrice] || "";
@@ -256,12 +231,6 @@
     refs.quantity.textContent = "-";
     refs.target.textContent = "-";
     refs.amount.textContent = "-";
-    refs.splitTotalQty.textContent = "Total Qty: -";
-    refs.order1ResultText.textContent = "-";
-    refs.order2ResultText.textContent = "-";
-    refs.order1ResultCheck.checked = false;
-    refs.order2ResultCheck.checked = false;
-    refs.splitResult.classList.add("is-hidden");
     setStatus("", "");
     state.calculation = null;
     resetOrderState();
@@ -274,12 +243,6 @@
     refs.quantity.textContent = "-";
     refs.target.textContent = "-";
     refs.amount.textContent = "-";
-    refs.splitTotalQty.textContent = "Total Qty: -";
-    refs.order1ResultText.textContent = "-";
-    refs.order2ResultText.textContent = "-";
-    refs.order1ResultCheck.checked = false;
-    refs.order2ResultCheck.checked = false;
-    refs.splitResult.classList.add("is-hidden");
     state.calculation = null;
     resetOrderState();
     chrome.storage.local.remove([STORAGE_KEYS.stopLoss]);
@@ -435,96 +398,6 @@
     setStatus(`Fetched ${result.symbol} LTP ${refs.buyPrice.value}.`, "success");
   }
 
-  async function prepareOrder(orderNumber) {
-    const calculation = recalculate();
-    const splitEnabled = refs.split.checked;
-    const splitQuantities = getSplitQuantities(calculation.quantity);
-    const orderQuantity = splitEnabled
-      ? (orderNumber === 1 ? splitQuantities.order1Qty : splitQuantities.order2Qty)
-      : calculation.quantity;
-
-    if (!state.activeSymbol) {
-      setStatus("Click Get LTP before filling data.", "error");
-      return;
-    }
-
-    if (!calculation.isValid) {
-      setStatus(calculation.errors[0], "error");
-      return;
-    }
-
-    if (orderQuantity <= 0) {
-      setStatus("Order quantity must be greater than 0.", "error");
-      return;
-    }
-
-    setStatus("Opening buy order and filling fields...", "");
-
-    try {
-      const result = await window.FyersOCODomHandler.prepareTrade({
-        quantity: orderQuantity,
-        buyPrice: window.FyersOCOCalculator.roundPrice(calculation.buyPrice),
-        stopLoss: window.FyersOCOCalculator.roundToDecimals(calculation.stopLoss, 1).toFixed(1),
-        targetPrice: window.FyersOCOCalculator.roundToDecimals(calculation.targetPrice, 1).toFixed(1)
-      });
-
-      if (result.ok) {
-        if (splitEnabled) {
-          const key = orderNumber === 1 ? "order1" : "order2";
-          const button = orderNumber === 1 ? refs.order1 : refs.order2;
-          state.orderPrepared[key] = true;
-          button.disabled = true;
-          button.textContent = `\u2713 Order ${orderNumber} Ready`;
-          button.classList.add("is-ready");
-          refs.order1ResultCheck.checked = state.orderPrepared.order1;
-          refs.order2ResultCheck.checked = state.orderPrepared.order2;
-
-          setStatus("", "success");
-        } else {
-          setStatus(`Trade prepared with qty ${orderQuantity}. Review before BUY.`, "success");
-        }
-      } else {
-        setStatus(`Prepared partially. Check ${result.missing.join(", ")} manually.`, "error");
-      }
-    } catch (error) {
-      setStatus(`Could not prepare trade: ${error.message}`, "error");
-    }
-  }
-
-  async function fillDrawingToolLevels() {
-    const calculation = recalculate();
-
-    if (!calculation.isValid) {
-      setStatus(calculation.errors[0], "error");
-      return;
-    }
-
-    setStatus("Filling drawing tool levels...", "");
-    refs.fillTool.disabled = true;
-
-    try {
-      const result = await window.FyersOCODomHandler.prepareDrawingToolLevels({
-        buyPrice: window.FyersOCOCalculator.roundPrice(calculation.buyPrice).toFixed(2),
-        targetPrice: window.FyersOCOCalculator.roundToDecimals(calculation.targetPrice, 1).toFixed(1),
-        stopLoss: window.FyersOCOCalculator.roundToDecimals(calculation.stopLoss, 1).toFixed(1)
-      });
-
-      if (result.ok) {
-        setStatus("Drawing tool levels filled.", "success");
-      } else {
-        if (result.error) {
-          setStatus(result.error, "error");
-        } else {
-          setStatus(`Drawing tool partially filled. Check ${result.missing.join(", ")} manually.`, "error");
-        }
-      }
-    } catch (error) {
-      setStatus(`Could not fill drawing tool: ${error.message}`, "error");
-    } finally {
-      refs.fillTool.disabled = false;
-    }
-  }
-
   function buildPanel() {
     if (document.getElementById("foc-root")) {
       return null;
@@ -550,10 +423,8 @@
     const topGrid = createElement("div", "foc-grid");
     const rr = field("foc-rr", "Risk Reward", "number", "2");
     const maxLoss = field("foc-max-loss", "Max Loss", "number", "1000");
-    const split = checkboxField("foc-split", "Split 50%");
-    split.input.checked = true;
     topGrid.classList.add("foc-top-grid");
-    topGrid.append(rr.wrapper, maxLoss.wrapper, split.wrapper);
+    topGrid.append(rr.wrapper, maxLoss.wrapper);
 
     const activeSection = createElement("div", "foc-section");
     const activeOutput = output("Active Symbol");
@@ -574,23 +445,17 @@
 
     const actions = createElement("div", "foc-actions");
     const fetch = createElement("button", "foc-btn foc-secondary", "Get LTP");
-    const order1 = createElement("button", "foc-btn foc-primary", "Fill Data");
-    const order2 = createElement("button", "foc-btn foc-primary is-hidden", "Order 2");
-    const fillTool = createElement("button", "foc-btn foc-secondary", "Fill Tool");
-    fetch.type = "button";
-    order1.type = "button";
-    order2.type = "button";
-    fillTool.type = "button";
-    actions.append(fetch, order1, order2, fillTool);
+    const buy = createElement("button", "foc-btn foc-primary foc-poc-buy", "Buy");
+    const sell = createElement("button", "foc-btn foc-primary foc-poc-sell", "Sell");
 
-    const splitResult = createElement("div", "foc-split-result is-hidden");
-    const splitTotalQty = createElement("span", "foc-split-total", "Total Qty: -");
-    const order1Result = splitResultItem("-");
-    const order2Result = splitResultItem("-");
-    splitResult.append(splitTotalQty, order1Result.wrapper, order2Result.wrapper);
+    fetch.type = "button";
+    buy.type = "button";
+    sell.type = "button";
+
+    actions.append(fetch, buy, sell);
 
     const status = createElement("div", "foc-status");
-    panel.append(header, topGrid, activeSection, tradeSection, outputSection, actions, splitResult, status);
+    panel.append(header, topGrid, activeSection, tradeSection, outputSection, actions, status);
     root.append(button, panel);
     document.documentElement.appendChild(root);
 
@@ -601,7 +466,6 @@
       close,
       rr: rr.input,
       maxLoss: maxLoss.input,
-      split: split.input,
       activeSymbol: activeOutput.valueElement,
       buyPrice: buyPrice.input,
       stopLoss: stopLoss.input,
@@ -609,17 +473,10 @@
       quantity: quantity.valueElement,
       target: target.valueElement,
       amount: amount.valueElement,
-      splitResult,
-      splitTotalQty,
-      order1ResultCheck: order1Result.input,
-      order2ResultCheck: order2Result.input,
-      order1ResultText: order1Result.text,
-      order2ResultText: order2Result.text,
       actions,
       fetch,
-      order1,
-      fillTool,
-      order2,
+      buy,
+      sell,
       status
     };
   }
@@ -633,14 +490,9 @@
   refs.button.addEventListener("click", togglePanel);
   refs.close.addEventListener("click", closePanel);
   refs.fetch.addEventListener("click", fetchLtp);
-  refs.order1.addEventListener("click", () => prepareOrder(1));
-  refs.fillTool.addEventListener("click", fillDrawingToolLevels);
-  refs.order2.addEventListener("click", () => prepareOrder(2));
-  refs.split.addEventListener("change", () => {
-    resetOrderState();
-    recalculate();
-    setStatus("", "");
-  });
+  refs.buy.addEventListener("click", () => triggerPocTrade(1));
+  refs.sell.addEventListener("click", () => triggerPocTrade(-1));
+
   enableDrag();
 
   [refs.rr, refs.maxLoss].forEach((input) => {
@@ -669,6 +521,140 @@
       closePanel();
     }
   });
+
+  async function triggerPocTrade(side) {
+    const calculation = recalculate();
+    if (!calculation.isValid) {
+      setStatus(calculation.errors[0], "error");
+      return;
+    }
+
+    if (!state.activeSymbol) {
+      setStatus("No active symbol. Please click Get LTP first.", "error");
+      return;
+    }
+
+    if (!state.authToken) {
+      setStatus("Authorization token not captured yet. Please interact with the page.", "error");
+      return;
+    }
+
+    const qty = calculation.quantity;
+    const buyPrice = calculation.buyPrice;
+    const stopLoss = calculation.stopLoss;
+    const actionWord = side === 1 ? "BUY" : "SELL";
+
+    if (side === 1 && stopLoss >= buyPrice) {
+      setStatus(`For BUY, Stop Price must be below Entry Price. Entry: ${buyPrice}, Stop: ${stopLoss}.`, "error");
+      return;
+    }
+
+    if (side === -1 && stopLoss <= buyPrice) {
+      setStatus(`For SELL, Stop Price must be above Entry Price. Entry: ${buyPrice}, Stop: ${stopLoss}.`, "error");
+      return;
+    }
+
+    // 1. Place the primary buy/sell order
+    // Exact payload format captured from Fyers web app curl:
+    // noConfirm, LTP, filledQty are REQUIRED by the Fyers internal API
+    const orderPayload = {
+      noConfirm: true,
+      productType: "INTRADAY",
+      side: side,         // 1 = Buy, -1 = Sell
+      symbol: state.activeSymbol,
+      qty: qty,
+      disclosedQty: 0,
+      type: 2,            // 2 = Market order
+      LTP: buyPrice,      // Required: current LTP
+      validity: "DAY",
+      filledQty: 0,       // Required by Fyers internal API
+      limitPrice: 0,
+      stopPrice: 0,
+      offlineOrder: false
+    };
+    console.log("[Fyers OCO] Placing order payload:", JSON.stringify(orderPayload));
+
+    console.group(`[Fyers OCO] ${actionWord} Order Request`);
+    console.log("Symbol:", state.activeSymbol);
+    console.log("Payload:", JSON.parse(JSON.stringify(orderPayload)));
+    console.log("Token (first 20 chars):", state.authToken?.slice(0, 20));
+    console.log("API Base URL:", state.apiBaseUrl);
+    console.groupEnd();
+    setStatus(`Placing ${actionWord} order for ${qty} shares of ${state.activeSymbol}...`);
+    refs.buy.disabled = true;
+    refs.sell.disabled = true;
+
+    chrome.runtime.sendMessage({
+      action: "placeOrder",
+      token: state.authToken,
+      baseUrl: state.apiBaseUrl,
+      payload: orderPayload
+    }, async (response) => {
+      console.group(`[Fyers OCO] ${actionWord} Order Response`);
+      console.log("Success:", response?.success);
+      console.log("URL tried:", response?.urlTried);
+      console.log("Raw response:", response?.rawResponse);
+      console.log("All endpoint attempts:", response?.attempts);
+      console.log("Error:", response?.error);
+      console.groupEnd();
+
+      if (chrome.runtime.lastError || !response || !response.success) {
+        const errMsg = response?.error || chrome.runtime.lastError?.message || "Unknown error";
+        setStatus(`Failed to place ${actionWord} order: ${errMsg}`, "error");
+        refs.buy.disabled = false;
+        refs.sell.disabled = false;
+        return;
+      }
+
+      setStatus(`Placed ${actionWord} order successfully. Waiting 2 seconds before placing Stop Loss...`, "success");
+
+      // Wait 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const executionPrice = getExecutionPrice(response.body, buyPrice);
+      const stopLossDistance = window.FyersOCOCalculator.roundPrice(Math.abs(executionPrice - stopLoss));
+
+      if (!Number.isFinite(stopLossDistance) || stopLossDistance <= 0) {
+        setStatus(`Could not calculate SL distance. Entry: ${executionPrice}, Stop: ${stopLoss}.`, "error");
+        refs.buy.disabled = false;
+        refs.sell.disabled = false;
+        return;
+      }
+
+      // 2. Place the Stop Loss (BO order)
+      const slPayload = {
+        legType: 1,
+        placeFlag: false,
+        type: 2,
+        orderTag: "OWTPSL",
+        positionId: `${state.activeSymbol}-INTRADAY`,
+        stopLoss: stopLossDistance,
+        qty: qty,
+        symbol: state.activeSymbol
+      };
+
+      console.log("[Fyers OCO] Intended SL price:", stopLoss, "Execution/entry price:", executionPrice, "SL distance sent:", stopLossDistance);
+      setStatus(`Placing Stop Loss at ${stopLoss.toFixed(2)} for ${state.activeSymbol}...`);
+
+      chrome.runtime.sendMessage({
+        action: "placeSL",
+        token: state.authToken,
+        baseUrl: state.apiBaseUrl,
+        payload: slPayload
+      }, (slResponse) => {
+        refs.buy.disabled = false;
+        refs.sell.disabled = false;
+
+        if (chrome.runtime.lastError || !slResponse || !slResponse.success) {
+          const errMsg = slResponse?.error || chrome.runtime.lastError?.message || "Unknown error";
+          setStatus(`Placed ${actionWord} order, but SL placement failed: ${errMsg}`, "error");
+          return;
+        }
+
+        setStatus(`Trade fully executed! ${actionWord} order + Stop Loss placed.`, "success");
+      });
+    });
+  }
 
   loadSettings();
   loadPanelPosition();

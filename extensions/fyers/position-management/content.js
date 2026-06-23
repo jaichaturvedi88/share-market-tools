@@ -7,7 +7,7 @@
   // Inject the bridge script into the page context
   try {
     const script = document.createElement("script");
-    script.src = chrome.runtime.getURL("utils/fyers-bridge.js");
+    script.src = chrome.runtime.getURL("position-management/utils/fyers-bridge.js");
     (document.head || document.documentElement).appendChild(script);
   } catch (err) {
     console.warn("[Fyers SL Manager] Failed to inject bridge script:", err);
@@ -19,7 +19,9 @@
     autoConfirm: "fyersSL.autoConfirm",
     hideClosed: "fyersSL.hideClosed",
     panelX: "fyersSL.panelX",
-    panelY: "fyersSL.panelY"
+    panelY: "fyersSL.panelY",
+    authToken: "fyersSL.authToken",
+    apiBaseUrl: "fyersSL.apiBaseUrl"
   };
 
   const DEFAULTS = {
@@ -93,9 +95,13 @@
   // Listen for Captured tokens from bridge
   window.addEventListener("fyers-token-captured", (e) => {
     const { token, baseUrl } = e.detail;
-    if (token && state.authToken !== token) {
+    if (token && (state.authToken !== token || state.apiBaseUrl !== baseUrl)) {
       state.authToken = token;
       state.apiBaseUrl = baseUrl;
+      chrome.storage.local.set({
+        [STORAGE_KEYS.authToken]: token,
+        [STORAGE_KEYS.apiBaseUrl]: baseUrl
+      });
       console.log("[Fyers SL Manager] Token captured, triggering background sync...");
       syncDataThroughBackground();
     }
@@ -367,6 +373,9 @@
   async function loadConfig() {
     const saved = await chrome.storage.local.get(Object.values(STORAGE_KEYS));
     
+    state.authToken = saved[STORAGE_KEYS.authToken] || null;
+    state.apiBaseUrl = saved[STORAGE_KEYS.apiBaseUrl] || null;
+
     state.targetProfit = Number(saved[STORAGE_KEYS.targetProfit]) || DEFAULTS.targetProfit;
     refs.profitInput.value = String(state.targetProfit);
 
