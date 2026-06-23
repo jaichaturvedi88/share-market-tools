@@ -17,33 +17,78 @@
   position: fixed;
   right: 16px;
   bottom: 99px; /* Exactly above the SL Manager button (bottom 60px + 31px height + 8px gap) */
-  min-width: 76px;
-  height: 31px;
-  border: 1px solid rgba(94, 234, 212, 0.45);
+  min-width: 84px;
+  height: 34px;
+  border: 1px solid rgba(94, 234, 212, 0.55);
   border-radius: 999px;
-  background: #0f172a;
-  color: #e2e8f0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(45, 212, 191, 0.32), transparent 28px),
+    linear-gradient(135deg, #0f172a 0%, #111827 48%, #022c22 100%);
+  color: #f8fafc;
   cursor: pointer;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 80ms ease;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(20, 184, 166, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 80ms ease, filter 120ms ease;
   z-index: 100001;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 7px;
+  padding: 0 12px 0 7px;
 }
 
 .foc-fab:hover {
   border-color: rgba(94, 234, 212, 0.9);
-  background: #122033;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.46);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.48), 0 0 18px rgba(45, 212, 191, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  filter: brightness(1.08);
 }
 
 .foc-fab:active {
   transform: translateY(1px) scale(0.98);
-  background: #0b1119;
+  filter: brightness(0.94);
+}
+
+.foc-fab-icon {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #14b8a6, #22c55e);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  flex: 0 0 auto;
+}
+
+.foc-fab-icon::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  top: 11px;
+  height: 2px;
+  border-radius: 999px;
+  background: #052e1b;
+  box-shadow: 4px -4px 0 #052e1b, 8px -1px 0 #052e1b;
+  transform: rotate(-24deg);
+}
+
+.foc-fab-icon::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid #052e1b;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transform: rotate(-24deg);
+}
+
+.foc-fab-text {
+  line-height: 1;
+  text-shadow: 0 1px 8px rgba(20, 184, 166, 0.28);
 }
 
 .foc-panel {
