@@ -1,0 +1,124 @@
+//@version=6
+// =============================================================================
+//  Jai-Swing Trade Screener
+//  Combines the 12 swing-filter criteria into one indicator.
+//  Use it two ways:
+//    1. On a chart  -> shows a live status table (pass/fail per criterion).
+//    2. Pine Screener -> attach to a watchlist, filter on "Score" or "All met".
+//  Note: this surfaces CANDIDATES, not buy/sell signals. Manage your own risk.
+// =============================================================================
+indicator("Jai-Swing Trade Screener", overlay = true)
+
+// ----------------------------- Inputs ---------------------------------------
+grpDir  = "Direction"
+dir     = input.string("Long", "Trade direction", options = ["Long", "Short"], group = grpDir)
+
+grpLiq  = "Liquidity & price"
+minAvgVol      = input.int(500000, "Min avg volume (shares)", group = grpLiq)
+volLen         = input.int(90,     "Avg volume lookback (bars)", group = grpLiq)
+minTradedValue = input.float(50000000.0, "Min daily traded value (price x avg vol)", group = grpLiq)
+priceFloor     = input.float(50.0,  "Price floor", group = grpLiq)
+priceCeiling   = input.float(5000.0,"Price ceiling", group = grpLiq)
+
+grpVol  = "Volatility"
+atrLen     = input.int(14,   "ATR length", group = grpVol)
+minAtrPct  = input.float(2.0,"Min ATR as % of price", group = grpVol)
+
+grpTrend = "Trend"
+maFast = input.int(50,  "Fast SMA", group = grpTrend)
+maSlow = input.int(200, "Slow SMA", group = grpTrend)
+
+grpMom = "Momentum"
+rsiLen  = input.int(14, "RSI length", group = grpMom)
+rsiLow  = input.float(40.0, "RSI band low", group = grpMom)
+rsiHigh = input.float(60.0, "RSI band high", group = grpMom)
+
+grpRs = "Relative strength"
+benchmark = input.symbol("NSE:NIFTY", "Benchmark index", group = grpRs)
+perfLen   = input.int(20, "RS lookback (bars)", group = grpRs)
+
+grpRvol = "Relative volume"
+rvolLen   = input.int(20,  "Relative volume lookback", group = grpRvol)
+minRvol   = input.float(1.5,"Min relative volume", group = grpRvol)
+
+isLong = dir == "Long"
+
+// --------------------------- Calculations ------------------------------------
+avgVol = ta.sma(volume, volLen)
+smaF   = ta.sma(close, maFast)
+smaS   = ta.sma(close, maSlow)
+atrPct = (ta.atr(atrLen) / close) * 100.0
+rsi    = ta.rsi(close, rsiLen)
+rvol   = volume / ta.sma(volume, rvolLen)
+
+benchClose = request.security(benchmark, timeframe.period, close, lookahead = barmerge.lookahead_off)
+stockPerf  = (close - close[perfLen]) / close[perfLen] * 100.0
+benchPerf  = (benchClose - benchClose[perfLen]) / benchClose[perfLen] * 100.0
+
+// ----------------------------- Conditions ------------------------------------
+cLiquidity = avgVol >= minAvgVol                               // 1
+cTraded    = close * avgVol >= minTradedValue                  // 2
+cFloor     = close >= priceFloor                               // 3
+cCeiling   = close <= priceCeiling                             // 4
+cVolatile  = atrPct >= minAtrPct                               // 5
+cTrendSlow = isLong ? close > smaS : close < smaS              // 6
+cTrendFast = isLong ? close > smaF : close < smaF              // 7
+cStack     = isLong ? smaF > smaS : smaF < smaS                // 8
+cRsi       = rsi >= rsiLow and rsi <= rsiHigh                  // 9
+cRs        = isLong ? stockPerf > benchPerf : stockPerf < benchPerf  // 10
+cRvol      = rvol >= minRvol                                   // 11
+// 12 (earnings/event risk) cannot be checked reliably in Pine for future
+// dates, so it is left for you to verify manually before entering.
+
+// Count how many of the 11 testable conditions pass.
+score = (cLiquidity ? 1 : 0) + (cTraded ? 1 : 0) + (cFloor ? 1 : 0) +
+         (cCeiling ? 1 : 0) + (cVolatile ? 1 : 0) + (cTrendSlow ? 1 : 0) +
+         (cTrendFast ? 1 : 0) + (cStack ? 1 : 0) + (cRsi ? 1 : 0) +
+         (cRs ? 1 : 0) + (cRvol ? 1 : 0)
+
+allMet = score == 11
+
+// ------------------------- Plots for the Screener -----------------------------
+// In the Pine Screener you can filter on these columns.
+plot(score,            "Score",   display = display.data_window)
+plot(allMet ? 1 : 0,   "All met", display = display.data_window)
+plot(atrPct,           "ATR %",   display = display.data_window)
+plot(rsi,              "RSI",     display = display.data_window)
+plot(rvol,             "Rel vol", display = display.data_window)
+
+// Reference lines on the chart.
+plot(smaF, "Fast SMA", color = color.new(color.orange, 0))
+plot(smaS, "Slow SMA", color = color.new(color.blue, 0))
+
+// Background tint when every condition is met.
+bgcolor(allMet ? color.new(color.green, 85) : na, title = "All conditions met")
+
+// ----------------------------- Status table ----------------------------------
+f_mark(bool ok) => ok ? "PASS" : "fail"
+f_col(bool ok)  => ok ? color.new(color.green, 0) : color.new(color.red, 0)
+
+var table t = table.new(position.top_right, 4, 7, border_width = 1)
+if barstate.islast
+    // Header spans the three left cells; score sits on the right.
+    table.cell(t, 0, 0, "Swing screener (" + dir + ")", text_color = color.white, bgcolor = color.new(color.gray, 0), text_size = size.small)
+    table.merge_cells(t, 0, 0, 2, 0)
+    table.cell(t, 3, 0, "Score " + str.tostring(score) + "/11", text_color = color.white, bgcolor = color.new(color.gray, 0), text_size = size.small)
+
+    labels = array.from("Liquidity", "Traded value", "Price floor", "Price ceiling", "Volatility (ATR%)", "Trend vs slow MA", "Trend vs fast MA", "MA stacking", "RSI band", "Rel strength", "Rel volume")
+    conds  = array.from(cLiquidity, cTraded, cFloor, cCeiling, cVolatile, cTrendSlow, cTrendFast, cStack, cRsi, cRs, cRvol)
+
+    // Left pair (cols 0-1): first 6 criteria, rows 1-6.
+    for i = 0 to 5
+        ok = array.get(conds, i)
+        table.cell(t, 0, i + 1, array.get(labels, i), text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
+        table.cell(t, 1, i + 1, f_mark(ok), text_color = color.white, bgcolor = f_col(ok), text_size = size.small)
+
+    // Right pair (cols 2-3): remaining 5 criteria, rows 1-5.
+    for i = 6 to 10
+        ok = array.get(conds, i)
+        table.cell(t, 2, i - 5, array.get(labels, i), text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
+        table.cell(t, 3, i - 5, f_mark(ok), text_color = color.white, bgcolor = f_col(ok), text_size = size.small)
+
+    // Event risk takes the last right-side slot (row 6).
+    table.cell(t, 2, 6, "Event risk", text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
+    table.cell(t, 3, 6, "check manually", text_color = color.white, bgcolor = color.new(color.orange, 0), text_size = size.small)

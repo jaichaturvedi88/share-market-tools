@@ -1,0 +1,37 @@
+Currently working:
+    Make a todo of component of intraday trading.
+    indicator or strategy ?
+    heavily-arbitraged stocks often range around a daily mean
+    Screen for average daily range (or ATR) as a % of price
+
+
+
+
+
+
+
+Todos:
+    where to exit 
+    where to put stop loss
+    risk per trade
+    curve-fitting ? keep tweaking lengths and conditions until the past looks great
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Completed: 
+
+
+
+
+

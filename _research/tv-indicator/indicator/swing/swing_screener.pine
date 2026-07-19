@@ -1,0 +1,167 @@
+//@version=6
+// =============================================================================
+//  Jai-Swing Trade Screener
+//  Combines swing-filter criteria into one indicator.
+//  Use it two ways:
+//    1. On a chart  -> shows a live status table (pass/fail per criterion).
+//    2. Pine Screener -> attach to a watchlist, filter on "Score" or "All met".
+//  Note: this surfaces CANDIDATES, not buy/sell signals. Manage your own risk.
+//
+//  Extracting the most important conditions (priority order):
+//    1. Trend alignment   – price above EMA50, EMA50 > EMA200
+//    2. EMA 50 proximity  – price not extended more than N% from EMA 50 (pullback filter)
+//    3. 52-week high      – price within N% of 52-week high (breakout readiness)
+//    4. MACD confirmation – MACD line above signal line (momentum direction)
+//    5. Relative strength – stock outperforming benchmark
+//    6. Volatility        – sufficient ATR for tradeable moves
+// =============================================================================
+indicator("Jai-Swing Trade Screener", overlay = true)
+
+// ----------------------------- Inputs ---------------------------------------
+grpDir = "Direction"
+dir    = input.string("Long", "Trade direction", options = ["Long", "Short"], group = grpDir)
+
+grpVol = "Volatility"
+atrLen    = input.int(14,   "ATR length",           group = grpVol)
+minAtrPct = input.float(2.0,"Min ATR as % of price", group = grpVol)
+
+grpTrend = "Trend"
+maFast = input.int(50,  "Fast EMA", group = grpTrend)
+maSlow = input.int(200, "Slow EMA", group = grpTrend)
+
+grpEma = "EMA 50 Proximity"
+ema50Len    = input.int(50,   "EMA 50 length",              minval = 1,   group = grpEma)
+maxEma50Dev = input.float(3.0,"Max % distance from EMA 50", minval = 0.1, group = grpEma)
+
+grp52w = "52-Week High"
+wk52Bars  = input.int(252,   "52-week lookback (bars)",  minval = 50,  group = grp52w)
+max52wDev = input.float(15.0,"Max % below 52-week high", minval = 0.1, group = grp52w)
+
+grpMacd = "MACD"
+macdFastLen = input.int(12, "MACD fast length",   minval = 1, group = grpMacd)
+macdSlowLen = input.int(26, "MACD slow length",   minval = 1, group = grpMacd)
+macdSigLen  = input.int(9,  "MACD signal length", minval = 1, group = grpMacd)
+
+grpRs = "Relative strength"
+benchmark = input.symbol("NSE:NIFTY", "Benchmark index",    group = grpRs)
+perfLen   = input.int(20,              "RS lookback (bars)", group = grpRs)
+
+grpRvol = "Relative volume"
+rvolLen = input.int(20,    "Relative volume lookback", group = grpRvol)
+minRvol = input.float(1.5, "Min relative volume",      group = grpRvol)
+
+grpAlert = "Alerts"
+minAlertScore = input.int(6, "Min score for partial alert", minval = 1, maxval = 8, group = grpAlert)
+
+isLong = dir == "Long"
+
+// --------------------------- Calculations ------------------------------------
+emaF      = ta.ema(close, maFast)
+emaS      = ta.ema(close, maSlow)
+ema50     = ta.ema(close, ema50Len)
+atrLong   = ta.atr(atrLen)
+atrPct    = atrLong / close * 100.0
+rvol      = volume / ta.sma(volume, rvolLen)
+wk52High  = ta.highest(high, wk52Bars)
+pct52wOff = (wk52High - close) / wk52High * 100
+
+[macdLine, signalLine, _] = ta.macd(close, macdFastLen, macdSlowLen, macdSigLen)
+
+benchClose = request.security(benchmark, timeframe.period, close, lookahead = barmerge.lookahead_off)
+stockPerf  = (close - close[perfLen]) / close[perfLen] * 100.0
+benchPerf  = (benchClose - benchClose[perfLen]) / benchClose[perfLen] * 100.0
+
+// ----------------------------- Conditions ------------------------------------
+// All conditions evaluate every bar.
+cTrendFast = isLong ? close > emaF : close < emaF                         // 1
+cStack     = isLong ? emaF > emaS  : emaF < emaS                          // 2
+c52wHigh   = pct52wOff <= max52wDev                                       // 3
+cMacd      = isLong ? macdLine > signalLine : macdLine < signalLine       // 4
+cVolatile  = atrPct >= minAtrPct                                           // 5
+cRs        = isLong ? stockPerf > benchPerf : stockPerf < benchPerf       // 6
+cRvol      = rvol >= minRvol                                               // 7
+cEma50     = math.abs(close - ema50) / ema50 * 100 <= maxEma50Dev         // 8
+
+score  = (cTrendFast ? 1 : 0) + (cStack ? 1 : 0) + (c52wHigh ? 1 : 0) +
+         (cMacd ? 1 : 0) + (cVolatile ? 1 : 0) + (cRs ? 1 : 0) +
+         (cRvol ? 1 : 0) + (cEma50 ? 1 : 0)
+allMet = score == 8
+
+// ------------------------- Plots for the Screener ----------------------------
+plot(score,           "Score",   display = display.data_window)
+plot(allMet ? 1 : 0,  "All met", display = display.data_window)
+plot(atrPct,          "ATR %",   display = display.data_window)
+plot(rvol,            "Rel vol", display = display.data_window)
+
+plot(emaF,  "Fast EMA", color = color.new(color.orange, 0))
+plot(emaS,  "Slow EMA", color = color.new(color.blue,   0))
+plot(ema50, "EMA 50",   color = color.new(color.green,  0))
+
+bgcolor(allMet ? color.new(color.green, 85) : na, title = "All conditions met")
+
+// ----------------------------- Alerts ----------------------------------------
+alertcondition(score >= minAlertScore, title = "Partial score alert", message = "Jai-Swing: Score threshold reached on {{ticker}}")
+alertcondition(allMet,                 title = "All conditions met",  message = "Jai-Swing: All 8 conditions met on {{ticker}}")
+
+// ----------------------------- Status table ----------------------------------
+f_mark(bool ok) => ok ? "PASS" : "fail"
+f_col (bool ok) => ok ? color.new(color.green, 0) : color.new(color.red, 0)
+
+// Labels with thresholds folded in
+fstLbl   = (isLong ? "Price>EMA" : "Price<EMA") + str.tostring(maFast)
+stkLbl   = "EMA" + str.tostring(maFast) + (isLong ? ">" : "<") + "EMA" + str.tostring(maSlow)
+hk52Lbl  = "≤"          + str.tostring(max52wDev, "#.#") + "% off 52wH"
+macdLbl  = isLong ? "MACD > Signal" : "MACD < Signal"
+atrLbl   = "ATR% ≥ "    + str.tostring(minAtrPct, "#.#") + "%"
+rsLbl    = isLong ? "RS > Nifty" : "RS < Nifty"
+rvolLbl  = "RVol ≥ "    + str.tostring(minRvol, "#.#") + "x"
+ema50Lbl = "EMA50 ±"    + str.tostring(maxEma50Dev, "#.#") + "%"
+
+// Live values
+fstVal   = str.tostring(close - emaF, "#.##")
+stkVal   = str.tostring(emaF  - emaS, "#.##")
+hk52Val  = str.tostring(pct52wOff, "#.##") + "%"
+macdVal  = str.tostring(macdLine - signalLine, "#.##")
+atrVal   = str.tostring(atrPct, "#.##") + "%"
+rsVal    = str.tostring(stockPerf - benchPerf, "#.##") + "%"
+rvolVal  = str.tostring(rvol, "#.##") + "x"
+ema50Val = str.tostring(math.abs(close - ema50) / ema50 * 100, "#.##") + "%"
+
+// 9-column layout: [group | label | value | status] spacer [group | label | value | status]
+// 5 rows: 1 header + 4 left criteria (0-3) + 4 right criteria (4-7)
+var table t = table.new(position.top_center, 9, 5, border_width = 1)
+if barstate.islast
+    // Header
+    table.cell(t, 0, 0, "Jai-Swing screener (" + dir + ")", text_color = color.white, bgcolor = color.new(color.gray, 0), text_size = size.small)
+    table.merge_cells(t, 0, 0, 6, 0)
+    table.cell(t, 7, 0, "Score " + str.tostring(score) + "/8", text_color = color.white, bgcolor = color.new(color.gray, 0), text_size = size.small)
+    table.merge_cells(t, 7, 0, 8, 0)
+
+    labels = array.from(fstLbl, stkLbl, hk52Lbl, macdLbl, atrLbl, rsLbl, rvolLbl, ema50Lbl)
+    values = array.from(fstVal, stkVal, hk52Val, macdVal, atrVal, rsVal, rvolVal, ema50Val)
+    conds  = array.from(cTrendFast, cStack, c52wHigh, cMacd, cVolatile, cRs, cRvol, cEma50)
+    groups = array.from("Trend", "Trend", "52wHigh", "MACD", "Volatility", "Rel Str", "Rel Vol", "EMA50")
+
+    // Left block (cols 0-3): criteria 0-3, rows 1-4
+    for i = 0 to 3
+        ok = array.get(conds, i)
+        table.cell(t, 0, i + 1, array.get(groups, i), text_color = color.white, bgcolor = color.new(color.gray, 55), text_size = size.small)
+        table.cell(t, 1, i + 1, array.get(labels, i), text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
+        table.cell(t, 2, i + 1, array.get(values, i), text_color = color.white, bgcolor = color.new(color.gray, 50), text_size = size.small)
+        table.cell(t, 3, i + 1, f_mark(ok),           text_color = color.white, bgcolor = f_col(ok),                text_size = size.small)
+
+    // Merge "Trend" group rows 1-2
+    table.merge_cells(t, 0, 1, 0, 2)
+
+    // Spacer column (col 4), rows 1-4
+    for i = 1 to 4
+        table.cell(t, 4, i, "", bgcolor = color.new(color.gray, 90), text_size = size.small)
+
+    // Right block (cols 5-8): criteria 4-7, rows 1-4
+    for i = 4 to 7
+        ok  = array.get(conds, i)
+        row = i - 3
+        table.cell(t, 5, row, array.get(groups, i), text_color = color.white, bgcolor = color.new(color.gray, 55), text_size = size.small)
+        table.cell(t, 6, row, array.get(labels, i), text_color = color.white, bgcolor = color.new(color.gray, 70), text_size = size.small)
+        table.cell(t, 7, row, array.get(values, i), text_color = color.white, bgcolor = color.new(color.gray, 50), text_size = size.small)
+        table.cell(t, 8, row, f_mark(ok),           text_color = color.white, bgcolor = f_col(ok),                text_size = size.small)

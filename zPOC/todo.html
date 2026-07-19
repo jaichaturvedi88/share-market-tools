@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>zPOC Todo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5edf6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 32px;
+      background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.2), transparent 320px),
+        linear-gradient(135deg, #0f172a, #111827 52%, #08111f);
+    }
+
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    section {
+      min-height: 260px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.76);
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      background: rgba(15, 23, 42, 0.72);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .count {
+      min-width: 28px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(45, 212, 191, 0.14);
+      color: #5eead4;
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    ul {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 14px;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 11px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.7);
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: #14b8a6;
+      cursor: pointer;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .item-name {
+      font-weight: 750;
+      color: #f8fafc;
+    }
+
+    .item-type {
+      margin-left: auto;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.14);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    #done-list .item-name {
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+
+    .empty {
+      display: none;
+      padding: 26px 18px;
+      color: #64748b;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .is-empty .empty {
+      display: block;
+    }
+
+    .is-empty ul {
+      display: none;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 18px;
+      }
+
+      .board {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>zPOC Todo</h1>
+      <p class="subtitle">Checklist generated from <code>C:\jai\projects\share-market\share-market-tools\zPOC</code></p>
+    </header>
+
+    <div class="board">
+      <section id="pending-section">
+        <div class="section-header">
+          <h2>Pending</h2>
+          <span id="pending-count" class="count">0</span>
+        </div>
+        <ul id="pending-list"></ul>
+        <div class="empty">Nothing pending. Nice.</div>
+      </section>
+
+      <section id="done-section">
+        <div class="section-header">
+          <h2>Done</h2>
+          <span id="done-count" class="count">0</span>
+        </div>
+        <ul id="done-list"></ul>
+        <div class="empty">Completed items will appear here.</div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "zpoc.todo.done.v1";
+    const items = [
+      { id: "chartink-webhook", name: "chartink-webhook", type: "folder" },
+      { id: "CI-intraday-scan-viewer", name: "CI-intraday-scan-viewer", type: "folder" },
+      { id: "fyers-auto-symbol-sync", name: "fyers-auto-symbol-sync", type: "folder" }
+    ];
+
+    const pendingSection = document.getElementById("pending-section");
+    const doneSection = document.getElementById("done-section");
+    const pendingList = document.getElementById("pending-list");
+    const doneList = document.getElementById("done-list");
+    const pendingCount = document.getElementById("pending-count");
+    const doneCount = document.getElementById("done-count");
+
+    function loadDoneIds() {
+      try {
+        return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+      } catch {
+        return new Set();
+      }
+    }
+
+    function saveDoneIds(doneIds) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...doneIds]));
+    }
+
+    function createItem(item, isDone, doneIds) {
+      const li = document.createElement("li");
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      const name = document.createElement("span");
+      const type = document.createElement("span");
+
+      checkbox.type = "checkbox";
+      checkbox.checked = isDone;
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          doneIds.add(item.id);
+        } else {
+          doneIds.delete(item.id);
+        }
+        saveDoneIds(doneIds);
+        render();
+      });
+
+      name.className = "item-name";
+      name.textContent = item.name;
+
+      type.className = "item-type";
+      type.textContent = item.type;
+
+      label.append(checkbox, name, type);
+      li.append(label);
+      return li;
+    }
+
+    function render() {
+      const doneIds = loadDoneIds();
+      pendingList.replaceChildren();
+      doneList.replaceChildren();
+
+      const pendingItems = items.filter((item) => !doneIds.has(item.id));
+      const doneItems = items.filter((item) => doneIds.has(item.id));
+
+      pendingItems.forEach((item) => pendingList.append(createItem(item, false, doneIds)));
+      doneItems.forEach((item) => doneList.append(createItem(item, true, doneIds)));
+
+      pendingCount.textContent = String(pendingItems.length);
+      doneCount.textContent = String(doneItems.length);
+
+      pendingSection.classList.toggle("is-empty", pendingItems.length === 0);
+      doneSection.classList.toggle("is-empty", doneItems.length === 0);
+    }
+
+    render();
+  </script>
+</body>
+</html>
